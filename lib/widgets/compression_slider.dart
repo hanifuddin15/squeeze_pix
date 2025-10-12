@@ -2,12 +2,8 @@ import 'package:flutter/material.dart';
 
 class CompressionSlider extends StatelessWidget {
   final double value;
-  final ValueChanged<double> onChanged;
-  const CompressionSlider({
-    required this.value,
-    required this.onChanged,
-    super.key,
-  });
+  final ValueChanged<double>? onChanged;
+  const CompressionSlider({required this.value, this.onChanged, super.key});
 
   @override
   Widget build(BuildContext context) {

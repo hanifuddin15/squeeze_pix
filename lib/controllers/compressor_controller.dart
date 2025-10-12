@@ -5,6 +5,7 @@ import '../services/compressor_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:get_storage/get_storage.dart';
+import 'package:open_filex/open_filex.dart';
 
 class CompressorController extends GetxController {
   final CompressorService _service = CompressorService();
@@ -14,6 +15,7 @@ class CompressorController extends GetxController {
   final RxInt quality = 80.obs; // default quality
   final Rxn<File> lastCompressed = Rxn<File>();
   final RxBool isCompressing = false.obs;
+  final RxBool isPicking = false.obs;
   final storage = GetStorage();
 
   // history small list of paths
@@ -21,10 +23,15 @@ class CompressorController extends GetxController {
 
   Future<void> pickImages() async {
     final ImagePicker picker = ImagePicker();
-    final picked = await picker.pickMultiImage();
-    if (picked.isNotEmpty) {
-      images.addAll(picked.map((x) => File(x.path)));
-      selected.value ??= images.first;
+    isPicking.value = true;
+    try {
+      final picked = await picker.pickMultiImage();
+      if (picked.isNotEmpty) {
+        images.addAll(picked.map((x) => File(x.path)));
+        selected.value ??= images.first;
+      }
+    } finally {
+      isPicking.value = false;
     }
   }
 
@@ -74,6 +81,12 @@ class CompressorController extends GetxController {
     history.insert(0, path);
     if (history.length > 50) history.removeLast();
     storage.write('history', history);
+  }
+
+  Future<void> openLastCompressedLocation() async {
+    final file = lastCompressed.value;
+    if (file == null) return;
+    await OpenFilex.open(file.path);
   }
 
   @override

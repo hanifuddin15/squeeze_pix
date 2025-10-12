@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/image_tile.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../controllers/compressor_controller.dart';
 
 class HomePage extends StatelessWidget {
@@ -20,10 +21,7 @@ class HomePage extends StatelessWidget {
                 ? IconButton(
                     icon: const Icon(Icons.delete_outline),
                     tooltip: 'Clear All',
-                    onPressed: () {
-                      c.images.clear();
-                      c.selected.value = null;
-                    },
+                    onPressed: () => _showClearConfirmation(context, c),
                   )
                 : const SizedBox.shrink(),
           ),
@@ -36,6 +34,28 @@ class HomePage extends StatelessWidget {
         return const _ImageGrid();
       }),
       bottomNavigationBar: const _BottomActionBar(),
+    );
+  }
+
+  void _showClearConfirmation(BuildContext context, CompressorController c) {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Clear All?'),
+        content: const Text(
+          'This will remove all picked images. Are you sure?',
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () {
+              c.images.clear();
+              c.selected.value = null;
+              Get.back();
+            },
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -87,12 +107,21 @@ class _ImageGrid extends StatelessWidget {
             delegate: SliverChildBuilderDelegate((context, i) {
               final file = c.images[i];
               final selected = c.selected.value?.path == file.path;
-              return GestureDetector(
-                onTap: () {
-                  c.selectImage(file);
-                  Get.toNamed('/compress');
-                },
-                child: ImageTile(file: file, selected: selected),
+              return AnimationConfiguration.staggeredGrid(
+                position: i,
+                duration: const Duration(milliseconds: 375),
+                columnCount: 3,
+                child: ScaleAnimation(
+                  child: FadeInAnimation(
+                    child: GestureDetector(
+                      onTap: () {
+                        c.selectImage(file);
+                        Get.toNamed('/compress');
+                      },
+                      child: ImageTile(file: file, selected: selected),
+                    ),
+                  ),
+                ),
               );
             }, childCount: c.images.length),
           ),
@@ -112,28 +141,38 @@ class _BottomActionBar extends StatelessWidget {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: PrimaryButton(
-                label: 'Pick Images',
-                onPressed: () => c.pickImages(),
-                icon: Icons.photo_library_outlined,
-              ),
-            ),
-            const SizedBox(width: 12),
-            IconButton.filled(
-              style: IconButton.styleFrom(
-                padding: const EdgeInsets.all(16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+        child: Obx(
+          () => Row(
+            children: [
+              Expanded(
+                child: PrimaryButton(
+                  label: c.isPicking.value ? 'Loading...' : 'Pick Images',
+                  onPressed: c.isPicking.value ? () {} : () => c.pickImages(),
+                  icon: c.isPicking.value
+                      ? null // Or a spinner icon
+                      : Icons.photo_library_outlined,
                 ),
               ),
-              onPressed: () => c.pickSingleFromCamera(),
-              icon: const Icon(Icons.camera_alt_outlined),
-              tooltip: 'Use Camera',
-            ),
-          ],
+              if (c.isPicking.value) ...[
+                const SizedBox(width: 12),
+                const CircularProgressIndicator(),
+              ],
+              const SizedBox(width: 12),
+              IconButton.filled(
+                style: IconButton.styleFrom(
+                  padding: const EdgeInsets.all(16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: c.isPicking.value
+                    ? null
+                    : () => c.pickSingleFromCamera(),
+                icon: const Icon(Icons.camera_alt_outlined),
+                tooltip: 'Use Camera',
+              ),
+            ],
+          ),
         ),
       ),
     );
