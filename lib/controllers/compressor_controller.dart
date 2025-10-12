@@ -22,7 +22,7 @@ class CompressorController extends GetxController {
   Future<void> pickImages() async {
     final ImagePicker picker = ImagePicker();
     final picked = await picker.pickMultiImage();
-    if (picked != null && picked.isNotEmpty) {
+    if (picked.isNotEmpty) {
       images.addAll(picked.map((x) => File(x.path)));
       selected.value ??= images.first;
     }

@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/compressor_controller.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/image_tile.dart';
+import '../controllers/compressor_controller.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -11,92 +11,177 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Get.find<CompressorController>();
     return Scaffold(
-      appBar: AppBar(title: const Text('SqueezePix'), centerTitle: true),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: PrimaryButton(
-                    label: 'Pick Images',
-                    onPressed: () => c.pickImages(),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                IconButton(
-                  onPressed: () => c.pickSingleFromCamera(),
-                  icon: const Icon(Icons.camera_alt_outlined),
-                ),
-              ],
+      appBar: AppBar(
+        title: const Text('SqueezePix'),
+        centerTitle: true,
+        actions: [
+          Obx(
+            () => c.images.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    tooltip: 'Clear All',
+                    onPressed: () {
+                      c.images.clear();
+                      c.selected.value = null;
+                    },
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+      body: Obx(() {
+        if (c.images.isEmpty) {
+          return const _EmptyState();
+        }
+        return const _ImageGrid();
+      }),
+      bottomNavigationBar: const _BottomActionBar(),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.photo_library_outlined,
+            size: 80,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(height: 16),
+          Text('No Images Yet', style: textTheme.headlineSmall),
+          const SizedBox(height: 8),
+          Text(
+            'Tap "Pick Images" to get started',
+            style: textTheme.bodyLarge?.copyWith(color: Colors.grey.shade600),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ImageGrid extends StatelessWidget {
+  const _ImageGrid();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Get.find<CompressorController>();
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.all(12),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
             ),
-            const SizedBox(height: 12),
-            Obx(() {
-              if (c.images.isEmpty) {
-                return const Expanded(
-                  child: Center(
-                    child: Text(
-                      'No images selected.\nTap "Pick Images" to begin.',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                );
-              }
-              return Expanded(
-                child: GridView.builder(
-                  itemCount: c.images.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                  ),
-                  itemBuilder: (_, i) {
-                    final file = c.images[i];
-                    final selected = c.selected.value?.path == file.path;
-                    return GestureDetector(
-                      onTap: () {
-                        c.selectImage(file);
-                        Get.toNamed('/compress');
-                      },
-                      child: ImageTile(file: file, selected: selected),
-                    );
-                  },
-                ),
+            delegate: SliverChildBuilderDelegate((context, i) {
+              final file = c.images[i];
+              final selected = c.selected.value?.path == file.path;
+              return GestureDetector(
+                onTap: () {
+                  c.selectImage(file);
+                  Get.toNamed('/compress');
+                },
+                child: ImageTile(file: file, selected: selected),
               );
-            }),
-            const SizedBox(height: 8),
-            Obx(
-              () => c.history.isEmpty
-                  ? const SizedBox.shrink()
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'History',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        SizedBox(
-                          height: 90,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemBuilder: (_, i) => Image.file(
-                              File(c.history[i]),
-                              width: 80,
-                              height: 80,
-                              fit: BoxFit.cover,
-                            ),
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(width: 8),
-                            itemCount: c.history.length,
-                          ),
-                        ),
-                      ],
-                    ),
+            }, childCount: c.images.length),
+          ),
+        ),
+        SliverToBoxAdapter(child: _History()),
+      ],
+    );
+  }
+}
+
+class _BottomActionBar extends StatelessWidget {
+  const _BottomActionBar();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Get.find<CompressorController>();
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: PrimaryButton(
+                label: 'Pick Images',
+                onPressed: () => c.pickImages(),
+                icon: Icons.photo_library_outlined,
+              ),
+            ),
+            const SizedBox(width: 12),
+            IconButton.filled(
+              style: IconButton.styleFrom(
+                padding: const EdgeInsets.all(16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () => c.pickSingleFromCamera(),
+              icon: const Icon(Icons.camera_alt_outlined),
+              tooltip: 'Use Camera',
             ),
           ],
         ),
       ),
     );
+  }
+}
+
+class _History extends StatelessWidget {
+  const _History();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Get.find<CompressorController>();
+    return Obx(() {
+      if (c.history.isEmpty) return const SizedBox.shrink();
+
+      return Card(
+        margin: const EdgeInsets.all(12),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Recently Compressed',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 90,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (_, i) => ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(
+                      File(c.history[i]),
+                      width: 90,
+                      height: 90,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemCount: c.history.length,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 }

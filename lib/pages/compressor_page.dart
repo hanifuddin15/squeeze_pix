@@ -18,8 +18,9 @@ class CompressorPage extends StatelessWidget {
         padding: const EdgeInsets.all(12.0),
         child: Obx(() {
           final sel = c.selected.value;
-          if (sel == null)
+          if (sel == null) {
             return const Center(child: Text('No image selected.'));
+          }
           return Column(
             children: [
               Expanded(
@@ -53,8 +54,9 @@ class CompressorPage extends StatelessWidget {
                             onPressed: () async {
                               await c.compressSelected();
                               final f = c.lastCompressed.value;
-                              if (f != null)
+                              if (f != null) {
                                 await Share.shareXFiles([XFile(f.path)]);
+                              }
                             },
                           ),
                         ),
