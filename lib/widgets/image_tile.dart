@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:squeeze_pix/controllers/compressor_controller.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 
-class ImageTile extends GetView {
+class ImageTile extends GetView<CompressorController> {
   final File file;
   final bool selected;
   const ImageTile({required this.file, this.selected = false, super.key});
@@ -65,6 +66,19 @@ class ImageTile extends GetView {
                     ),
                   ),
                 ],
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Obx(
+                    () => controller.favorites.contains(file.path)
+                        ? Icon(
+                            Icons.star,
+                            color: Theme.of(context).colorScheme.secondary,
+                            size: 24,
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ),
               ],
             ),
           ),

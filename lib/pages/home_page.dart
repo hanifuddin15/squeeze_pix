@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:squeeze_pix/controllers/compressor_controller.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/widgets/bottom_action_bar.dart';
 import 'package:squeeze_pix/widgets/custom_appbar.dart';
 import 'package:squeeze_pix/widgets/empty_state.dart';
 import 'package:squeeze_pix/widgets/image_grid.dart';
+import 'package:squeeze_pix/widgets/primary_button.dart';
 
 class HomePage extends GetView<CompressorController> {
   const HomePage({super.key});
@@ -31,6 +31,22 @@ class HomePage extends GetView<CompressorController> {
                 }
                 return const ImageGrid();
               }),
+            ),
+            Obx(
+              () => controller.images.isNotEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: PrimaryButton(
+                        label: controller.isCompressing.value
+                            ? 'Compressing...'
+                            : 'Compress All',
+                        onPressed: controller.isCompressing.value
+                            ? () {}
+                            : () => controller.compressAll(),
+                        icon: Icons.compress,
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ),
             // FutureBuilder<BannerAd>(
             //   future: _loadBannerAd(),

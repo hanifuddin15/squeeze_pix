@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:squeeze_pix/controllers/compressor_controller.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/widgets/controls_card.dart';
@@ -15,12 +14,8 @@ class CompressorPage extends GetView<CompressorController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: false,
-      appBar: CustomAppBar(
-        title: 'Compress & Save',
-        isLeadingIcon: true,
-        onClearAll: controller.showClearConfirmation,
-      ),
+      extendBodyBehindAppBar: true,
+      appBar: CustomAppBar(title: 'Compress & Share', isLeadingIcon: true),
       body: Container(
         decoration: BoxDecoration(gradient: AppTheme.gradient),
         child: Obx(() {
@@ -36,6 +31,8 @@ class CompressorPage extends GetView<CompressorController> {
           return ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
+              const SizedBox(height: 100),
+
               OriginalImageCard(file: selectedFile),
               const SizedBox(height: 16),
               ControlsCard(),
@@ -44,7 +41,6 @@ class CompressorPage extends GetView<CompressorController> {
                 resultFile: controller.lastCompressed.value ?? File(''),
               ),
               const SizedBox(height: 16),
-
               // FutureBuilder<BannerAd>(
               //   future: _loadBannerAd(),
               //   builder: (context, snapshot) {

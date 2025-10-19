@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/controllers/compressor_controller.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/widgets/compression_slider.dart';
+import 'package:squeeze_pix/widgets/gradient_dropdown.dart';
 import 'package:squeeze_pix/widgets/primary_button.dart';
 
 class ControlsCard extends GetView<CompressorController> {
@@ -20,7 +21,7 @@ class ControlsCard extends GetView<CompressorController> {
         child: Container(
           decoration: BoxDecoration(
             gradient: AppTheme.gradient,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -39,6 +40,34 @@ class ControlsCard extends GetView<CompressorController> {
                   onChanged: isCompressing
                       ? null
                       : (v) => controller.quality.value = v.round(),
+                ),
+                const SizedBox(height: 12),
+                GradientDropdown(
+                  selectedValue: controller.outputFormat,
+                  items: ['jpg', 'png'],
+                  isDisabled: isCompressing,
+                  onChanged: (newValue) =>
+                      controller.outputFormat.value = newValue,
+                ),
+
+                const SizedBox(height: 12),
+                TextField(
+                  decoration: InputDecoration(
+                    labelText: 'Target Size (KB)',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Theme.of(
+                      context,
+                    ).colorScheme.surface.withOpacity(0.8),
+                  ),
+                  keyboardType: TextInputType.number,
+                  enabled: !isCompressing,
+                  onChanged: (value) {
+                    final parsed = double.tryParse(value);
+                    controller.targetSizeKB.value = parsed;
+                  },
                 ),
                 const SizedBox(height: 16),
                 if (isCompressing) ...[
@@ -102,15 +131,9 @@ class ControlsCard extends GetView<CompressorController> {
                                 await controller.compressSelected();
                                 final f = controller.lastCompressed.value;
                                 if (f != null) {
-                                  await SharePlus.instance.share(
-                                    ShareParams(
-                                      files: [XFile(f.path)],
-                                      text: 'Check out this compressed image!',
-                                    ),
-                                  );
-                                  // await Share.shareXFiles([
-                                  //   XFile(f.path),
-                                  // ], text: 'Check out this compressed image!');
+                                  await Share.shareXFiles([
+                                    XFile(f.path),
+                                  ], text: 'Check out this compressed image!');
                                   Get.snackbar(
                                     'Shared',
                                     'Image shared successfully!',

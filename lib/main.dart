@@ -5,6 +5,8 @@ import 'package:squeeze_pix/controllers/compressor_controller.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:squeeze_pix/pages/compressor_page.dart';
 import 'package:squeeze_pix/pages/home_page.dart';
+import 'package:squeeze_pix/pages/splash_page.dart';
+import 'package:squeeze_pix/routes.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 
 void main() async {
@@ -28,11 +30,9 @@ class MyApp extends StatelessWidget {
       initialBinding: BindingsBuilder(() {
         Get.put(CompressorController());
       }),
-      getPages: [
-        GetPage(name: '/', page: () => const HomePage()),
-        GetPage(name: '/compress', page: () => const CompressorPage()),
-      ],
-      home: const HomePage(),
+      getPages: AppPages.pages,
+
+      initialRoute: '/splash',
     );
   }
 }

@@ -21,6 +21,7 @@ dependencies:
   flutter_image_compress: ^2.4.0
   flutter_staggered_animations: ^1.1.1
   open_filex: ^4.7.0
+  archive: ^4.0.7
   # google_mobile_ads: ^6.0.0
   # open_file_plus: ^3.4.1+1
 

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:squeeze_pix/controllers/compressor_controller.dart';
@@ -34,6 +36,7 @@ class ClearAllAlertDialog extends GetView<CompressorController> {
             backgroundColor: Theme.of(context).colorScheme.errorContainer,
           ),
           onPressed: () {
+            final List<File> previousImages = List.from(controller.images);
             controller.images.clear();
             controller.selected.value = null;
             Get.back();
@@ -42,6 +45,29 @@ class ClearAllAlertDialog extends GetView<CompressorController> {
               'All images have been removed.',
               backgroundColor: Theme.of(context).colorScheme.primary,
               colorText: Colors.white,
+              snackbarStatus: (status) {
+                if (status == SnackbarStatus.CLOSED) {
+                  Get.snackbar(
+                    'Undo',
+                    'Restore cleared images?',
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    colorText: Colors.black,
+                    mainButton: TextButton(
+                      onPressed: () {
+                        controller.images.assignAll(previousImages);
+                        if (previousImages.isNotEmpty) {
+                          controller.selected.value = previousImages.first;
+                        }
+                        Get.back();
+                      },
+                      child: const Text(
+                        'Undo',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  );
+                }
+              },
             );
           },
           child: const Text('Clear'),

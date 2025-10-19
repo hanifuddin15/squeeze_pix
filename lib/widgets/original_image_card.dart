@@ -15,7 +15,7 @@ class OriginalImageCard extends GetView<CompressorController> {
       child: Container(
         decoration: BoxDecoration(
           gradient: AppTheme.gradient,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           children: [
@@ -28,12 +28,28 @@ class OriginalImageCard extends GetView<CompressorController> {
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'Original: ${(file.lengthSync() / 1024).toStringAsFixed(1)} KB',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Original: ${(file.lengthSync() / 1024).toStringAsFixed(1)} KB',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Obx(
+                    () => IconButton(
+                      icon: Icon(
+                        controller.favorites.contains(file.path)
+                            ? Icons.star
+                            : Icons.star_border,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                      onPressed: () => controller.toggleFavorite(file.path),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
