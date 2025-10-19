@@ -7,6 +7,7 @@ import 'package:squeeze_pix/widgets/custom_appbar.dart';
 import 'package:squeeze_pix/widgets/empty_state.dart';
 import 'package:squeeze_pix/widgets/image_grid.dart';
 import 'package:squeeze_pix/widgets/primary_button.dart';
+import 'package:squeeze_pix/widgets/compression_slider.dart';
 
 class HomePage extends GetView<CompressorController> {
   const HomePage({super.key});
@@ -36,14 +37,50 @@ class HomePage extends GetView<CompressorController> {
               () => controller.images.isNotEmpty
                   ? Padding(
                       padding: const EdgeInsets.all(16.0),
-                      child: PrimaryButton(
-                        label: controller.isCompressing.value
-                            ? 'Compressing...'
-                            : 'Compress All',
-                        onPressed: controller.isCompressing.value
-                            ? () {}
-                            : () => controller.compressAll(),
-                        icon: Icons.compress,
+                      child: Card(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: AppTheme.gradient,
+                            border: Border.all(color: Colors.red),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              children: [
+                                Text(
+                                  'Batch Quality: ${controller.batchQuality.value}%',
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onPrimary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                                const SizedBox(height: 12),
+                                CompressionSlider(
+                                  value: controller.batchQuality.value
+                                      .toDouble(),
+                                  onChanged: controller.isCompressing.value
+                                      ? null
+                                      : (v) => controller.batchQuality.value = v
+                                            .round(),
+                                ),
+                                const SizedBox(height: 16),
+                                PrimaryButton(
+                                  label: controller.isCompressing.value
+                                      ? 'Compressing...'
+                                      : 'Compress All',
+                                  onPressed: controller.isCompressing.value
+                                      ? () {}
+                                      : () => controller.compressAll(),
+                                  icon: Icons.compress,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     )
                   : const SizedBox.shrink(),

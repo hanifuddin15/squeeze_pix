@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/services/compressor_service.dart';
 import 'package:squeeze_pix/services/zip_service.dart';
 import 'package:squeeze_pix/widgets/clear_all_alert.dart';
@@ -10,6 +9,7 @@ import 'package:path/path.dart' as p;
 import 'package:get_storage/get_storage.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 class CompressorController extends GetxController {
   final CompressorService _service = CompressorService();
@@ -18,6 +18,8 @@ class CompressorController extends GetxController {
   final RxList<File> images = <File>[].obs;
   final Rxn<File> selected = Rxn<File>();
   final RxInt quality = 80.obs;
+  final RxInt batchQuality =
+      80.obs; // New variable for batch compression quality
   final Rxn<File> lastCompressed = Rxn<File>();
   final RxBool isCompressing = false.obs;
   final RxBool isPicking = false.obs;
@@ -73,6 +75,13 @@ class CompressorController extends GetxController {
         lastCompressed.value = await moveToDownloads(compressed);
         addToHistory(lastCompressed.value!.path);
       }
+    } catch (e) {
+      Get.snackbar(
+        'Compression Failed',
+        'Unable to compress image: $e',
+        backgroundColor: Get.theme.colorScheme.error,
+        colorText: Colors.white,
+      );
     } finally {
       isCompressing.value = false;
     }
@@ -90,7 +99,7 @@ class CompressorController extends GetxController {
         final originalSize = file.lengthSync() / 1024;
         final compressed = await _service.compressFile(
           file: file,
-          quality: quality.value,
+          quality: batchQuality.value, // Use batchQuality for batch compression
           format: outputFormat.value,
           targetSizeKB: targetSizeKB.value,
         );
@@ -116,8 +125,15 @@ class CompressorController extends GetxController {
 
       Get.snackbar(
         'Batch Compression Complete',
-        '$count images compressed successfully!',
+        '$count images compressed, saved ${(totalSizeReduction).toStringAsFixed(1)} KB!',
         backgroundColor: Get.theme.colorScheme.primary,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Batch Compression Failed',
+        'Error: $e',
+        backgroundColor: Get.theme.colorScheme.error,
         colorText: Colors.white,
       );
     } finally {
@@ -152,7 +168,15 @@ class CompressorController extends GetxController {
   Future<File> moveToDownloads(File tempFile) async {
     final docDir = await getApplicationDocumentsDirectory();
     final outDir = Directory(p.join(docDir.path, 'SqueezePix'));
-    if (!await outDir.exists()) await outDir.create(recursive: true);
+    try {
+      if (!await outDir.exists()) {
+        await outDir.create(recursive: true);
+        debugPrint('Created directory: ${outDir.path}');
+      }
+    } catch (e) {
+      debugPrint('Failed to create directory: $e');
+      rethrow;
+    }
     final newPath = p.join(outDir.path, p.basename(tempFile.path));
     final newFile = await tempFile.copy(newPath);
     return newFile;
@@ -180,12 +204,9 @@ class CompressorController extends GetxController {
   Future<void> shareZipFile() async {
     final file = lastZipFile.value;
     if (file == null) return;
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(file.path)],
-        text: 'Check out this zip file of compressed images!',
-      ),
-    );
+    await Share.shareXFiles([
+      XFile(file.path),
+    ], text: 'Check out these compressed images!');
     Get.snackbar(
       'Shared',
       'Zip file shared successfully!',
