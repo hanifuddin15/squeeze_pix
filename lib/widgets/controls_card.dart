@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/controllers/compressor_controller.dart';
+import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/widgets/compression_slider.dart';
 import 'package:squeeze_pix/widgets/primary_button.dart';
 
@@ -12,59 +13,121 @@ class ControlsCard extends GetView<CompressorController> {
   Widget build(BuildContext context) {
     return Obx(() {
       final bool isCompressing = controller.isCompressing.value;
+      final double progress = controller.isCompressing.value
+          ? controller.quality.value / 100
+          : 0.0;
       return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Text(
-                'Quality: ${controller.quality.value}%',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              CompressionSlider(
-                value: controller.quality.value.toDouble(),
-                onChanged: isCompressing
-                    ? null
-                    : (v) => controller.quality.value = v.round(),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: PrimaryButton(
-                      label: isCompressing ? 'Compressing...' : 'Compress',
-                      onPressed: isCompressing
-                          ? () {}
-                          : () => controller.compressSelected(),
-                    ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: AppTheme.gradient,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Text(
+                  'Quality: ${controller.quality.value}%',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: PrimaryButton(
-                      label: isCompressing ? 'Working...' : 'Compress & Share',
-                      onPressed: isCompressing
-                          ? () {}
-                          : () async {
-                              await controller.compressSelected();
-                              final f = controller.lastCompressed.value;
-                              if (f != null) {
-                                await SharePlus.instance.share(
-                                  ShareParams(
-                                    text: 'Check out this compressed image!',
-                                    files: [XFile(f.path)],
-                                  ),
-                                );
-                              }
-                            },
-                    ),
-                  ),
-                ],
-              ),
-              if (isCompressing) ...[
+                ),
+                const SizedBox(height: 12),
+                CompressionSlider(
+                  value: controller.quality.value.toDouble(),
+                  onChanged: isCompressing
+                      ? null
+                      : (v) => controller.quality.value = v.round(),
+                ),
                 const SizedBox(height: 16),
-                const LinearProgressIndicator(),
+                if (isCompressing) ...[
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: CircularProgressIndicator(
+                          value: progress,
+                          strokeWidth: 6,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '${(progress * 100).toInt()}%',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                Row(
+                  children: [
+                    Expanded(
+                      child: PrimaryButton(
+                        label: isCompressing ? 'Compressing...' : 'Compress',
+                        onPressed: isCompressing
+                            ? () {}
+                            : () async {
+                                await controller.compressSelected();
+                                if (controller.lastCompressed.value != null) {
+                                  Get.snackbar(
+                                    'Compression Complete',
+                                    'Image compressed successfully!',
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                    colorText: Colors.white,
+                                  );
+                                }
+                              },
+                        icon: Icons.compress,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: PrimaryButton(
+                        label: isCompressing
+                            ? 'Working...'
+                            : 'Compress & Share',
+                        onPressed: isCompressing
+                            ? () {}
+                            : () async {
+                                await controller.compressSelected();
+                                final f = controller.lastCompressed.value;
+                                if (f != null) {
+                                  await SharePlus.instance.share(
+                                    ShareParams(
+                                      files: [XFile(f.path)],
+                                      text: 'Check out this compressed image!',
+                                    ),
+                                  );
+                                  // await Share.shareXFiles([
+                                  //   XFile(f.path),
+                                  // ], text: 'Check out this compressed image!');
+                                  Get.snackbar(
+                                    'Shared',
+                                    'Image shared successfully!',
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                    colorText: Colors.white,
+                                  );
+                                }
+                              },
+                        icon: Icons.share,
+                      ),
+                    ),
+                  ],
+                ),
               ],
-            ],
+            ),
           ),
         ),
       );

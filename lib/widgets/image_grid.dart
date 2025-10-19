@@ -13,19 +13,19 @@ class ImageGrid extends GetView<CompressorController> {
     return CustomScrollView(
       slivers: [
         SliverPadding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(16),
           sliver: SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
             ),
             delegate: SliverChildBuilderDelegate((context, i) {
               final file = controller.images[i];
               final selected = controller.selected.value?.path == file.path;
               return AnimationConfiguration.staggeredGrid(
                 position: i,
-                duration: const Duration(milliseconds: 375),
+                duration: const Duration(milliseconds: 400),
                 columnCount: 3,
                 child: ScaleAnimation(
                   child: FadeInAnimation(

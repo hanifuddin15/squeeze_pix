@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:squeeze_pix/theme/app_theme.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String label;
@@ -10,19 +11,47 @@ class PrimaryButton extends StatelessWidget {
     this.icon,
     super.key,
   });
+
   @override
   Widget build(BuildContext context) {
-    final child = Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Text(label),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppTheme.gradient,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: FilledButton(
+        style: FilledButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: onPressed,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 12),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onPrimary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
-
-    return icon != null
-        ? FilledButton.icon(
-            onPressed: onPressed,
-            icon: Icon(icon),
-            label: child,
-          )
-        : FilledButton(onPressed: onPressed, child: child);
   }
 }

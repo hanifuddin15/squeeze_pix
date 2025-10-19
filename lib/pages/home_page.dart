@@ -1,39 +1,70 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+// import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:squeeze_pix/controllers/compressor_controller.dart';
+import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/widgets/bottom_action_bar.dart';
+import 'package:squeeze_pix/widgets/custom_appbar.dart';
 import 'package:squeeze_pix/widgets/empty_state.dart';
 import 'package:squeeze_pix/widgets/image_grid.dart';
-import '../controllers/compressor_controller.dart';
 
 class HomePage extends GetView<CompressorController> {
   const HomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('SqueezePix'),
-        centerTitle: true,
-        actions: [
-          Obx(
-            () => controller.images.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    tooltip: 'Clear All',
-                    onPressed: () {
-                      controller.showClearConfirmation();
-                    },
-                  )
-                : const SizedBox.shrink(),
-          ),
-        ],
+      extendBodyBehindAppBar: false,
+      appBar: CustomAppBar(
+        title: 'SqueezePix',
+        images: controller.images,
+        onClearAll: controller.showClearConfirmation,
       ),
-      body: Obx(() {
-        if (controller.images.isEmpty) {
-          return const EmptyState();
-        }
-        return const ImageGrid();
-      }),
+      body: Container(
+        decoration: BoxDecoration(gradient: AppTheme.gradient),
+        child: Column(
+          children: [
+            Expanded(
+              child: Obx(() {
+                if (controller.images.isEmpty) {
+                  return const EmptyState();
+                }
+                return const ImageGrid();
+              }),
+            ),
+            // FutureBuilder<BannerAd>(
+            //   future: _loadBannerAd(),
+            //   builder: (context, snapshot) {
+            //     if (snapshot.connectionState == ConnectionState.done &&
+            //         snapshot.data != null) {
+            //       return Container(
+            //         alignment: Alignment.center,
+            //         width: snapshot.data!.size.width.toDouble(),
+            //         height: snapshot.data!.size.height.toDouble(),
+            //         child: AdWidget(ad: snapshot.data!),
+            //       );
+            //     }
+            //     return const SizedBox.shrink();
+            //   },
+            // ),
+          ],
+        ),
+      ),
       bottomNavigationBar: const BottomActionBar(),
     );
   }
+
+  // Future<BannerAd> _loadBannerAd() async {
+  //   return BannerAd(
+  //     adUnitId: 'ca-app-pub-3940256099942544/6300978111', // Test ad unit ID
+  //     size: AdSize.banner,
+  //     request: const AdRequest(),
+  //     listener: BannerAdListener(
+  //       onAdFailedToLoad: (ad, error) {
+  //         ad.dispose();
+  //         debugPrint('Ad failed to load: $error');
+  //       },
+  //     ),
+  //   )..load();
+  // }
 }
