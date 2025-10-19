@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:squeeze_pix/widgets/clear_all_alert.dart';
 import '../services/compressor_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -87,6 +88,10 @@ class CompressorController extends GetxController {
     final file = lastCompressed.value;
     if (file == null) return;
     await OpenFilex.open(file.path);
+  }
+
+  Future<void> showClearConfirmation() {
+    return Get.dialog(ClearAllAlertDialog());
   }
 
   @override
