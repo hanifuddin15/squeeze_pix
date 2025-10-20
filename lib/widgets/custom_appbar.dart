@@ -26,26 +26,23 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         gradient: AppTheme.gradient,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: .15),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
         ],
-        // borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
       ),
       child: AppBar(
         backgroundColor: Colors.transparent,
         leading: isLeadingIcon
             ? IconButton(
-                icon: Icon(
+                icon: const Icon(
                   Icons.arrow_back_ios_new_outlined,
                   color: Colors.white,
                 ),
-                onPressed: () {
-                  Get.back();
-                },
+                onPressed: Get.back,
               )
-            : SizedBox.shrink(),
+            : const SizedBox.shrink(),
         elevation: 0,
         title: Text(
           title,
@@ -56,14 +53,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         centerTitle: true,
         actions: [
-          (images?.isNotEmpty ?? false)
-              ? IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.white),
-                  tooltip: 'Clear All',
-                  onPressed: onClearAll,
-                )
-              : const SizedBox.shrink(),
-
+          // ✅ Only use Obx when images list is passed
+          if (images != null)
+            Obx(
+              () => (images!.isNotEmpty)
+                  ? IconButton(
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        color: Colors.white,
+                      ),
+                      tooltip: 'Clear All',
+                      onPressed: onClearAll,
+                    )
+                  : const SizedBox.shrink(),
+            ),
           IconButton(
             icon: Icon(
               Theme.of(context).brightness == Brightness.dark
