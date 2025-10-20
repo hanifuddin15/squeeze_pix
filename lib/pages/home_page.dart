@@ -23,101 +23,69 @@ class HomePage extends GetView<CompressorController> {
       ),
       body: Container(
         decoration: BoxDecoration(gradient: AppTheme.gradient),
-        child: Column(
-          children: [
-            Expanded(
-              child: Obx(() {
-                if (controller.images.isEmpty) {
-                  return const EmptyState();
-                }
-                return const ImageGrid();
-              }),
-            ),
-            Obx(
-              () => controller.images.isNotEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Card(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: AppTheme.gradient,
-                            border: Border.all(color: Colors.red),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              children: [
-                                Text(
-                                  'Batch Quality: ${controller.batchQuality.value}%',
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onPrimary,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                ),
-                                const SizedBox(height: 12),
-                                CompressionSlider(
-                                  value: controller.batchQuality.value
-                                      .toDouble(),
-                                  onChanged: controller.isCompressing.value
-                                      ? null
-                                      : (v) => controller.batchQuality.value = v
-                                            .round(),
-                                ),
-                                const SizedBox(height: 16),
-                                PrimaryButton(
-                                  label: controller.isCompressing.value
-                                      ? 'Compressing...'
-                                      : 'Compress All',
-                                  onPressed: controller.isCompressing.value
-                                      ? () {}
-                                      : () => controller.compressAll(),
-                                  icon: Icons.compress,
-                                ),
-                              ],
+        child: Obx(() {
+          if (controller.images.isEmpty) {
+            return const EmptyState();
+          }
+
+          return CustomScrollView(
+            slivers: [
+              const ImageGrid(), // includes grid + stats + history
+              // 👇 Moved this batch card section inside scroll view
+              SliverPadding(
+                padding: const EdgeInsets.all(12),
+                sliver: SliverToBoxAdapter(
+                  child: Card(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: AppTheme.gradient,
+                        border: Border.all(color: Colors.red),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Batch Quality: ${controller.batchQuality.value}%',
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                             ),
-                          ),
+                            const SizedBox(height: 12),
+                            CompressionSlider(
+                              value: controller.batchQuality.value.toDouble(),
+                              onChanged: controller.isCompressing.value
+                                  ? null
+                                  : (v) => controller.batchQuality.value = v
+                                        .round(),
+                            ),
+                            const SizedBox(height: 16),
+                            PrimaryButton(
+                              label: controller.isCompressing.value
+                                  ? 'Compressing...'
+                                  : 'Compress All',
+                              onPressed: controller.isCompressing.value
+                                  ? () {}
+                                  : () => controller.compressAll(),
+                              icon: Icons.compress,
+                            ),
+                          ],
                         ),
                       ),
-                    )
-                  : const SizedBox.shrink(),
-            ),
-            // FutureBuilder<BannerAd>(
-            //   future: _loadBannerAd(),
-            //   builder: (context, snapshot) {
-            //     if (snapshot.connectionState == ConnectionState.done &&
-            //         snapshot.data != null) {
-            //       return Container(
-            //         alignment: Alignment.center,
-            //         width: snapshot.data!.size.width.toDouble(),
-            //         height: snapshot.data!.size.height.toDouble(),
-            //         child: AdWidget(ad: snapshot.data!),
-            //       );
-            //     }
-            //     return const SizedBox.shrink();
-            //   },
-            // ),
-          ],
-        ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        }),
       ),
       bottomNavigationBar: const BottomActionBar(),
     );
   }
-
-  // Future<BannerAd> _loadBannerAd() async {
-  //   return BannerAd(
-  //     adUnitId: 'ca-app-pub-3940256099942544/6300978111', // Test ad unit ID
-  //     size: AdSize.banner,
-  //     request: const AdRequest(),
-  //     listener: BannerAdListener(
-  //       onAdFailedToLoad: (ad, error) {
-  //         ad.dispose();
-  //         debugPrint('Ad failed to load: $error');
-  //       },
-  //     ),
-  //   )..load();
-  // }
 }
