@@ -13,17 +13,21 @@ class ImageGrid extends GetView<CompressorController> {
   Widget build(BuildContext context) {
     return Obx(() {
       final sortedImages = controller.getSortedImages();
-      return CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.all(16),
-            sliver: SliverGrid(
+
+      return SliverPadding(
+        padding: const EdgeInsets.all(16),
+        sliver: SliverList(
+          delegate: SliverChildListDelegate([
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: sortedImages.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
               ),
-              delegate: SliverChildBuilderDelegate((context, i) {
+              itemBuilder: (context, i) {
                 final file = sortedImages[i];
                 final selected = controller.selected.value?.path == file.path;
                 return AnimationConfiguration.staggeredGrid(
@@ -42,12 +46,14 @@ class ImageGrid extends GetView<CompressorController> {
                     ),
                   ),
                 );
-              }, childCount: sortedImages.length),
+              },
             ),
-          ),
-          const SliverToBoxAdapter(child: BatchStatsCard()),
-          SliverToBoxAdapter(child: History()),
-        ],
+            const SizedBox(height: 16),
+            const BatchStatsCard(),
+            const SizedBox(height: 8),
+            const History(),
+          ]),
+        ),
       );
     });
   }

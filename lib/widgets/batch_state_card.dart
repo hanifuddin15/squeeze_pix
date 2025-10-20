@@ -12,7 +12,7 @@ class BatchStatsCard extends GetView<CompressorController> {
     return Obx(() {
       if (controller.batchStats.isEmpty) return const SizedBox.shrink();
       return Card(
-        margin: const EdgeInsets.all(16),
+        margin: const EdgeInsets.all(10),
         child: Container(
           decoration: BoxDecoration(
             gradient: AppTheme.gradient,

@@ -13,7 +13,7 @@ class History extends GetView<CompressorController> {
       if (controller.history.isEmpty) return const SizedBox.shrink();
 
       return Card(
-        margin: const EdgeInsets.all(16),
+        margin: const EdgeInsets.all(12),
         child: Container(
           decoration: BoxDecoration(
             gradient: AppTheme.gradient,
