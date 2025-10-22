@@ -8,6 +8,7 @@ import 'package:squeeze_pix/widgets/empty_state.dart';
 import 'package:squeeze_pix/widgets/image_grid.dart';
 import 'package:squeeze_pix/widgets/primary_button.dart';
 import 'package:squeeze_pix/widgets/compression_slider.dart';
+import 'package:squeeze_pix/widgets/unity_ads.dart';
 
 class HomePage extends GetView<CompressorController> {
   const HomePage({super.key});
@@ -57,6 +58,7 @@ class HomePage extends GetView<CompressorController> {
                                   ),
                             ),
                             const SizedBox(height: 12),
+                            UnitBannerAdsWidget(),
                             CompressionSlider(
                               value: controller.batchQuality.value.toDouble(),
                               onChanged: controller.isCompressing.value

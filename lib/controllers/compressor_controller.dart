@@ -10,11 +10,12 @@ import 'package:get_storage/get_storage.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 
 class CompressorController extends GetxController {
   final CompressorService _service = CompressorService();
   final ZipService _zipService = ZipService();
-
+  final RxBool isInterstitialReady = false.obs;
   final RxList<File> images = <File>[].obs;
   final Rxn<File> selected = Rxn<File>();
   final RxInt quality = 80.obs;
@@ -74,6 +75,34 @@ class CompressorController extends GetxController {
       if (compressed != null) {
         lastCompressed.value = await moveToDownloads(compressed);
         addToHistory(lastCompressed.value!.path);
+        // Show interstitial ad if ready
+        if (isInterstitialReady.value) {
+          final interstitialPlacementId = Platform.isAndroid
+              ? 'Interstitial_Android'
+              : 'Interstitial_iOS';
+          UnityAds.showVideoAd(
+            placementId: interstitialPlacementId,
+            onComplete: (placementId) {
+              debugPrint('Interstitial completed: $placementId');
+              isInterstitialReady.value = false; // Reset for next load
+              _loadInterstitial(); // Pre-load next ad
+            },
+            onFailed: (placementId, error, message) {
+              debugPrint('Interstitial failed: $message');
+              isInterstitialReady.value = false;
+              _loadInterstitial(); // Retry loading
+            },
+            onStart: (placementId) =>
+                debugPrint('Interstitial started: $placementId'),
+            onClick: (placementId) =>
+                debugPrint('Interstitial clicked: $placementId'),
+            onSkipped: (placementId) {
+              debugPrint('Interstitial skipped: $placementId');
+              isInterstitialReady.value = false;
+              _loadInterstitial();
+            },
+          );
+        }
       }
     } catch (e) {
       Get.snackbar(
@@ -129,6 +158,35 @@ class CompressorController extends GetxController {
         backgroundColor: Get.theme.colorScheme.primary,
         colorText: Colors.white,
       );
+
+      // Show interstitial ad if ready
+      if (isInterstitialReady.value) {
+        final interstitialPlacementId = Platform.isAndroid
+            ? 'Interstitial_Android'
+            : 'Interstitial_iOS';
+        UnityAds.showVideoAd(
+          placementId: interstitialPlacementId,
+          onComplete: (placementId) {
+            debugPrint('Interstitial completed: $placementId');
+            isInterstitialReady.value = false; // Reset for next load
+            _loadInterstitial(); // Pre-load next ad
+          },
+          onFailed: (placementId, error, message) {
+            debugPrint('Interstitial failed: $message');
+            isInterstitialReady.value = false;
+            _loadInterstitial(); // Retry loading
+          },
+          onStart: (placementId) =>
+              debugPrint('Interstitial started: $placementId'),
+          onClick: (placementId) =>
+              debugPrint('Interstitial clicked: $placementId'),
+          onSkipped: (placementId) {
+            debugPrint('Interstitial skipped: $placementId');
+            isInterstitialReady.value = false;
+            _loadInterstitial();
+          },
+        );
+      }
     } catch (e) {
       Get.snackbar(
         'Batch Compression Failed',
@@ -139,6 +197,23 @@ class CompressorController extends GetxController {
     } finally {
       isCompressing.value = false;
     }
+  }
+
+  void _loadInterstitial() {
+    final interstitialPlacementId = Platform.isAndroid
+        ? 'Interstitial_Android'
+        : 'Interstitial_iOS';
+    UnityAds.load(
+      placementId: interstitialPlacementId,
+      onComplete: (placementId) {
+        isInterstitialReady.value = true;
+        debugPrint('Interstitial loaded: $placementId');
+      },
+      onFailed: (placementId, error, message) {
+        isInterstitialReady.value = false;
+        debugPrint('Interstitial load failed: $message');
+      },
+    );
   }
 
   void clearBatchStats() {
@@ -226,5 +301,8 @@ class CompressorController extends GetxController {
     history.assignAll(savedHistory.cast<String>());
     final savedFavorites = storage.read<List>('favorites') ?? [];
     favorites.assignAll(savedFavorites.cast<String>());
+
+    // Pre-load interstitial ad
+    _loadInterstitial();
   }
 }

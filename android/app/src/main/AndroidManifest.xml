@@ -26,6 +26,11 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+              <!-- NOTE: For Unity Ads Mediation -->
+    <!-- <meta-data
+    android:name="unityads_game_id"
+    android:value="5970117" /> -->
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
