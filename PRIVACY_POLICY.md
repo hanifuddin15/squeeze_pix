@@ -1,6 +1,6 @@
 # Privacy Policy for Squeeze Pix
 
-**Last Updated: [Date]**
+**Last Updated: [10/27/2025]**
 
 Thank you for using Squeeze Pix ("we," "us," or "our"). This Privacy Policy explains how we handle information when you use our mobile application, Squeeze Pix (the "App").
 
@@ -65,4 +65,4 @@ We may update our Privacy Policy from time to time. We will notify you of any ch
 
 If you have any questions about this Privacy Policy, please contact us at:
 
-**[hanifuddin.dev@gmail.comn]**
+**[hanifuddin.dev@gmail.com]**
