@@ -19,7 +19,7 @@ void main() async {
 
   await UnityAds.init(
     gameId: gameId,
-    testMode: true, //ToDo:::: Turn off (false) for release build
+    testMode: false, //ToDo:::: Turn off (false) for release build
     onComplete: () => debugPrint('Unity Ads Initialized for $gameId'),
     onFailed: (error, message) => debugPrint('Initialization Failed: $message'),
   );
