@@ -17,7 +17,7 @@ class EmptyState extends GetView<CompressorController> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: .2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -43,7 +43,9 @@ class EmptyState extends GetView<CompressorController> {
             Text(
               'Tap "Pick Images" to get started',
               style: textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.8),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onPrimary.withValues(alpha: .8),
               ),
             ),
           ],

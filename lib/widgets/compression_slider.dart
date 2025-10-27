@@ -15,7 +15,7 @@ class CompressionSlider extends StatelessWidget {
         activeTrackColor: Theme.of(context).colorScheme.primary,
         inactiveTrackColor: Theme.of(
           context,
-        ).colorScheme.primary.withOpacity(0.3),
+        ).colorScheme.primary.withValues(alpha: .3),
         thumbColor: Theme.of(context).colorScheme.secondary,
       ),
       child: Slider(

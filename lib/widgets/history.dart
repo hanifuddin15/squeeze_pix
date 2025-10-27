@@ -45,7 +45,7 @@ class History extends GetView<CompressorController> {
                         fit: BoxFit.cover,
                       ),
                     ),
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
                     itemCount: controller.history.length,
                   ),
                 ),

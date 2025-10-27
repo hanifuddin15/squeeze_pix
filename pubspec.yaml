@@ -17,7 +17,9 @@ dependencies:
   get: ^4.7.2
   get_storage: ^2.1.1
   image_picker: ^1.2.0
-  share_plus: ^12.0.0
+  path_provider: ^2.1.5 # Add this line
+  path: ^1.9.1 # Add this line
+  share_plus: ^12.0.1
   flutter_image_compress: ^2.4.0
   flutter_staggered_animations: ^1.1.1
   open_filex: ^4.7.0
@@ -35,7 +37,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

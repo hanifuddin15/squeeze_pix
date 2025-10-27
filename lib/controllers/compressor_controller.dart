@@ -279,9 +279,12 @@ class CompressorController extends GetxController {
   Future<void> shareZipFile() async {
     final file = lastZipFile.value;
     if (file == null) return;
-    await Share.shareXFiles([
-      XFile(file.path),
-    ], text: 'Check out these compressed images!');
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text: 'Check out these compressed images!',
+      ),
+    );
     Get.snackbar(
       'Shared',
       'Zip file shared successfully!',

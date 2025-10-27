@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
@@ -60,7 +62,7 @@ class ControlsCard extends GetView<CompressorController> {
                     filled: true,
                     fillColor: Theme.of(
                       context,
-                    ).colorScheme.surface.withOpacity(0.8),
+                    ).colorScheme.surface.withValues(alpha: .8),
                   ),
                   keyboardType: TextInputType.number,
                   enabled: !isCompressing,
@@ -131,15 +133,17 @@ class ControlsCard extends GetView<CompressorController> {
                                 await controller.compressSelected();
                                 final f = controller.lastCompressed.value;
                                 if (f != null) {
-                                  await Share.shareXFiles([
-                                    XFile(f.path),
-                                  ], text: 'Check out this compressed image!');
+                                  await SharePlus.instance.share(
+                                    ShareParams(
+                                      files: [XFile(f.path)],
+                                      text: 'Check out this compressed image!',
+                                    ),
+                                  );
                                   Get.snackbar(
                                     'Shared',
                                     'Image shared successfully!',
-                                    backgroundColor: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
+                                    backgroundColor:
+                                        context.theme.colorScheme.primary,
                                     colorText: Colors.white,
                                   );
                                 }

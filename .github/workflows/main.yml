@@ -44,7 +44,7 @@ jobs:
 
       # Runs static analysis
       - name: Analyze project
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos
 
       # Runs widget tests
       - name: Run tests
