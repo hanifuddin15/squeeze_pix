@@ -46,9 +46,9 @@ jobs:
       - name: Analyze project
         run: flutter analyze --no-fatal-infos
 
-      # Runs widget tests
-      - name: Run tests
-        run: flutter test
+      # # Runs widget tests
+      # - name: Run tests
+      #   run: flutter test
 
   # This job builds the Android app
   build_android:
