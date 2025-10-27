@@ -34,8 +34,8 @@ jobs:
       # Sets up the Flutter SDK
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.2' # Use your project's Flutter version
-          channel: 'stable'
+          # Use a version from the beta channel to satisfy the Dart SDK requirement
+          channel: 'beta'
           cache: true
 
       # Gets Flutter dependencies
@@ -61,8 +61,8 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.2' # Use your project's Flutter version
-          channel: 'stable'
+          # Use a version from the beta channel to satisfy the Dart SDK requirement
+          channel: 'beta'
           cache: true
 
       - name: Install dependencies
@@ -85,8 +85,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.2' # Use your project's Flutter version
-          channel: 'stable'
+          # Use a version from the beta channel to satisfy the Dart SDK requirement
+          channel: 'beta'
           cache: true
       - name: Install dependencies
         run: flutter pub get
@@ -103,8 +103,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.2' # Use your project's Flutter version
-          channel: 'stable'
+          # Use a version from the beta channel to satisfy the Dart SDK requirement
+          channel: 'beta'
           cache: true
       - name: Install dependencies
         run: flutter pub get
