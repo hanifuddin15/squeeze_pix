@@ -116,7 +116,7 @@ jobs:
         with:
           path: ./build/web
 
-  # This job deploys the artifact to GitHub Pages
+  # This job deploys the artifact to GitHub Pages 
   deploy_web:
     name: Deploy Web
     needs: build_web
