@@ -6,8 +6,9 @@ import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/widgets/primary_button.dart';
 
 class ResultCard extends GetView<CompressorController> {
-  final File resultFile;
-  const ResultCard({super.key, required this.resultFile});
+  final File? originalFile;
+  final File? resultFile;
+  const ResultCard({super.key, this.originalFile, this.resultFile});
 
   @override
   Widget build(BuildContext context) {
@@ -16,10 +17,10 @@ class ResultCard extends GetView<CompressorController> {
       transitionBuilder: (child, animation) {
         return FadeTransition(opacity: animation, child: child);
       },
-      child: resultFile.path.isEmpty
+      child: resultFile == null || resultFile!.path.isEmpty
           ? const SizedBox.shrink()
           : Card(
-              key: ValueKey(resultFile.path),
+              key: ValueKey(resultFile!.path),
               child: Container(
                 decoration: BoxDecoration(
                   gradient: AppTheme.gradient,
@@ -32,7 +33,7 @@ class ResultCard extends GetView<CompressorController> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: Image.file(
-                          resultFile,
+                          resultFile!,
                           width: 90,
                           height: 90,
                           fit: BoxFit.cover,
@@ -54,7 +55,7 @@ class ResultCard extends GetView<CompressorController> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'New size: ${(resultFile.lengthSync() / 1024).toStringAsFixed(1)} KB',
+                              _buildResultText(),
                               style: Theme.of(context).textTheme.bodyLarge
                                   ?.copyWith(
                                     color: Theme.of(
@@ -78,5 +79,24 @@ class ResultCard extends GetView<CompressorController> {
               ),
             ),
     );
+  }
+
+  String _buildResultText() {
+    if (resultFile == null || originalFile == null) return '';
+
+    final originalSize = originalFile!.lengthSync();
+    final newSize = resultFile!.lengthSync();
+    final reduction = originalSize - newSize;
+    final reductionPercent = (reduction / originalSize * 100).toStringAsFixed(
+      1,
+    );
+
+    final newSizeKB = (newSize / 1024).toStringAsFixed(1);
+
+    if (reduction > 0) {
+      return 'New size: $newSizeKB KB (${reductionPercent}% smaller)';
+    } else {
+      return 'New size: $newSizeKB KB';
+    }
   }
 }

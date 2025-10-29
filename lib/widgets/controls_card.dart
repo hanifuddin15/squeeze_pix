@@ -1,163 +1,102 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/controllers/compressor_controller.dart';
-import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/widgets/compression_slider.dart';
 import 'package:squeeze_pix/widgets/gradient_dropdown.dart';
-import 'package:squeeze_pix/widgets/primary_button.dart';
 
 class ControlsCard extends GetView<CompressorController> {
-  const ControlsCard({super.key});
+  final int compressionMode; // 0: Quality, 1: Target Size, 2: Format
+  const ControlsCard({required this.compressionMode, super.key});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       final bool isCompressing = controller.isCompressing.value;
-      final double progress = controller.isCompressing.value
-          ? controller.quality.value / 100
-          : 0.0;
-      return Card(
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: AppTheme.gradient,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Text(
-                  'Quality: ${controller.quality.value}%',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                CompressionSlider(
-                  value: controller.quality.value.toDouble(),
-                  onChanged: isCompressing
-                      ? null
-                      : (v) => controller.quality.value = v.round(),
-                ),
-                const SizedBox(height: 12),
-                GradientDropdown(
-                  selectedValue: controller.outputFormat,
-                  items: ['jpg', 'png'],
-                  isDisabled: isCompressing,
-                  onChanged: (newValue) =>
-                      controller.outputFormat.value = newValue,
-                ),
 
-                const SizedBox(height: 12),
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Target Size (KB)',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    filled: true,
-                    fillColor: Theme.of(
-                      context,
-                    ).colorScheme.surface.withValues(alpha: .8),
-                  ),
-                  keyboardType: TextInputType.number,
-                  enabled: !isCompressing,
-                  onChanged: (value) {
-                    final parsed = double.tryParse(value);
-                    controller.targetSizeKB.value = parsed;
-                  },
-                ),
-                const SizedBox(height: 16),
-                if (isCompressing) ...[
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      SizedBox(
-                        width: 60,
-                        height: 60,
-                        child: CircularProgressIndicator(
-                          value: progress,
-                          strokeWidth: 6,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Theme.of(context).colorScheme.secondary,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        '${(progress * 100).toInt()}%',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Theme.of(context).colorScheme.onPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                ],
-                Row(
-                  children: [
-                    Expanded(
-                      child: PrimaryButton(
-                        label: isCompressing ? 'Compressing...' : 'Compress',
-                        onPressed: isCompressing
-                            ? () {}
-                            : () async {
-                                await controller.compressSelected();
-                                if (controller.lastCompressed.value != null) {
-                                  Get.snackbar(
-                                    'Compression Complete',
-                                    'Image compressed successfully!',
-                                    backgroundColor: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
-                                    colorText: Colors.white,
-                                  );
-                                }
-                              },
-                        icon: Icons.compress,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: PrimaryButton(
-                        label: isCompressing
-                            ? 'Working...'
-                            : 'Compress & Share',
-                        onPressed: isCompressing
-                            ? () {}
-                            : () async {
-                                await controller.compressSelected();
-                                final f = controller.lastCompressed.value;
-                                if (f != null) {
-                                  await SharePlus.instance.share(
-                                    ShareParams(
-                                      files: [XFile(f.path)],
-                                      text: 'Check out this compressed image!',
-                                    ),
-                                  );
-                                  Get.snackbar(
-                                    'Shared',
-                                    'Image shared successfully!',
-                                    backgroundColor:
-                                        context.theme.colorScheme.primary,
-                                    colorText: Colors.white,
-                                  );
-                                }
-                              },
-                        icon: Icons.share,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
+      switch (compressionMode) {
+        case 0: // Quality
+          return _buildQualityControls(context, isCompressing);
+        case 1: // Target Size
+          return _buildTargetSizeControls(context, isCompressing);
+        case 2: // Format
+          return _buildFormatControls(context, isCompressing);
+        default:
+          return const SizedBox.shrink();
+      }
     });
+  }
+
+  Widget _buildQualityControls(BuildContext context, bool isCompressing) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Quality: ${controller.quality.value}%',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 12),
+        CompressionSlider(
+          value: controller.quality.value.toDouble(),
+          onChanged: isCompressing
+              ? null
+              : (v) => controller.quality.value = v.round(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTargetSizeControls(BuildContext context, bool isCompressing) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Set a target file size for the output image.',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 16),
+        TextField(
+          decoration: InputDecoration(
+            labelText: 'Target Size (KB)',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            filled: true,
+            fillColor: Theme.of(context).colorScheme.surfaceVariant,
+          ),
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          enabled: !isCompressing,
+          onChanged: (value) {
+            final parsed = int.tryParse(value);
+            controller.targetSizeKB.value = parsed;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFormatControls(BuildContext context, bool isCompressing) {
+    return Column(
+      children: [
+        GradientDropdown(
+          selectedValue: controller.outputFormat,
+          items: ['jpg', 'png', 'webp'],
+          isDisabled: isCompressing,
+          onChanged: (newValue) => controller.outputFormat.value = newValue,
+        ),
+        const SizedBox(height: 12),
+        SwitchListTile(
+          title: const Text('Strip Image Metadata (EXIF)'),
+          value: controller.stripExif.value,
+          onChanged: isCompressing
+              ? null
+              : (val) => controller.stripExif.value = val,
+          activeColor: Theme.of(context).colorScheme.secondary,
+          dense: true,
+        ),
+      ],
+    );
   }
 }

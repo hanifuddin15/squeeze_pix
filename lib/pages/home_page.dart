@@ -8,6 +8,7 @@ import 'package:squeeze_pix/widgets/empty_state.dart';
 import 'package:squeeze_pix/widgets/image_grid.dart';
 import 'package:squeeze_pix/widgets/primary_button.dart';
 import 'package:squeeze_pix/widgets/compression_slider.dart';
+import 'package:squeeze_pix/widgets/savings_card.dart';
 import 'package:squeeze_pix/widgets/unity_ads.dart';
 
 class HomePage extends GetView<CompressorController> {
@@ -31,6 +32,7 @@ class HomePage extends GetView<CompressorController> {
 
           return CustomScrollView(
             slivers: [
+              const SliverToBoxAdapter(child: SavingsCard()),
               const ImageGrid(), // includes grid + stats + history
               // 👇 Moved this batch card section inside scroll view
               SliverPadding(
@@ -39,8 +41,7 @@ class HomePage extends GetView<CompressorController> {
                   child: Card(
                     child: Container(
                       decoration: BoxDecoration(
-                        gradient: AppTheme.gradient,
-                        border: Border.all(color: Colors.red),
+                        gradient: AppTheme.gradient.scale(0.8),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Padding(
@@ -58,7 +59,6 @@ class HomePage extends GetView<CompressorController> {
                                   ),
                             ),
                             const SizedBox(height: 12),
-                            UnitBannerAdsWidget(),
                             CompressionSlider(
                               value: controller.batchQuality.value.toDouble(),
                               onChanged: controller.isCompressing.value
@@ -66,11 +66,31 @@ class HomePage extends GetView<CompressorController> {
                                   : (v) => controller.batchQuality.value = v
                                         .round(),
                             ),
+                            const SizedBox(height: 8),
+                            SwitchListTile(
+                              title: Text(
+                                'Strip Image Metadata (EXIF)',
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
+                                ),
+                              ),
+                              value: controller.stripExif.value,
+                              onChanged: (val) =>
+                                  controller.stripExif.value = val,
+                              activeColor: Theme.of(
+                                context,
+                              ).colorScheme.secondary,
+                              dense: true,
+                            ),
+                            const SizedBox(height: 16),
+                            const UnitBannerAdsWidget(),
                             const SizedBox(height: 16),
                             PrimaryButton(
                               label: controller.isCompressing.value
                                   ? 'Compressing...'
-                                  : 'Compress All',
+                                  : 'Compress All (${controller.images.length})',
                               onPressed: controller.isCompressing.value
                                   ? () {}
                                   : () => controller.compressAll(),
