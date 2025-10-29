@@ -60,6 +60,12 @@ class BatchStatsCard extends GetView<CompressorController> {
                         onPressed: () => controller.openZipFolderLocation(),
                         icon: Icons.folder_open,
                       ),
+                      const SizedBox(width: 12),
+                      PrimaryButton(
+                        label: 'Extract Here',
+                        onPressed: () => controller.extractZipFile(),
+                        icon: Icons.unarchive,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),

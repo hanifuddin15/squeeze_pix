@@ -135,9 +135,10 @@ class UnityAdsController extends GetxController {
         },
       );
     } else {
-      debugPrint('Rewarded ad not ready, showing snackbar.');
-      Get.snackbar('Ad Not Ready', 'Please try again in a moment.');
-      _loadRewardedAd(); // Try to load for next time
+      debugPrint('Rewarded ad not ready, granting access and proceeding.');
+      // Grant reward and proceed if ad is not ready, so user is not blocked.
+      _compressorController.batchAccessGranted.value = true;
+      _compressorController.compressAll();
     }
   }
 }

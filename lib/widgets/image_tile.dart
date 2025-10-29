@@ -7,7 +7,15 @@ import 'package:squeeze_pix/theme/app_theme.dart';
 class ImageTile extends GetView<CompressorController> {
   final File file;
   final bool selected;
-  const ImageTile({required this.file, this.selected = false, super.key});
+  final bool isSelectionMode;
+  final bool isSelectedInBatch;
+  const ImageTile({
+    required this.file,
+    this.selected = false,
+    this.isSelectionMode = false,
+    this.isSelectedInBatch = false,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -15,9 +23,10 @@ class ImageTile extends GetView<CompressorController> {
       onLongPress: () {
         Get.to(
           () => Scaffold(
+            backgroundColor: Colors.black,
             appBar: AppBar(
-              title: const Text('Image Preview'),
-              backgroundColor: Colors.transparent,
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
             ),
             body: InteractiveViewer(
               child: Center(child: Image.file(file, fit: BoxFit.contain)),
@@ -44,7 +53,7 @@ class ImageTile extends GetView<CompressorController> {
             child: Stack(
               children: [
                 Positioned.fill(child: Image.file(file, fit: BoxFit.cover)),
-                if (selected) ...[
+                if (selected && !isSelectionMode) ...[
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
@@ -66,6 +75,32 @@ class ImageTile extends GetView<CompressorController> {
                     ),
                   ),
                 ],
+                if (isSelectionMode)
+                  Positioned.fill(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      decoration: BoxDecoration(
+                        color: isSelectedInBatch
+                            ? Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.6)
+                            : Colors.black.withOpacity(0.2),
+                      ),
+                    ),
+                  ),
+                if (isSelectedInBatch)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Icon(
+                      Icons.check_circle,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                      size: 24,
+                      shadows: const [
+                        Shadow(color: Colors.black38, blurRadius: 4),
+                      ],
+                    ),
+                  ),
                 Positioned(
                   top: 8,
                   left: 8,

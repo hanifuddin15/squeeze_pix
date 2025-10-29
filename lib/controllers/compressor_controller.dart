@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
 import 'package:squeeze_pix/controllers/unity_ads_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:archive/archive_io.dart';
@@ -35,6 +36,12 @@ class CompressorController extends GetxController {
   final RxMap batchStats = {}.obs;
   final RxInt totalBytesSaved = 0.obs;
 
+  // For batch selection
+  final RxList<File> batchSelection = <File>[].obs;
+  final RxBool isSelectionMode = false.obs;
+  final RxString zipFileName = 'squeezepix_batch'.obs;
+  final RxnString batchSavePath = RxnString(null);
+
   // New Feature States
   final Rxn<int> targetSizeKB = Rxn<int>();
   final Rxn<int> resizeWidth = Rxn<int>();
@@ -62,6 +69,7 @@ class CompressorController extends GetxController {
     final List<dynamic>? storedFavorites = _box.read<List>('favorites');
     final List<dynamic>? storedImages = _box.read<List>('images');
     totalBytesSaved.value = _box.read<int>('totalBytesSaved') ?? 0;
+    batchSavePath.value = _box.read<String>('batchSavePath');
 
     widthController = TextEditingController();
     heightController = TextEditingController();
@@ -358,62 +366,170 @@ class CompressorController extends GetxController {
   }
 
   Future<void> compressAll() async {
-    if (images.length > 3 && !batchAccessGranted.value) {
+    final imagesToCompress = isSelectionMode.value ? batchSelection : images;
+
+    if (imagesToCompress.isEmpty) {
+      Get.snackbar('No Images Selected', 'Please select images to compress.');
+      return;
+    }
+
+    if (imagesToCompress.length > 3 && !batchAccessGranted.value) {
       final adsController = Get.find<UnityAdsController>();
       adsController.showRewardedAd();
       return;
     }
 
     isCompressing.value = true;
-    // Show interstitial for batch compression as well if you want
-    // final adsController = Get.find<UnityAdsController>();
-    // adsController.showInterstitialAd(onComplete: () async {
-    final tempDir = await getTemporaryDirectory();
-    final archive = Archive();
-    int count = 0;
-    int totalReduction = 0;
-
-    for (final file in images) {
-      final compressedFile = await _compressFile(file);
-      if (compressedFile != null) {
-        final archiveFile = ArchiveFile(
-          '${DateTime.now().millisecondsSinceEpoch}_${count++}.jpg',
-          compressedFile.lengthSync(),
-          await compressedFile.readAsBytes(),
-        );
-        archive.addFile(archiveFile);
-        totalReduction += file.lengthSync() - compressedFile.lengthSync();
+    try {
+      String? outputDirectory = batchSavePath.value;
+      if (outputDirectory == null) {
+        final downloadsDir = await getDownloadsDirectory();
+        outputDirectory = downloadsDir?.path;
+        if (outputDirectory == null) {
+          Get.snackbar('Error', 'Could not determine downloads directory.');
+          return;
+        }
       }
+      // Show interstitial for batch compression as well if you want
+      // final adsController = Get.find<UnityAdsController>();
+      // adsController.showInterstitialAd(onComplete: () async {
+      final tempDir = await getTemporaryDirectory();
+      final archive = Archive();
+      int count = 0;
+      int totalReduction = 0;
+
+      for (final file in imagesToCompress) {
+        final compressedFile = await _compressFile(file);
+        if (compressedFile != null) {
+          final archiveFile = ArchiveFile(
+            '${DateTime.now().millisecondsSinceEpoch}_${count++}.jpg',
+            compressedFile.lengthSync(),
+            await compressedFile.readAsBytes(),
+          );
+          archive.addFile(archiveFile);
+          totalReduction += file.lengthSync() - compressedFile.lengthSync();
+        }
+      }
+
+      final zipEncoder = ZipEncoder();
+      final zipData = zipEncoder.encode(archive);
+
+      final zipFilePath = '$outputDirectory/${zipFileName.value}.zip';
+      lastZipFile.value = await File(zipFilePath).writeAsBytes(zipData);
+
+      batchStats.value = {'count': count, 'sizeReduction': totalReduction};
+    } finally {
+      isCompressing.value = false;
+      batchAccessGranted.value = false; // Reset access after use
+      toggleSelectionMode(false); // Exit selection mode
     }
-
-    final zipEncoder = ZipEncoder();
-    final zipData = zipEncoder.encode(archive);
-
-    final zipFilePath = '${tempDir.path}/squeezepix_batch.zip';
-    lastZipFile.value = await File(zipFilePath).writeAsBytes(zipData);
-
-    batchStats.value = {'count': count, 'sizeReduction': totalReduction};
-
-    isCompressing.value = false;
-    batchAccessGranted.value = false; // Reset access after use
     // });
+  }
+
+  Future<void> setBatchSavePath() async {
+    final String? selectedDirectory = await FilePicker.platform
+        .getDirectoryPath();
+    if (selectedDirectory != null) {
+      batchSavePath.value = selectedDirectory;
+      _box.write('batchSavePath', selectedDirectory);
+      Get.snackbar(
+        'Save Path Set',
+        'Batch compressions will be saved to your selected folder.',
+      );
+    }
   }
 
   Future<void> openLastCompressedLocation() async {
     if (lastCompressed.value != null) {
-      await OpenFilex.open(lastCompressed.value!.path);
+      final adsController = Get.find<UnityAdsController>();
+      adsController.showInterstitialAd(
+        onComplete: () {
+          OpenFilex.open(lastCompressed.value!.path);
+        },
+      );
     }
   }
 
   Future<void> openZipFolderLocation() async {
     if (lastZipFile.value != null) {
-      await OpenFilex.open(lastZipFile.value!.path);
+      final adsController = Get.find<UnityAdsController>();
+      adsController.showInterstitialAd(
+        onComplete: () {
+          final path = lastZipFile.value!.parent.path;
+          OpenFilex.open(path);
+        },
+      );
+    }
+  }
+
+  Future<void> extractZipFile() async {
+    if (lastZipFile.value == null) return;
+
+    final adsController = Get.find<UnityAdsController>();
+    adsController.showInterstitialAd(
+      onComplete: () async {
+        try {
+          final destinationDir = lastZipFile.value!.parent;
+          final inputStream = InputFileStream(lastZipFile.value!.path);
+          final archive = ZipDecoder().decodeStream(inputStream);
+
+          for (final file in archive.files) {
+            final filename = file.name;
+            if (file.isFile) {
+              final data = file.content as List<int>;
+              final extractedFile = File('${destinationDir.path}/$filename');
+              await extractedFile.writeAsBytes(data);
+            }
+          }
+          Get.snackbar('Success', 'Files extracted to ${destinationDir.path}');
+        } catch (e) {
+          Get.snackbar('Error', 'Failed to extract files: $e');
+        }
+      },
+    );
+  }
+
+  void toggleSelectionMode(bool? enable) {
+    isSelectionMode.value = enable ?? !isSelectionMode.value;
+    if (!isSelectionMode.value) {
+      batchSelection.clear();
+    }
+  }
+
+  void toggleBatchSelection(File file) {
+    if (batchSelection.contains(file)) {
+      batchSelection.remove(file);
+      if (batchSelection.isEmpty) {
+        isSelectionMode.value = false;
+      }
+    } else {
+      batchSelection.add(file);
+    }
+  }
+
+  void selectAllForBatch() {
+    batchSelection.assignAll(images);
+  }
+
+  Future<void> openHistoryFile(String path) async {
+    try {
+      final result = await OpenFilex.open(path);
+      if (result.type != ResultType.done) {
+        Get.snackbar('Error', 'Could not open file: ${result.message}');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'File not found or could not be opened.');
     }
   }
 
   Future<void> shareZipFile() async {
     if (lastZipFile.value != null) {
-      await Share.shareXFiles([XFile(lastZipFile.value!.path)]);
+      final adsController = Get.find<UnityAdsController>();
+      adsController.showInterstitialAd(
+        onComplete: () {
+          Share.shareXFiles([XFile(lastZipFile.value!.path)]);
+        },
+      );
     }
   }
 }
