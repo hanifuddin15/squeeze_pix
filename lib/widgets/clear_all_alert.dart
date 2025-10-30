@@ -33,7 +33,7 @@ class ClearAllAlertDialog extends GetView<CompressorController> {
         ),
         FilledButton(
           style: FilledButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.errorContainer,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
           onPressed: () {
             final List<File> previousImages = List.from(controller.images);

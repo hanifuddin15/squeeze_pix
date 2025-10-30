@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:typed_data';
+import 'package:file_saver/file_saver.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:squeeze_pix/controllers/unity_ads_controller.dart';
 import 'package:flutter/foundation.dart';
@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as img;
@@ -397,6 +398,8 @@ class CompressorController extends GetxController {
       final archive = Archive();
       int count = 0;
       int totalReduction = 0;
+      int totalOriginalSize = 0;
+      int totalCompressedSize = 0;
 
       for (final file in imagesToCompress) {
         final compressedFile = await _compressFile(file);
@@ -407,17 +410,30 @@ class CompressorController extends GetxController {
             await compressedFile.readAsBytes(),
           );
           archive.addFile(archiveFile);
-          totalReduction += file.lengthSync() - compressedFile.lengthSync();
+          final originalSize = file.lengthSync();
+          final newSize = compressedFile.lengthSync();
+          totalOriginalSize += originalSize;
+          totalCompressedSize += newSize;
+          totalReduction += originalSize - newSize;
         }
       }
 
       final zipEncoder = ZipEncoder();
       final zipData = zipEncoder.encode(archive);
 
-      final zipFilePath = '$outputDirectory/${zipFileName.value}.zip';
-      lastZipFile.value = await File(zipFilePath).writeAsBytes(zipData);
-
-      batchStats.value = {'count': count, 'sizeReduction': totalReduction};
+      String? savedPath = await FileSaver.instance.saveFile(
+        name: zipFileName.value,
+        bytes: Uint8List.fromList(zipData),
+        fileExtension: 'zip',
+        mimeType: MimeType.zip,
+      );
+      lastZipFile.value = File(savedPath);
+      batchStats.value = {
+        'count': count,
+        'sizeReduction': totalReduction,
+        'totalOriginalSize': totalOriginalSize,
+        'totalCompressedSize': totalCompressedSize,
+      };
     } finally {
       isCompressing.value = false;
       batchAccessGranted.value = false; // Reset access after use
@@ -427,15 +443,19 @@ class CompressorController extends GetxController {
   }
 
   Future<void> setBatchSavePath() async {
-    final String? selectedDirectory = await FilePicker.platform
-        .getDirectoryPath();
+    // Use flutter_document_picker to get a writable content URI for a directory
+    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+
     if (selectedDirectory != null) {
-      batchSavePath.value = selectedDirectory;
-      _box.write('batchSavePath', selectedDirectory);
-      Get.snackbar(
-        'Save Path Set',
-        'Batch compressions will be saved to your selected folder.',
-      );
+      try {
+        batchSavePath.value = selectedDirectory;
+        _box.write('batchSavePath', selectedDirectory);
+        Get.snackbar('Success', 'Batch save location updated.');
+        debugPrint('Selected save path: $selectedDirectory');
+      } catch (e) {
+        debugPrint('Failed to set batch save path: $e');
+        Get.snackbar('Error', 'Failed to set save location.');
+      }
     }
   }
 
@@ -450,17 +470,17 @@ class CompressorController extends GetxController {
     }
   }
 
-  Future<void> openZipFolderLocation() async {
-    if (lastZipFile.value != null) {
-      final adsController = Get.find<UnityAdsController>();
-      adsController.showInterstitialAd(
-        onComplete: () {
-          final path = lastZipFile.value!.parent.path;
-          OpenFilex.open(path);
-        },
-      );
-    }
-  }
+  // Future<void> openZipFolderLocation() async {
+  //   if (lastZipFile.value != null) {
+  //     final adsController = Get.find<UnityAdsController>();
+  //     adsController.showInterstitialAd(
+  //       onComplete: () {
+  //         final path = lastZipFile.value!.parent.path;
+  //         OpenFilex.open(path);
+  //       },
+  //     );
+  //   }
+  // }
 
   Future<void> extractZipFile() async {
     if (lastZipFile.value == null) return;
@@ -468,20 +488,48 @@ class CompressorController extends GetxController {
     final adsController = Get.find<UnityAdsController>();
     adsController.showInterstitialAd(
       onComplete: () async {
+        // Request storage permission before proceeding
+        var status = await Permission.manageExternalStorage.status;
+        if (!status.isGranted) {
+          status = await Permission.manageExternalStorage.request();
+        }
+
+        if (!status.isGranted) {
+          Get.snackbar(
+            'Permission Denied',
+            'Storage permission is required to extract files.',
+          );
+          return;
+        }
+
         try {
-          final destinationDir = lastZipFile.value!.parent;
+          String? saveDir = batchSavePath.value;
+          if (saveDir == null) {
+            Get.snackbar(
+              'No Save Location',
+              'Please set a save location before extracting.',
+            );
+            await setBatchSavePath();
+            saveDir = batchSavePath.value;
+            if (saveDir == null) return;
+          }
+
           final inputStream = InputFileStream(lastZipFile.value!.path);
           final archive = ZipDecoder().decodeStream(inputStream);
+
+          Get.snackbar('Extracting...', 'Extracting files, please wait.');
 
           for (final file in archive.files) {
             final filename = file.name;
             if (file.isFile) {
               final data = file.content as List<int>;
-              final extractedFile = File('${destinationDir.path}/$filename');
-              await extractedFile.writeAsBytes(data);
+              final path = '$saveDir/$filename';
+              final outFile = File(path);
+              await outFile.create(recursive: true);
+              await outFile.writeAsBytes(data);
             }
           }
-          Get.snackbar('Success', 'Files extracted to ${destinationDir.path}');
+          Get.snackbar('Success', 'Files extracted to your selected folder.');
         } catch (e) {
           Get.snackbar('Error', 'Failed to extract files: $e');
         }
@@ -531,5 +579,10 @@ class CompressorController extends GetxController {
         },
       );
     }
+  }
+
+  /// Ensures a callback runs on the main isolate, which is required for UI operations.
+  void runOnMainThread(VoidCallback callback) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => callback());
   }
 }

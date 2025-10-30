@@ -3,6 +3,7 @@ import 'package:squeeze_pix/theme/app_theme.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String label;
+  final TextStyle? labelStyle;
   final VoidCallback onPressed;
   final IconData? icon;
   const PrimaryButton({
@@ -10,6 +11,7 @@ class PrimaryButton extends StatelessWidget {
     required this.onPressed,
     this.icon,
     super.key,
+    this.labelStyle,
   });
 
   @override
@@ -44,10 +46,12 @@ class PrimaryButton extends StatelessWidget {
             ],
             Text(
               label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onPrimary,
-                fontWeight: FontWeight.bold,
-              ),
+              style:
+                  labelStyle ??
+                  Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
           ],
         ),

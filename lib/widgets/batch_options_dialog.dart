@@ -40,8 +40,9 @@ class BatchOptionsDialog extends GetView<CompressorController> {
             if (controller.zipFileName.value.isEmpty) {
               controller.zipFileName.value = 'squeezepix_batch';
             }
-            Get.back();
+            // Get.back();
             controller.compressAll();
+            Navigator.of(context).popUntil((route) => route.isFirst);
           },
         ),
       ],

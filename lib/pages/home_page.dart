@@ -119,49 +119,7 @@ class HomePage extends GetView<CompressorController> {
                                 dense: true,
                               ),
                               const SizedBox(height: 16),
-                              Card(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.surface.withOpacity(0.5),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12.0),
-                                  child: Column(
-                                    children: [
-                                      const Text(
-                                        'Save Location',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Obx(
-                                        () => Text(
-                                          controller.batchSavePath.value != null
-                                              ? '.../${p.basename(controller.batchSavePath.value!)}'
-                                              : 'Default (Downloads)',
-                                          style: const TextStyle(
-                                            color: Colors.white70,
-                                            fontSize: 12,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      SizedBox(
-                                        height: 35,
-                                        child: PrimaryButton(
-                                          label: 'Change',
-                                          onPressed: () =>
-                                              controller.setBatchSavePath(),
-                                          icon: Icons.folder_open,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
+
                               const UnitBannerAdsWidget(),
                               const SizedBox(height: 16),
                               Obx(() {

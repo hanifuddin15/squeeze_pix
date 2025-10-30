@@ -20,6 +20,13 @@ class ImageTile extends GetView<CompressorController> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onTap: () {
+        if (isSelectionMode) {
+          controller.toggleBatchSelection(file);
+        } else {
+          Get.toNamed('/compress');
+        }
+      },
       onLongPress: () {
         Get.to(
           () => Scaffold(

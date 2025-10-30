@@ -24,7 +24,7 @@ class ResultCard extends GetView<CompressorController> {
               child: Container(
                 decoration: BoxDecoration(
                   gradient: AppTheme.gradient,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),

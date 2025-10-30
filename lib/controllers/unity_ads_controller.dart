@@ -91,24 +91,28 @@ class UnityAdsController extends GetxController {
         onClick: (placementId) => debugPrint('Video Ad ($placementId) click'),
         onSkipped: (placementId) {
           debugPrint('Video Ad ($placementId) skipped');
-          onComplete();
+          Get.find<CompressorController>().runOnMainThread(onComplete);
           isInterstitialReady.value = false;
           _loadInterstitialAd(); // Load next ad
         },
         onComplete: (placementId) {
           debugPrint('Video Ad ($placementId) complete');
-          onComplete();
+          Get.find<CompressorController>().runOnMainThread(onComplete);
           isInterstitialReady.value = false;
           _loadInterstitialAd(); // Load next ad
         },
         onFailed: (placementId, error, message) {
           debugPrint('Video Ad ($placementId) failed: $error $message');
-          onComplete(); // Still proceed if ad fails
+          Get.find<CompressorController>().runOnMainThread(
+            onComplete,
+          ); // Still proceed if ad fails
         },
       );
     } else {
       debugPrint('Interstitial ad not ready, skipping.');
-      onComplete(); // Proceed without showing ad
+      Get.find<CompressorController>().runOnMainThread(
+        onComplete,
+      ); // Proceed without showing ad
       _loadInterstitialAd(); // Try to load for next time
     }
   }
