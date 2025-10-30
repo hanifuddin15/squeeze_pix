@@ -136,9 +136,12 @@ class CompressorPage extends GetView<CompressorController> {
                       await controller.compressSelectedWithAd();
                       final f = controller.lastCompressed.value;
                       if (f != null) {
-                        await Share.shareXFiles([
-                          XFile(f.path),
-                        ], text: 'Check out this compressed image!');
+                        await SharePlus.instance.share(
+                          ShareParams(
+                            files: [XFile(f.path)],
+                            text: 'Check out this compressed image!',
+                          ),
+                        );
                         Get.snackbar(
                           'Shared',
                           'Image shared successfully!',

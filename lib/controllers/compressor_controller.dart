@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:file_saver/file_saver.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:squeeze_pix/controllers/unity_ads_controller.dart';
 import 'package:flutter/foundation.dart';
@@ -13,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
+// ignore: depend_on_referenced_packages
 import 'package:image/image.dart' as img;
 import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/widgets/clear_all_alert.dart';
@@ -647,7 +647,12 @@ class CompressorController extends GetxController {
       final adsController = Get.find<UnityAdsController>();
       adsController.showInterstitialAd(
         onComplete: () {
-          Share.shareXFiles([XFile(lastZipFile.value!.path)]);
+          SharePlus.instance.share(
+            ShareParams(
+              files: [XFile(lastZipFile.value!.path)],
+              text: 'Here is my compressed images ZIP from Squeeze Pix!',
+            ),
+          );
         },
       );
     }

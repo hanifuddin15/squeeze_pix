@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:path/path.dart' as p;
 import 'package:squeeze_pix/widgets/batch_options_dialog.dart';
 import 'package:squeeze_pix/controllers/compressor_controller.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
@@ -77,7 +76,7 @@ class HomePage extends GetView<CompressorController> {
       ),
       body: Obx(() {
         // This ensures the body rebuilds when batchStats changes
-        final _ = controller.batchStats.value;
+        final _ = controller.batchStats;
         return Container(
           // Main container for the body
           decoration: BoxDecoration(gradient: AppTheme.gradient),
@@ -145,7 +144,7 @@ class HomePage extends GetView<CompressorController> {
                                 value: controller.stripExif.value,
                                 onChanged: (val) =>
                                     controller.stripExif.value = val,
-                                activeColor: Theme.of(
+                                activeThumbColor: Theme.of(
                                   context,
                                 ).colorScheme.secondary,
                                 dense: true,

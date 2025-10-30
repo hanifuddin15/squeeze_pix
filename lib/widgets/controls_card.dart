@@ -63,7 +63,7 @@ class ControlsCard extends GetView<CompressorController> {
             labelText: 'Target Size (KB)',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             filled: true,
-            fillColor: Theme.of(context).colorScheme.surfaceVariant,
+            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
           ),
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -93,7 +93,7 @@ class ControlsCard extends GetView<CompressorController> {
           onChanged: isCompressing
               ? null
               : (val) => controller.stripExif.value = val,
-          activeColor: Theme.of(context).colorScheme.secondary,
+          activeThumbColor: Theme.of(context).colorScheme.secondary,
           dense: true,
         ),
       ],

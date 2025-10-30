@@ -65,15 +65,6 @@ class ImageTile extends GetView<CompressorController> {
                       ),
                     ),
                   ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Icon(
-                      Icons.check_circle,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      size: 24,
-                    ),
-                  ),
                 ],
                 if (isSelectionMode)
                   Positioned.fill(
@@ -83,8 +74,8 @@ class ImageTile extends GetView<CompressorController> {
                         color: isSelectedInBatch
                             ? Theme.of(
                                 context,
-                              ).colorScheme.primary.withOpacity(0.6)
-                            : Colors.black.withOpacity(0.2),
+                              ).colorScheme.primary.withValues(alpha: .6)
+                            : Colors.black.withValues(alpha: .2),
                       ),
                     ),
                   ),

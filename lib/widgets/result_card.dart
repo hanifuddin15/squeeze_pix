@@ -94,7 +94,7 @@ class ResultCard extends GetView<CompressorController> {
     final newSizeKB = (newSize / 1024).toStringAsFixed(1);
 
     if (reduction > 0) {
-      return 'New size: $newSizeKB KB (${reductionPercent}% smaller)';
+      return 'New size: $newSizeKB KB ($reductionPercent% smaller)';
     } else {
       return 'New size: $newSizeKB KB';
     }
