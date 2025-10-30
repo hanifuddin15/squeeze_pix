@@ -25,13 +25,40 @@ class HomePage extends GetView<CompressorController> {
         child: Obx(() {
           if (controller.isSelectionMode.value) {
             return AppBar(
-              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+              backgroundColor: Theme.of(context).colorScheme.primary,
               leading: IconButton(
                 icon: const Icon(Icons.close),
                 onPressed: () => controller.toggleSelectionMode(false),
               ),
               title: Text('${controller.batchSelection.length} selected'),
               actions: [
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  tooltip: 'Delete Selected',
+                  onPressed: () {
+                    Get.dialog(
+                      AlertDialog(
+                        title: const Text('Delete Images?'),
+                        content: Text(
+                          'Are you sure you want to delete ${controller.batchSelection.length} selected image(s)? This cannot be undone.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Cancel'),
+                          ),
+                          FilledButton(
+                            onPressed: () {
+                              controller.deleteBatchSelection();
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Delete'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
                 IconButton(
                   icon: const Icon(Icons.select_all),
                   tooltip: 'Select All',
@@ -41,7 +68,7 @@ class HomePage extends GetView<CompressorController> {
             );
           } else {
             return CustomAppBar(
-              title: 'SqueezePix',
+              title: 'Squeeze Pix',
               images: controller.images,
               onClearAll: controller.showClearConfirmation,
             );
@@ -67,7 +94,12 @@ class HomePage extends GetView<CompressorController> {
                   ),
                 ),
                 const SliverToBoxAdapter(child: SavingsCard()),
-                const ImageGrid(), // includes grid + stats + history
+                Obx(() {
+                  // This Obx ensures the grid and its children rebuild
+                  // when the batch selection list changes.
+                  final _ = controller.batchSelection.length;
+                  return const ImageGrid();
+                }),
                 // 👇 Moved this batch card section inside scroll view
                 SliverPadding(
                   padding: const EdgeInsets.all(12),

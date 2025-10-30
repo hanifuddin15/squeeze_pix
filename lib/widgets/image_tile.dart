@@ -24,22 +24,15 @@ class ImageTile extends GetView<CompressorController> {
         if (isSelectionMode) {
           controller.toggleBatchSelection(file);
         } else {
+          // Select the image first, then navigate.
+          controller.selectImage(file);
           Get.toNamed('/compress');
         }
       },
       onLongPress: () {
-        Get.to(
-          () => Scaffold(
-            backgroundColor: Colors.black,
-            appBar: AppBar(
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
-            ),
-            body: InteractiveViewer(
-              child: Center(child: Image.file(file, fit: BoxFit.contain)),
-            ),
-          ),
-        );
+        // Enable selection mode and select the long-pressed item.
+        controller.toggleSelectionMode(true);
+        controller.toggleBatchSelection(file);
       },
       child: Hero(
         tag: file.path,

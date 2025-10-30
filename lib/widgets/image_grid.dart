@@ -19,6 +19,7 @@ class ImageGrid extends GetView<CompressorController> {
         sliver: SliverList(
           delegate: SliverChildListDelegate([
             GridView.builder(
+              padding: EdgeInsets.zero,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: sortedImages.length,
@@ -36,28 +37,16 @@ class ImageGrid extends GetView<CompressorController> {
                   columnCount: 3,
                   child: ScaleAnimation(
                     child: FadeInAnimation(
-                      child: Obx(() {
-                        final isSelectedInBatch = controller.batchSelection
-                            .contains(file);
-                        return GestureDetector(
-                          onTap: () {
-                            if (controller.isSelectionMode.value) {
-                              controller.toggleBatchSelection(file);
-                            } else {
-                              controller.selectImage(file);
-                              Get.toNamed('/compress');
-                            }
-                          },
-                          onLongPress: () =>
-                              controller.toggleBatchSelection(file),
-                          child: ImageTile(
-                            file: file,
-                            selected: selected,
-                            isSelectionMode: controller.isSelectionMode.value,
-                            isSelectedInBatch: isSelectedInBatch,
+                      child: Obx(
+                        () => ImageTile(
+                          file: file,
+                          selected: selected,
+                          isSelectionMode: controller.isSelectionMode.value,
+                          isSelectedInBatch: controller.batchSelection.contains(
+                            file,
                           ),
-                        );
-                      }),
+                        ),
+                      ),
                     ),
                   ),
                 );

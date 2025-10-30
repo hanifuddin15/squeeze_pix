@@ -25,7 +25,7 @@ class SavingsCard extends GetView<CompressorController> {
         return const SizedBox.shrink();
       }
       return Card(
-        margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        margin: const EdgeInsets.fromLTRB(12, 10, 12, 0),
         child: Container(
           decoration: BoxDecoration(
             gradient: AppTheme.gradient,

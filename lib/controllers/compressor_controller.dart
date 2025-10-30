@@ -603,6 +603,32 @@ class CompressorController extends GetxController {
     batchSelection.assignAll(images);
   }
 
+  //===== Delete Batch Selection =====//
+  void deleteBatchSelection() {
+    if (batchSelection.isEmpty) {
+      Get.snackbar('No Images', 'No images selected to delete.');
+      return;
+    }
+
+    final imagesToDelete = List<File>.from(batchSelection);
+
+    // Remove from the main images list
+    images.removeWhere((img) => imagesToDelete.contains(img));
+
+    // If the main selected image was deleted, update it
+    if (selected.value != null && imagesToDelete.contains(selected.value)) {
+      selected.value = images.isNotEmpty ? images.first : null;
+    }
+
+    // Persist changes and reset selection state
+    _box.write('images', images.map((e) => e.path).toList());
+    toggleSelectionMode(false); // This also clears batchSelection
+    Get.snackbar(
+      'Deleted',
+      '${imagesToDelete.length} image(s) have been removed.',
+    );
+  }
+
   //===== Open a File from History =====//
   Future<void> openHistoryFile(String path) async {
     try {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -40,7 +41,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   Icons.arrow_back_ios_new_outlined,
                   color: Colors.white,
                 ),
-                onPressed: Get.back,
+                onPressed: () => Navigator.of(context).pop(),
               )
             : const SizedBox.shrink(),
         elevation: 0,
@@ -49,6 +50,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.bold,
+            fontFamily: GoogleFonts.workbench().fontFamily,
+            fontSize: 20,
           ),
         ),
         centerTitle: true,
