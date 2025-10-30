@@ -25,15 +25,13 @@ class BatchOptionsDialog extends GetView<CompressorController> {
             ),
             onChanged: (value) => controller.zipFileName.value = value,
           ),
-          const SizedBox(height: 16),
-          const Text(
-            'You will be prompted to select a save location after continuing.',
-            style: TextStyle(fontSize: 12),
-          ),
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
         PrimaryButton(
           label: 'Continue',
           onPressed: () {

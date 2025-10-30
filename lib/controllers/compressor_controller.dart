@@ -63,6 +63,7 @@ class CompressorController extends GetxController {
   late TextEditingController heightController;
   img.Image? _decodedImage;
 
+  //===== On Init =====//
   @override
   void onInit() {
     super.onInit();
@@ -134,6 +135,7 @@ class CompressorController extends GetxController {
     });
   }
 
+  //===== Pick Images from Gallery =====//
   Future<void> pickImages() async {
     final ImagePicker picker = ImagePicker();
     isPicking.value = true;
@@ -146,6 +148,7 @@ class CompressorController extends GetxController {
     isPicking.value = false;
   }
 
+  //===== Pick Image from Camera =====//
   Future<void> pickSingleFromCamera() async {
     final ImagePicker picker = ImagePicker();
     final XFile? shot = await picker.pickImage(source: ImageSource.camera);
@@ -157,6 +160,7 @@ class CompressorController extends GetxController {
     }
   }
 
+  //===== Select an Image for Compression =====//
   void selectImage(File file) {
     selected.value = file;
     lastCompressed.value = null;
@@ -167,6 +171,7 @@ class CompressorController extends GetxController {
     resizeHeight.value = null;
   }
 
+  //===== Clear All Picked Images =====//
   void clearAll() {
     images.clear();
     selected.value = null;
@@ -174,15 +179,18 @@ class CompressorController extends GetxController {
     _box.remove('images');
   }
 
+  //===== Clear Batch Compression Statistics =====//
   void clearBatchStats() {
     batchStats.clear();
     lastZipFile.value = null;
   }
 
+  //===== Show Clear All Confirmation Dialog =====//
   void showClearConfirmation() {
     Get.dialog(const ClearAllAlertDialog());
   }
 
+  //===== Toggle an Image as Favorite =====//
   void toggleFavorite(String path) {
     if (favorites.contains(path)) {
       favorites.remove(path);
@@ -192,6 +200,7 @@ class CompressorController extends GetxController {
     _box.write('favorites', favorites.toList());
   }
 
+  //===== Get Sorted Images (Favorites First) =====//
   List<File> getSortedImages() {
     final favoriteImages = images
         .where((file) => favorites.contains(file.path))
@@ -202,6 +211,7 @@ class CompressorController extends GetxController {
     return [...favoriteImages, ...nonFavoriteImages];
   }
 
+  //===== Compress a File to a Target Size =====//
   Future<File?> _compressFileWithTargetSize(
     File file,
     int targetKB,
@@ -256,6 +266,7 @@ class CompressorController extends GetxController {
     return resultFile;
   }
 
+  //===== Main Internal Compression Logic =====//
   Future<File?> _compressFile(File file) async {
     final dir = await getTemporaryDirectory();
     final targetPath =
@@ -337,10 +348,12 @@ class CompressorController extends GetxController {
     }
   }
 
+  //===== Reset the Compressor State =====//
   void resetCompressor() {
     lastCompressed.value = null;
   }
 
+  //===== Compress the Currently Selected Image =====//
   Future<void> compressSelected() async {
     if (selected.value == null) return;
     isCompressing.value = true;
@@ -357,6 +370,7 @@ class CompressorController extends GetxController {
     }
   }
 
+  //===== Compress Selected Image with an Ad =====//
   Future<void> compressSelectedWithAd() async {
     final adsController = Get.find<UnityAdsController>();
     adsController.showInterstitialAd(
@@ -366,6 +380,7 @@ class CompressorController extends GetxController {
     );
   }
 
+  //===== Compress All Selected Images into a ZIP =====//
   Future<void> compressAll() async {
     final imagesToCompress = isSelectionMode.value ? batchSelection : images;
 
@@ -381,20 +396,20 @@ class CompressorController extends GetxController {
     }
 
     isCompressing.value = true;
-    try {
-      String? outputDirectory = batchSavePath.value;
-      if (outputDirectory == null) {
-        final downloadsDir = await getDownloadsDirectory();
-        outputDirectory = downloadsDir?.path;
-        if (outputDirectory == null) {
-          Get.snackbar('Error', 'Could not determine downloads directory.');
-          return;
-        }
+    String? saveDir = batchSavePath.value;
+
+    // Prompt user to select a directory if it's not set
+    if (saveDir == null) {
+      await setBatchSavePath();
+      saveDir = batchSavePath.value;
+      if (saveDir == null) {
+        isCompressing.value = false;
+        Get.snackbar('Cancelled', 'No save location was selected.');
+        return;
       }
-      // Show interstitial for batch compression as well if you want
-      // final adsController = Get.find<UnityAdsController>();
-      // adsController.showInterstitialAd(onComplete: () async {
-      final tempDir = await getTemporaryDirectory();
+    }
+
+    try {
       final archive = Archive();
       int count = 0;
       int totalReduction = 0;
@@ -402,7 +417,12 @@ class CompressorController extends GetxController {
       int totalCompressedSize = 0;
 
       for (final file in imagesToCompress) {
-        final compressedFile = await _compressFile(file);
+        // Use batchQuality for batch compression
+        final compressedFile = await _compressFileWithQuality(
+          file,
+          batchQuality.value,
+        );
+
         if (compressedFile != null) {
           final archiveFile = ArchiveFile(
             '${DateTime.now().millisecondsSinceEpoch}_${count++}.jpg',
@@ -421,27 +441,58 @@ class CompressorController extends GetxController {
       final zipEncoder = ZipEncoder();
       final zipData = zipEncoder.encode(archive);
 
-      String? savedPath = await FileSaver.instance.saveFile(
-        name: zipFileName.value,
-        bytes: Uint8List.fromList(zipData),
-        fileExtension: 'zip',
-        mimeType: MimeType.zip,
-      );
-      lastZipFile.value = File(savedPath);
+      final zipName =
+          '${zipFileName.value.isNotEmpty ? zipFileName.value : 'squeezepix_batch'}.zip';
+      final fullPath = '$saveDir/$zipName';
+      final zipFile = File(fullPath);
+      await zipFile.writeAsBytes(zipData);
+
+      lastZipFile.value = zipFile;
       batchStats.value = {
         'count': count,
         'sizeReduction': totalReduction,
         'totalOriginalSize': totalOriginalSize,
         'totalCompressedSize': totalCompressedSize,
       };
+      Get.snackbar('Success', 'Batch compression complete. ZIP file saved.');
+    } catch (e) {
+      Get.snackbar('Error', 'An error occurred during batch compression: $e');
     } finally {
       isCompressing.value = false;
       batchAccessGranted.value = false; // Reset access after use
       toggleSelectionMode(false); // Exit selection mode
     }
-    // });
   }
 
+  //===== Internal Helper to Compress with a Specific Quality =====//
+  Future<File?> _compressFileWithQuality(File file, int qualityValue) async {
+    final dir = await getTemporaryDirectory();
+    final targetPath =
+        '${dir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+    final resultBytes = await FlutterImageCompress.compressWithFile(
+      file.absolute.path,
+      quality: qualityValue,
+      format: CompressFormat.jpeg, // Batch is always jpeg for consistency
+      keepExif: !stripExif.value,
+    );
+
+    if (resultBytes == null || resultBytes.isEmpty) {
+      return null;
+    }
+
+    final resultFile = await File(targetPath).writeAsBytes(resultBytes);
+    final originalSize = file.lengthSync();
+    final newSize = resultFile.lengthSync();
+    final saved = originalSize - newSize;
+    if (saved > 0) {
+      totalBytesSaved.value += saved;
+      _box.write('totalBytesSaved', totalBytesSaved.value);
+    }
+    return resultFile;
+  }
+
+  //===== Set Batch Save Path =====//
   Future<void> setBatchSavePath() async {
     // Use flutter_document_picker to get a writable content URI for a directory
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
@@ -459,6 +510,7 @@ class CompressorController extends GetxController {
     }
   }
 
+  //===== Open the Location of the Last Compressed File =====//
   Future<void> openLastCompressedLocation() async {
     if (lastCompressed.value != null) {
       final adsController = Get.find<UnityAdsController>();
@@ -470,18 +522,7 @@ class CompressorController extends GetxController {
     }
   }
 
-  // Future<void> openZipFolderLocation() async {
-  //   if (lastZipFile.value != null) {
-  //     final adsController = Get.find<UnityAdsController>();
-  //     adsController.showInterstitialAd(
-  //       onComplete: () {
-  //         final path = lastZipFile.value!.parent.path;
-  //         OpenFilex.open(path);
-  //       },
-  //     );
-  //   }
-  // }
-
+  //===== Extract the Last Created ZIP File =====//
   Future<void> extractZipFile() async {
     if (lastZipFile.value == null) return;
 
@@ -537,6 +578,7 @@ class CompressorController extends GetxController {
     );
   }
 
+  //===== Toggle Batch Selection Mode =====//
   void toggleSelectionMode(bool? enable) {
     isSelectionMode.value = enable ?? !isSelectionMode.value;
     if (!isSelectionMode.value) {
@@ -544,6 +586,7 @@ class CompressorController extends GetxController {
     }
   }
 
+  //===== Toggle a File's Selection State for Batch Processing =====//
   void toggleBatchSelection(File file) {
     if (batchSelection.contains(file)) {
       batchSelection.remove(file);
@@ -555,10 +598,12 @@ class CompressorController extends GetxController {
     }
   }
 
+  //===== Select All Images for Batch Processing =====//
   void selectAllForBatch() {
     batchSelection.assignAll(images);
   }
 
+  //===== Open a File from History =====//
   Future<void> openHistoryFile(String path) async {
     try {
       final result = await OpenFilex.open(path);
@@ -570,6 +615,7 @@ class CompressorController extends GetxController {
     }
   }
 
+  //===== Share the Last Created ZIP File =====//
   Future<void> shareZipFile() async {
     if (lastZipFile.value != null) {
       final adsController = Get.find<UnityAdsController>();
@@ -581,6 +627,7 @@ class CompressorController extends GetxController {
     }
   }
 
+  //===== Run a Callback on the Main UI Thread =====//
   /// Ensures a callback runs on the main isolate, which is required for UI operations.
   void runOnMainThread(VoidCallback callback) {
     WidgetsBinding.instance.addPostFrameCallback((_) => callback());
