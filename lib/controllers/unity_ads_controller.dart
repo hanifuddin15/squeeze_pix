@@ -39,7 +39,7 @@ class UnityAdsController extends GetxController {
   Future<void> _initAds() async {
     await UnityAds.init(
       gameId: _gameId,
-      testMode: true, //todo:::: Set to false for production
+      testMode: false, //todo:::: Set to false for production
       onComplete: () {
         debugPrint('Unity Ads Initialization Complete');
         _loadAllAds(); // Load ads after initialization

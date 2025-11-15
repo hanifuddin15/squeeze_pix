@@ -53,6 +53,10 @@ class BottomActionBar extends GetView<CompressorController> {
                     padding: const EdgeInsets.all(16),
                     backgroundColor: Theme.of(context).colorScheme.secondary,
                     shape: RoundedRectangleBorder(
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.onSecondary,
+                        width: 2,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),

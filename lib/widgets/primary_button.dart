@@ -20,6 +20,10 @@ class PrimaryButton extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: AppTheme.gradient,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.secondary,
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: .2),

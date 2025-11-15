@@ -74,113 +74,109 @@ class HomePage extends GetView<CompressorController> {
           }
         }),
       ),
-      body: Obx(() {
-        // This ensures the body rebuilds when batchStats changes
-        final _ = controller.batchStats;
-        return Container(
-          // Main container for the body
-          decoration: BoxDecoration(gradient: AppTheme.gradient),
-          child: Obx(() {
-            if (controller.images.isEmpty) {
-              return const EmptyState();
-            }
+      body: Container(
+        // Main container for the body
+        decoration: BoxDecoration(gradient: AppTheme.gradient),
+        child: Obx(() {
+          if (controller.images.isEmpty) {
+            return const EmptyState();
+          }
 
-            return CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: Get.mediaQuery.padding.top + kToolbarHeight,
-                  ),
+          return CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: Get.mediaQuery.padding.top + kToolbarHeight,
                 ),
-                const SliverToBoxAdapter(child: SavingsCard()),
-                Obx(() {
-                  // This Obx ensures the grid and its children rebuild
-                  // when the batch selection list changes.
-                  final _ = controller.batchSelection.length;
-                  return const ImageGrid();
-                }),
-                // 👇 Moved this batch card section inside scroll view
-                SliverPadding(
-                  padding: const EdgeInsets.all(12),
-                  sliver: SliverToBoxAdapter(
-                    child: Card(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: AppTheme.gradient.scale(0.8),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            children: [
-                              Text(
-                                'Batch Quality: ${controller.batchQuality.value}%',
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onPrimary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              const SizedBox(height: 12),
-                              CompressionSlider(
-                                value: controller.batchQuality.value.toDouble(),
-                                onChanged: controller.isCompressing.value
-                                    ? null
-                                    : (v) => controller.batchQuality.value = v
-                                          .round(),
-                              ),
-                              const SizedBox(height: 8),
-                              SwitchListTile(
-                                title: Text(
-                                  'Strip Image Metadata (EXIF)',
-                                  style: TextStyle(
+              ),
+              const SliverToBoxAdapter(child: SavingsCard()),
+              Obx(() {
+                // This Obx ensures the grid and its children rebuild
+                // when the batch selection list changes.
+                final _ = controller.batchSelection.length;
+                return const ImageGrid();
+              }),
+              // 👇 Moved this batch card section inside scroll view
+              SliverPadding(
+                padding: const EdgeInsets.all(12),
+                sliver: SliverToBoxAdapter(
+                  child: Card(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: AppTheme.gradient.scale(0.8),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Batch Quality: ${controller.batchQuality.value}%',
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
                                     color: Theme.of(
                                       context,
                                     ).colorScheme.onPrimary,
+                                    fontWeight: FontWeight.bold,
                                   ),
+                            ),
+                            const SizedBox(height: 12),
+                            CompressionSlider(
+                              value: controller.batchQuality.value.toDouble(),
+                              onChanged: controller.isCompressing.value
+                                  ? null
+                                  : (v) => controller.batchQuality.value = v
+                                        .round(),
+                            ),
+                            const SizedBox(height: 8),
+                            SwitchListTile(
+                              title: Text(
+                                'Strip Image Metadata (EXIF)',
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
                                 ),
-                                value: controller.stripExif.value,
-                                onChanged: (val) =>
-                                    controller.stripExif.value = val,
-                                activeThumbColor: Theme.of(
-                                  context,
-                                ).colorScheme.secondary,
-                                dense: true,
                               ),
-                              const SizedBox(height: 16),
+                              value: controller.stripExif.value,
+                              onChanged: (val) =>
+                                  controller.stripExif.value = val,
+                              activeThumbColor: Theme.of(
+                                context,
+                              ).colorScheme.secondary,
+                              dense: true,
+                            ),
+                            const SizedBox(height: 16),
 
-                              const UnitBannerAdsWidget(),
-                              const SizedBox(height: 16),
-                              Obx(() {
-                                final count = controller.isSelectionMode.value
-                                    ? controller.batchSelection.length
-                                    : controller.images.length;
-                                return PrimaryButton(
-                                  label: controller.isCompressing.value
-                                      ? 'Compressing...'
-                                      : 'Compress ($count)',
-                                  onPressed: controller.isCompressing.value
-                                      ? () {}
-                                      : () => Get.dialog(
-                                          const BatchOptionsDialog(),
-                                        ),
-                                  icon: Icons.compress,
-                                );
-                              }),
-                            ],
-                          ),
+                            const UnitBannerAdsWidget(),
+                            const SizedBox(height: 16),
+                            Obx(() {
+                              final count = controller.isSelectionMode.value
+                                  ? controller.batchSelection.length
+                                  : controller.images.length;
+                              return PrimaryButton(
+                                label: controller.isCompressing.value
+                                    ? 'Compressing...'
+                                    : 'Compress ($count)',
+                                onPressed: controller.isCompressing.value
+                                    ? () {}
+                                    : () => Get.dialog(
+                                        const BatchOptionsDialog(),
+                                      ),
+                                icon: Icons.compress,
+                              );
+                            }),
+                          ],
                         ),
                       ),
                     ),
                   ),
                 ),
-              ],
-            );
-          }),
-        );
-      }), // Closing for the main Container and outer Obx
+              ),
+            ],
+          );
+        }),
+      ), // Closing for the main Container and outer Obx
       bottomNavigationBar: const BottomActionBar(),
     );
   }
