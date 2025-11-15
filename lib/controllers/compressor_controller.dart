@@ -409,6 +409,21 @@ class CompressorController extends GetxController {
       }
     }
 
+    // Request storage permission before writing
+    var status = await Permission.manageExternalStorage.status;
+    if (!status.isGranted) {
+      status = await Permission.manageExternalStorage.request();
+    }
+
+    if (!status.isGranted) {
+      isCompressing.value = false;
+      Get.snackbar(
+        'Permission Denied',
+        'Storage permission is required to save the ZIP file.',
+      );
+      return;
+    }
+
     try {
       final archive = Archive();
       int count = 0;
