@@ -63,7 +63,7 @@ class ControlsCard extends GetView<CompressorController> {
             labelText: 'Target Size (KB)',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             filled: true,
-            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+            fillColor: Theme.of(context).colorScheme.primary,
           ),
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],

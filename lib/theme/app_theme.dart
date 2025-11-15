@@ -79,4 +79,14 @@ class AppTheme {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+  // 🆕 Neutral-friendly Gradient (BlueGrey → Teal → Soft Cyan)
+  static LinearGradient get neutralGradient => const LinearGradient(
+    colors: [
+      Color(0xFF546E7A), // BlueGrey - good base
+      Color(0xFF009688), // Teal - matches your theme
+      Color(0xFF4DD0E1), // Light Cyan - soft & text friendly
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }
