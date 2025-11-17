@@ -23,7 +23,7 @@ class CompressorPage extends GetView<CompressorController> {
         isLeadingIcon: true,
       ),
       body: Container(
-        decoration: BoxDecoration(gradient: AppTheme.neutralGradient),
+        decoration: BoxDecoration(gradient: AppTheme.gradient),
         child: Obx(() {
           final selectedFile = controller.selected.value;
           if (selectedFile == null) {
@@ -83,7 +83,7 @@ class CompressorPage extends GetView<CompressorController> {
       clipBehavior: Clip.antiAlias,
       child: Container(
         decoration: BoxDecoration(
-          gradient: AppTheme.neutralGradient,
+          gradient: AppTheme.gradient,
           border: Border.all(
             color: Theme.of(context).colorScheme.secondary,
             width: 2,
@@ -175,7 +175,7 @@ class CompressorPage extends GetView<CompressorController> {
       clipBehavior: Clip.antiAlias,
       child: Container(
         decoration: BoxDecoration(
-          gradient: AppTheme.neutralGradient,
+          gradient: AppTheme.gradient,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: Theme.of(context).colorScheme.secondary,
@@ -207,7 +207,7 @@ class CompressorPage extends GetView<CompressorController> {
       clipBehavior: Clip.antiAlias,
       child: Container(
         decoration: BoxDecoration(
-          gradient: AppTheme.neutralGradient,
+          gradient: AppTheme.gradient,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: Theme.of(context).colorScheme.secondary,
@@ -248,7 +248,7 @@ class CompressorPage extends GetView<CompressorController> {
       clipBehavior: Clip.antiAlias,
       child: Container(
         decoration: BoxDecoration(
-          gradient: AppTheme.neutralGradient,
+          gradient: AppTheme.gradient,
           border: Border.all(
             color: Theme.of(context).colorScheme.secondary,
             width: 2,
@@ -359,7 +359,7 @@ class CompressorPage extends GetView<CompressorController> {
       clipBehavior: Clip.antiAlias,
       child: Container(
         decoration: BoxDecoration(
-          gradient: AppTheme.neutralGradient,
+          gradient: AppTheme.gradient,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: Theme.of(context).colorScheme.secondary,

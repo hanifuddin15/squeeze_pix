@@ -1,10 +1,10 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:squeeze_pix/controllers/compressor_controller.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:squeeze_pix/controllers/unity_ads_controller.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:squeeze_pix/app_bindings.dart';
 import 'package:squeeze_pix/routes.dart';
-import 'package:squeeze_pix/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,17 +18,26 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'SqueezePix',
+      title: 'Squeeze Pix 2.0',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
-      initialBinding: BindingsBuilder(() {
-        Get.put(CompressorController(), permanent: true);
-        Get.put(UnityAdsController(), permanent: true);
-      }),
-      getPages: AppPages.pages,
+      initialBinding: AppBindings(),
+      getPages: AppRoutes.pages,
       initialRoute: '/splash',
+      theme: ThemeData(
+        useMaterial3: true,
+        fontFamily: GoogleFonts.poppins().fontFamily,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+        scaffoldBackgroundColor: Colors.grey[50],
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        fontFamily: GoogleFonts.poppins().fontFamily,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.teal,
+          brightness: Brightness.dark,
+        ),
+      ),
+      themeMode: ThemeMode.system,
     );
   }
 }

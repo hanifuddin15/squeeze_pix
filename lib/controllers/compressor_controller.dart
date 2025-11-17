@@ -372,12 +372,10 @@ class CompressorController extends GetxController {
 
   //===== Compress Selected Image with an Ad =====//
   Future<void> compressSelectedWithAd() async {
-    final adsController = Get.find<UnityAdsController>();
-    adsController.showInterstitialAd(
-      onComplete: () async {
-        await compressSelected();
-      },
-    );
+    final adsController = Get.find<AdsController>();
+    adsController.showInterstitial(() async {
+      await compressSelected();
+    });
   }
 
   //===== Compress All Selected Images into a ZIP =====//
@@ -390,8 +388,13 @@ class CompressorController extends GetxController {
     }
 
     if (imagesToCompress.length > 3 && !batchAccessGranted.value) {
-      final adsController = Get.find<UnityAdsController>();
-      adsController.showRewardedAd();
+      final adsController = Get.find<AdsController>();
+      adsController.showRewarded(
+        onComplete: () async {
+          batchAccessGranted.value = true;
+          await compressAll();
+        },
+      );
       return;
     }
 
@@ -528,12 +531,10 @@ class CompressorController extends GetxController {
   //===== Open the Location of the Last Compressed File =====//
   Future<void> openLastCompressedLocation() async {
     if (lastCompressed.value != null) {
-      final adsController = Get.find<UnityAdsController>();
-      adsController.showInterstitialAd(
-        onComplete: () {
-          OpenFilex.open(lastCompressed.value!.path);
-        },
-      );
+      final adsController = Get.find<AdsController>();
+      adsController.showInterstitial(() {
+        OpenFilex.open(lastCompressed.value!.path);
+      });
     }
   }
 
@@ -541,56 +542,54 @@ class CompressorController extends GetxController {
   Future<void> extractZipFile() async {
     if (lastZipFile.value == null) return;
 
-    final adsController = Get.find<UnityAdsController>();
-    adsController.showInterstitialAd(
-      onComplete: () async {
-        // Request storage permission before proceeding
-        var status = await Permission.manageExternalStorage.status;
-        if (!status.isGranted) {
-          status = await Permission.manageExternalStorage.request();
-        }
+    final adsController = Get.find<AdsController>();
+    adsController.showInterstitial(() async {
+      // Request storage permission before proceeding
+      var status = await Permission.manageExternalStorage.status;
+      if (!status.isGranted) {
+        status = await Permission.manageExternalStorage.request();
+      }
 
-        if (!status.isGranted) {
+      if (!status.isGranted) {
+        Get.snackbar(
+          'Permission Denied',
+          'Storage permission is required to extract files.',
+        );
+        return;
+      }
+
+      try {
+        String? saveDir = batchSavePath.value;
+        if (saveDir == null) {
           Get.snackbar(
-            'Permission Denied',
-            'Storage permission is required to extract files.',
+            'No Save Location',
+            'Please set a save location before extracting.',
           );
-          return;
+          await setBatchSavePath();
+          saveDir = batchSavePath.value;
+          if (saveDir == null) return;
         }
 
-        try {
-          String? saveDir = batchSavePath.value;
-          if (saveDir == null) {
-            Get.snackbar(
-              'No Save Location',
-              'Please set a save location before extracting.',
-            );
-            await setBatchSavePath();
-            saveDir = batchSavePath.value;
-            if (saveDir == null) return;
+        final inputStream = InputFileStream(lastZipFile.value!.path);
+        final archive = ZipDecoder().decodeStream(inputStream);
+
+        Get.snackbar('Extracting...', 'Extracting files, please wait.');
+
+        for (final file in archive.files) {
+          final filename = file.name;
+          if (file.isFile) {
+            final data = file.content as List<int>;
+            final path = '$saveDir/$filename';
+            final outFile = File(path);
+            await outFile.create(recursive: true);
+            await outFile.writeAsBytes(data);
           }
-
-          final inputStream = InputFileStream(lastZipFile.value!.path);
-          final archive = ZipDecoder().decodeStream(inputStream);
-
-          Get.snackbar('Extracting...', 'Extracting files, please wait.');
-
-          for (final file in archive.files) {
-            final filename = file.name;
-            if (file.isFile) {
-              final data = file.content as List<int>;
-              final path = '$saveDir/$filename';
-              final outFile = File(path);
-              await outFile.create(recursive: true);
-              await outFile.writeAsBytes(data);
-            }
-          }
-          Get.snackbar('Success', 'Files extracted to your selected folder.');
-        } catch (e) {
-          Get.snackbar('Error', 'Failed to extract files: $e');
         }
-      },
-    );
+        Get.snackbar('Success', 'Files extracted to your selected folder.');
+      } catch (e) {
+        Get.snackbar('Error', 'Failed to extract files: $e');
+      }
+    });
   }
 
   //===== Toggle Batch Selection Mode =====//
@@ -659,17 +658,15 @@ class CompressorController extends GetxController {
   //===== Share the Last Created ZIP File =====//
   Future<void> shareZipFile() async {
     if (lastZipFile.value != null) {
-      final adsController = Get.find<UnityAdsController>();
-      adsController.showInterstitialAd(
-        onComplete: () {
-          SharePlus.instance.share(
-            ShareParams(
-              files: [XFile(lastZipFile.value!.path)],
-              text: 'Here is my compressed images ZIP from Squeeze Pix!',
-            ),
-          );
-        },
-      );
+      final adsController = Get.find<AdsController>();
+      adsController.showInterstitial(() {
+        SharePlus.instance.share(
+          ShareParams(
+            files: [XFile(lastZipFile.value!.path)],
+            text: 'Here is my compressed images ZIP from Squeeze Pix!',
+          ),
+        );
+      });
     }
   }
 
