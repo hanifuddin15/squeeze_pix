@@ -50,7 +50,14 @@ class ResultScreen extends StatelessWidget {
   }
 
   void _share() {
-    if (compressed != null) Share.shareXFiles([XFile(compressed!.path)]);
+    if (compressed != null) {
+      SharePlus.instance.share(
+        ShareParams(
+          subject: "Compressed Image",
+          files: [XFile(compressed!.path)],
+        ),
+      );
+    }
   }
 
   void _save() {

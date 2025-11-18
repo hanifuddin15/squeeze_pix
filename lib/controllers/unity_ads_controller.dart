@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:squeeze_pix/controllers/compressor_controller.dart';
 import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 
 // class UnityAdsController extends GetxController {

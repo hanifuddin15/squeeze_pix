@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -19,7 +18,7 @@ class HomeScreen extends StatelessWidget {
     // Ensure CompressorController is initialized for the HistoryScreen
     Get.put(CompressorController());
 
-    final List<Widget> _pages = [
+    final List<Widget> pages = [
       const ImageGridPage(),
       const PixelLabScreen(),
       const HistoryScreen(),
@@ -32,7 +31,7 @@ class HomeScreen extends StatelessWidget {
         child: Obx(
           () => IndexedStack(
             index: homeController.tabIndex.value,
-            children: _pages,
+            children: pages,
           ),
         ),
       ),
@@ -106,6 +105,8 @@ class ImageGridPage extends StatelessWidget {
 }
 
 class GlassBottomNav extends StatelessWidget {
+  const GlassBottomNav({super.key});
+
   @override
   Widget build(BuildContext context) {
     final homeController = Get.find<HomeController>();
@@ -115,7 +116,7 @@ class GlassBottomNav extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Obx(
           () => BottomNavigationBar(
-            backgroundColor: Colors.white.withOpacity(0.2),
+            backgroundColor: Colors.white.withValues(alpha: .2),
             selectedItemColor: Colors.cyan,
             unselectedItemColor: Colors.white70,
             currentIndex: homeController.tabIndex.value,

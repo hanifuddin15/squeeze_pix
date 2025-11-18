@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 
 class PixelLabScreen extends StatelessWidget {
-  const PixelLabScreen({Key? key}) : super(key: key);
+  const PixelLabScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

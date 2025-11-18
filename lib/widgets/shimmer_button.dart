@@ -29,7 +29,7 @@ class ShimmerButton extends StatelessWidget {
           foregroundColor: Colors.white,
           padding: padding,
           elevation: 12,
-          shadowColor: Colors.cyan.withOpacity(0.6),
+          shadowColor: Colors.cyan.withValues(alpha: .6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
           ),

@@ -136,7 +136,7 @@ class CompressorService {
   }
 
   Future<File?> batchCompress(List<File> files, int quality) async {
-    final dir = await getTemporaryDirectory();
+    // final dir = await getTemporaryDirectory();
     final compressed = <File>[];
     for (var file in files) {
       final compressedFile = await compress(

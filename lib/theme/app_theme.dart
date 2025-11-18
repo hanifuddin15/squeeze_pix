@@ -115,7 +115,10 @@ class AppTheme {
   );
 
   static final LinearGradient glassGradient = LinearGradient(
-    colors: [Colors.white.withOpacity(0.25), Colors.white.withOpacity(0.05)],
+    colors: [
+      Colors.white.withValues(alpha: .25),
+      Colors.white.withValues(alpha: .05),
+    ],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

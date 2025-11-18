@@ -9,6 +9,8 @@ import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/widgets/pixel_lab_button.dart';
 
 class PixelLabHub extends StatelessWidget {
+  const PixelLabHub({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

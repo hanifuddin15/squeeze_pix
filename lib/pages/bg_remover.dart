@@ -22,6 +22,7 @@ class _BackgroundRemoverState extends State<BackgroundRemover> {
   @override
   Widget build(BuildContext context) {
     final iap = Get.find<IAPController>();
+    // ignore: unrelated_type_equality_checks
     if (!(iap.isUltra == true)) {
       return Scaffold(
         body: Center(

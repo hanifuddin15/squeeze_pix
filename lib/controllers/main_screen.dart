@@ -7,7 +7,7 @@ import 'package:squeeze_pix/theme/app_theme.dart';
 // For example: import 'package:squeeze_pix/screens/compressor_screen.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  const MainScreen({super.key});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -52,7 +52,9 @@ class _MainScreenState extends State<MainScreen> {
         // This is the crucial fix for the labels
         type: BottomNavigationBarType.fixed,
         // Optional: Add some styling to make it look better
-        backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+        backgroundColor: Theme.of(
+          context,
+        ).colorScheme.surface.withValues(alpha: .8),
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Colors.grey,
         elevation: 10,
