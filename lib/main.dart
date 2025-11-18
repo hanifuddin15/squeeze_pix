@@ -4,10 +4,12 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:squeeze_pix/app_bindings.dart';
+import 'package:squeeze_pix/controllers/iap_controller.dart';
 import 'package:squeeze_pix/routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  Get.put(IAPController(), permanent: true);
   await GetStorage.init();
   runApp(const MyApp());
 }

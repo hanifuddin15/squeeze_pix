@@ -1,210 +1,29 @@
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
-// import 'package:squeeze_pix/widgets/batch_options_dialog.dart';
-// import 'package:squeeze_pix/controllers/compressor_controller.dart';
-// import 'package:squeeze_pix/theme/app_theme.dart';
-// import 'package:squeeze_pix/widgets/bottom_action_bar.dart';
-// import 'package:squeeze_pix/widgets/custom_appbar.dart';
-// import 'package:squeeze_pix/widgets/empty_state.dart';
-// import 'package:squeeze_pix/widgets/image_grid.dart';
-// import 'package:squeeze_pix/widgets/primary_button.dart';
-// import 'package:squeeze_pix/widgets/compression_slider.dart';
-// import 'package:squeeze_pix/widgets/savings_card.dart';
-// import 'package:squeeze_pix/widgets/unity_ads.dart';
-
-// class HomePage extends GetView<CompressorController> {
-//   const HomePage({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       extendBodyBehindAppBar: true,
-//       appBar: PreferredSize(
-//         preferredSize: const Size.fromHeight(kToolbarHeight),
-//         child: Obx(() {
-//           if (controller.isSelectionMode.value) {
-//             return AppBar(
-//               backgroundColor: Theme.of(context).colorScheme.primary,
-//               leading: IconButton(
-//                 icon: const Icon(Icons.close),
-//                 onPressed: () => controller.toggleSelectionMode(false),
-//               ),
-//               title: Text('${controller.batchSelection.length} selected'),
-//               actions: [
-//                 IconButton(
-//                   icon: const Icon(Icons.delete_outline),
-//                   tooltip: 'Delete Selected',
-//                   onPressed: () {
-//                     Get.dialog(
-//                       AlertDialog(
-//                         title: const Text('Delete Images?'),
-//                         content: Text(
-//                           'Are you sure you want to delete ${controller.batchSelection.length} selected image(s)? This cannot be undone.',
-//                         ),
-//                         actions: [
-//                           TextButton(
-//                             onPressed: () => Navigator.of(context).pop(),
-//                             child: const Text('Cancel'),
-//                           ),
-//                           FilledButton(
-//                             onPressed: () {
-//                               controller.deleteBatchSelection();
-//                               Navigator.of(context).pop();
-//                             },
-//                             child: const Text('Delete'),
-//                           ),
-//                         ],
-//                       ),
-//                     );
-//                   },
-//                 ),
-//                 IconButton(
-//                   icon: const Icon(Icons.select_all),
-//                   tooltip: 'Select All',
-//                   onPressed: () => controller.selectAllForBatch(),
-//                 ),
-//               ],
-//             );
-//           } else {
-//             return CustomAppBar(
-//               title: 'Squeeze Pix',
-//               images: controller.images,
-//               onClearAll: controller.showClearConfirmation,
-//             );
-//           }
-//         }),
-//       ),
-//       body: Container(
-//         // Main container for the body
-//         decoration: BoxDecoration(gradient: AppTheme.gradient),
-//         child: Obx(() {
-//           if (controller.images.isEmpty) {
-//             return const EmptyState();
-//           }
-
-//           return CustomScrollView(
-//             slivers: [
-//               SliverToBoxAdapter(
-//                 child: SizedBox(
-//                   height: Get.mediaQuery.padding.top + kToolbarHeight,
-//                 ),
-//               ),
-//               const SliverToBoxAdapter(child: SavingsCard()),
-//               Obx(() {
-//                 // This Obx ensures the grid and its children rebuild
-//                 // when the batch selection list changes.
-//                 final _ = controller.batchSelection.length;
-//                 return const ImageGrid();
-//               }),
-//               // 👇 Moved this batch card section inside scroll view
-//               SliverPadding(
-//                 padding: const EdgeInsets.all(12),
-//                 sliver: SliverToBoxAdapter(
-//                   child: Card(
-//                     child: Container(
-//                       decoration: BoxDecoration(
-//                         gradient: AppTheme.gradient.scale(0.8),
-//                         borderRadius: BorderRadius.circular(12),
-//                       ),
-//                       child: Padding(
-//                         padding: const EdgeInsets.all(20.0),
-//                         child: Column(
-//                           children: [
-//                             Text(
-//                               'Batch Quality: ${controller.batchQuality.value}%',
-//                               style: Theme.of(context).textTheme.titleMedium
-//                                   ?.copyWith(
-//                                     color: Theme.of(
-//                                       context,
-//                                     ).colorScheme.onPrimary,
-//                                     fontWeight: FontWeight.bold,
-//                                   ),
-//                             ),
-//                             const SizedBox(height: 12),
-//                             CompressionSlider(
-//                               value: controller.batchQuality.value.toDouble(),
-//                               onChanged: controller.isCompressing.value
-//                                   ? null
-//                                   : (v) => controller.batchQuality.value = v
-//                                         .round(),
-//                             ),
-//                             const SizedBox(height: 8),
-//                             SwitchListTile(
-//                               title: Text(
-//                                 'Strip Image Metadata (EXIF)',
-//                                 style: TextStyle(
-//                                   color: Theme.of(
-//                                     context,
-//                                   ).colorScheme.onPrimary,
-//                                 ),
-//                               ),
-//                               value: controller.stripExif.value,
-//                               onChanged: (val) =>
-//                                   controller.stripExif.value = val,
-//                               activeThumbColor: Theme.of(
-//                                 context,
-//                               ).colorScheme.secondary,
-//                               dense: true,
-//                             ),
-//                             const SizedBox(height: 16),
-
-//                             const UnitBannerAdsWidget(),
-//                             const SizedBox(height: 16),
-//                             Obx(() {
-//                               final count = controller.isSelectionMode.value
-//                                   ? controller.batchSelection.length
-//                                   : controller.images.length;
-//                               return PrimaryButton(
-//                                 label: controller.isCompressing.value
-//                                     ? 'Compressing...'
-//                                     : 'Compress ($count)',
-//                                 onPressed: controller.isCompressing.value
-//                                     ? () {}
-//                                     : () => Get.dialog(
-//                                         const BatchOptionsDialog(),
-//                                       ),
-//                                 icon: Icons.compress,
-//                               );
-//                             }),
-//                           ],
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//               ),
-//             ],
-//           );
-//         }),
-//       ), // Closing for the main Container and outer Obx
-//       bottomNavigationBar: const BottomActionBar(),
-//     );
-//   }
-// }
-
+import 'dart:io';
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:squeeze_pix/controllers/compressor_controller.dart';
 import 'package:squeeze_pix/controllers/home_controller.dart';
+import 'package:squeeze_pix/controllers/history_screen.dart';
+import 'package:squeeze_pix/controllers/pixel_lab_screen.dart';
 import 'package:squeeze_pix/pages/editor_hub.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
-import 'package:squeeze_pix/widgets/shimmer_button.dart';
+import 'package:squeeze_pix/controllers/glassmorphic_button.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  final List<Map<String, dynamic>> tabs = const [
-    {"icon": Icons.home, "label": "Home"},
-    {"icon": Icons.crop_original, "label": "DP"},
-    {"icon": Icons.portrait, "label": "ID"},
-    {"icon": Icons.mood, "label": "Meme"},
-    {"icon": Icons.auto_awesome, "label": "AI"},
-  ];
-
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(HomeController());
+    final homeController = Get.put(HomeController());
+    // Ensure CompressorController is initialized for the HistoryScreen
+    Get.put(CompressorController());
+
+    final List<Widget> _pages = [
+      const ImageGridPage(),
+      const PixelLabScreen(),
+      const HistoryScreen(),
+    ];
 
     return Scaffold(
       extendBody: true,
@@ -212,56 +31,112 @@ class HomeScreen extends StatelessWidget {
         decoration: BoxDecoration(gradient: AppTheme.gradient),
         child: Obx(
           () => IndexedStack(
-            index: controller.tabIndex.value,
-            children: List.generate(
-              tabs.length,
-              (i) => Center(
-                child: Text(
-                  tabs[i]["label"],
-                  style: const TextStyle(fontSize: 40, color: Colors.white),
-                ),
-              ),
-            ),
+            index: homeController.tabIndex.value,
+            children: _pages,
           ),
         ),
       ),
-      floatingActionButton: ShimmerButton(
-        onPressed: () => Get.to(() => const EditorHub()),
-        child: const Text("Compress Now", style: TextStyle(fontSize: 18)),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: GlassBottomNav(),
+      bottomNavigationBar: GlassBottomNav(), // Using the refactored Nav Bar
     );
+  }
+}
+
+class ImageGridPage extends StatelessWidget {
+  const ImageGridPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = Get.find<HomeController>();
+    Get.put(CompressorController()); // Ensure it's available
+
+    return Obx(() {
+      if (controller.images.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.image_search, size: 80, color: Colors.white70),
+              const SizedBox(height: 20),
+              const Text(
+                'No images yet.',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+              const SizedBox(height: 20),
+              GlassmorphicButton(
+                width: 200,
+                height: 50,
+                onPressed: controller.isPicking.value
+                    ? () {}
+                    : () => controller.pickMultiple(),
+                child: Text(
+                  controller.isPicking.value ? "Loading..." : "Pick Images",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+      return SafeArea(
+        child: GridView.builder(
+          padding: const EdgeInsets.all(8),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+          ),
+          itemCount: controller.images.length,
+          itemBuilder: (context, index) {
+            final image = controller.images[index];
+            return GestureDetector(
+              onTap: () => Get.to(() => EditorHub(imageFile: image.file)),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(image.file, fit: BoxFit.cover),
+              ),
+            );
+          },
+        ),
+      );
+    });
   }
 }
 
 class GlassBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<HomeController>();
+    final homeController = Get.find<HomeController>();
     return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: BottomNavigationBar(
-          backgroundColor: Colors.white.withOpacity(0.1),
-          selectedItemColor: Colors.cyan,
-          unselectedItemColor: Colors.white70,
-          currentIndex: controller.tabIndex.value,
-          onTap: (i) => controller.tabIndex.value = i,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.crop_original),
-              label: "DP",
-            ),
-            BottomNavigationBarItem(icon: Icon(Icons.portrait), label: "ID"),
-            BottomNavigationBarItem(icon: Icon(Icons.mood), label: "Meme"),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.auto_awesome),
-              label: "AI",
-            ),
-          ],
+        child: Obx(
+          () => BottomNavigationBar(
+            backgroundColor: Colors.white.withOpacity(0.2),
+            selectedItemColor: Colors.cyan,
+            unselectedItemColor: Colors.white70,
+            currentIndex: homeController.tabIndex.value,
+            onTap: (i) => homeController.tabIndex.value = i,
+            type:
+                BottomNavigationBarType.fixed, // This makes all labels visible
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.photo_library),
+                label: "Home",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.grid_view_rounded),
+                label: "Pixel Lab",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.history),
+                label: "History",
+              ),
+            ],
+          ),
         ),
       ),
     );

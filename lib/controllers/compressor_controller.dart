@@ -67,17 +67,26 @@ class CompressorController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    widthController = TextEditingController();
+    heightController = TextEditingController();
+
+    _loadPersistedData();
+    _setupListeners();
+  }
+
+  Future<void> _loadPersistedData() async {
     final List<dynamic>? storedHistory = _box.read<List>('history');
     final List<dynamic>? storedFavorites = _box.read<List>('favorites');
     final List<dynamic>? storedImages = _box.read<List>('images');
     totalBytesSaved.value = _box.read<int>('totalBytesSaved') ?? 0;
     batchSavePath.value = _box.read<String>('batchSavePath');
 
-    widthController = TextEditingController();
-    heightController = TextEditingController();
-
     if (storedHistory != null) {
-      history.assignAll(storedHistory.map((e) => e.toString()).toList());
+      history.assignAll(
+        storedHistory
+            .map((e) => e.toString())
+            .where((p) => File(p).existsSync()),
+      );
     }
     if (storedFavorites != null) {
       favorites.assignAll(storedFavorites.map((e) => e.toString()).toList());
@@ -85,10 +94,24 @@ class CompressorController extends GetxController {
     if (storedImages != null) {
       images.assignAll(storedImages.map((e) => File(e.toString())).toList());
       if (images.isNotEmpty) {
-        selected.value = images.first;
+        // Filter out non-existent files before assigning
+        final existingImages = images
+            .where((file) => file.existsSync())
+            .toList();
+        images.assignAll(existingImages);
+
+        if (images.isNotEmpty) {
+          selected.value = images.first;
+        } else {
+          selected.value = null;
+        }
+        // Update storage with the cleaned list
+        _box.write('images', images.map((e) => e.path).toList());
       }
     }
+  }
 
+  void _setupListeners() {
     // When selected image changes, decode it for aspect ratio calculations
     ever(selected, (File? file) async {
       if (file != null) {

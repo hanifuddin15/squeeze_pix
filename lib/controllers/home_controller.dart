@@ -14,6 +14,7 @@ class HomeController extends GetxController {
   final RxList<AppImage> selection = <AppImage>[].obs;
   final RxInt tabIndex = 0.obs;
   final RxInt totalSavings = 0.obs;
+  final RxBool isPicking = false.obs;
   final GetStorage box = GetStorage();
 
   final CompressorService compressor = CompressorService();
@@ -27,11 +28,17 @@ class HomeController extends GetxController {
   }
 
   void pickMultiple() async {
-    final picked = await ImagePicker().pickMultiImage();
-    if (picked.isNotEmpty) {
-      images.addAll(picked.map((x) => AppImage(File(x.path))));
+    if (isPicking.value) return;
+    try {
+      isPicking.value = true;
+      final picked = await ImagePicker().pickMultiImage();
+      if (picked.isNotEmpty) {
+        images.addAll(picked.map((x) => AppImage(File(x.path))));
+      }
+      saveImages();
+    } finally {
+      isPicking.value = false;
     }
-    saveImages();
   }
 
   void toggleFavorite(AppImage image) {
