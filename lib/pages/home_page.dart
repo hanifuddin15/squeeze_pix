@@ -179,6 +179,7 @@ class _GridItem extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
+              const SizedBox(height: 20),
               Image.file(image.file, fit: BoxFit.cover),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
