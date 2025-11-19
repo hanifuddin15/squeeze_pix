@@ -1,69 +1,68 @@
-// lib/controllers/editor_controller.dart
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:squeeze_pix/controllers/iap_controller.dart';
-import 'package:squeeze_pix/pages/dp_maker.dart';
-import 'package:squeeze_pix/pages/id_photo_maker.dart';
-import 'package:squeeze_pix/pages/pro_upgrade_screen.dart';
-import 'package:squeeze_pix/services/bg_remover_service.dart';
-import 'package:squeeze_pix/services/compressor_service.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:squeeze_pix/utils/snackbar.dart';
 
 class EditorController extends GetxController {
-  final Rx<File?> selected = Rxn<File>();
-  final RxInt quality = 80.obs;
-  final RxInt resizeWidth = 1920.obs;
-  final RxInt resizeHeight = 1080.obs;
-  final RxBool keepAspect = true.obs;
-  final RxBool stripExif = true.obs;
-  final RxBool enableWatermark = false.obs;
-  final RxString watermarkText = ''.obs;
-  final Rx<File?> compressed = Rxn<File>();
-  final RxBool isCompressing = false.obs;
+  final Rxn<File> originalImage = Rxn<File>();
+  final Rxn<File> editedImage = Rxn<File>();
 
-  final CompressorService compressor = CompressorService();
-  final BgRemoverService bgRemover = BgRemoverService();
-  final IAPController iap = Get.find();
+  // This will be called when the EditorHub is opened
+  void setImage(File image) {
+    originalImage.value = image;
+    editedImage.value = image; // Initially, edited is same as original
+  }
 
-  Future<void> compress() async {
-    if (selected.value == null) return;
-    isCompressing.value = true;
-    try {
-      compressed.value = await compressor.compress(
-        file: selected.value!,
-        quality: quality.value,
-        targetWidth: resizeWidth.value,
-        targetHeight: resizeHeight.value,
-        format: 'jpg',
+  Future<void> cropImage() async {
+    if (editedImage.value == null) return;
+
+    final croppedFile = await ImageCropper().cropImage(
+      sourcePath: editedImage.value!.path,
+      aspectRatio: const CropAspectRatio(
+        ratioX: 1,
+        ratioY: 1,
+      ), // default = square
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Image',
+          toolbarColor: Get.theme.colorScheme.primary,
+          toolbarWidgetColor: Colors.white,
+          lockAspectRatio: false,
+        ),
+        IOSUiSettings(title: 'Crop Image'),
+      ],
+    );
+
+    if (croppedFile != null) {
+      editedImage.value = File(croppedFile.path);
+      showSuccessSnackkbar(message: 'Image cropped successfully.');
+    }
+  }
+
+  void resizeImage() {
+    // TODO: Implement resize logic, perhaps with a bottom sheet for input
+    showWarningSnackkbar(message: 'Resize feature coming soon!');
+  }
+
+  void compressImage() {
+    // TODO: Implement compress logic, perhaps with a bottom sheet for quality slider
+    showWarningSnackkbar(message: 'Compress feature coming soon!');
+  }
+
+  void convertImage() {
+    // TODO: Implement convert logic (e.g., to PNG, WEBP)
+    showWarningSnackkbar(message: 'Convert feature coming soon!');
+  }
+
+  void shareImage() {
+    if (editedImage.value != null) {
+      SharePlus.instance.share(
+        ShareParams(files: [XFile(editedImage.value!.path)]),
       );
-    } finally {
-      isCompressing.value = false;
+    } else {
+      showErrorSnackkbar(message: 'No image to share.');
     }
   }
-
-  Future<void> removeBackground() async {
-    if (!iap.isUltra.value) {
-      Get.to(() => ProUpgradeScreen());
-      return;
-    }
-    isCompressing.value = true;
-    try {
-      compressed.value = await bgRemover.remove(selected.value!);
-    } finally {
-      isCompressing.value = false;
-    }
-  }
-
-  Future<void> makeDP() async {
-    Get.to(() => DPMaker(image: selected.value!));
-  }
-
-  Future<void> makeIDPhoto() async {
-    if (!iap.isPro.value) {
-      Get.to(() => ProUpgradeScreen());
-      return;
-    }
-    Get.to(() => IDPhotoMaker(image: selected.value!));
-  }
-
-  void toggleWatermark(bool value) => enableWatermark.value = value;
 }
