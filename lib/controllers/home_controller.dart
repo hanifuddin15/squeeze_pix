@@ -29,7 +29,9 @@ class HomeController extends GetxController {
     Get.lazyPut<UnityAdsController>(() => UnityAdsController());
     loadImages();
     loadFavorites();
-    _loadTheme();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadTheme();
+    });
     totalSavings.value = box.read('savings') ?? 0;
   }
 
