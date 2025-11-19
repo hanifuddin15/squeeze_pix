@@ -617,6 +617,21 @@ class CompressorController extends GetxController {
     }
   }
 
+  Future<void> compressAndShare() async {
+    // First, run the compression logic.
+    await compressAll();
+
+    // If compression was successful and a zip file was created, share it.
+    if (lastZipFile.value != null) {
+      final adsController = Get.find<UnityAdsController>();
+      adsController.showInterstitialAd(
+        onComplete: () {
+          shareZipFile(showAd: true); // Share without showing another ad
+        },
+      );
+    }
+  }
+
   //===== Internal Helper to Compress with a Specific Quality =====//
   Future<File?> _compressFileWithQuality(File file, int qualityValue) async {
     final dir = await getTemporaryDirectory();
@@ -808,16 +823,20 @@ class CompressorController extends GetxController {
   }
 
   //===== Share the Last Created ZIP File =====//
-  Future<void> shareZipFile() async {
+  Future<void> shareZipFile({bool showAd = true}) async {
     if (lastZipFile.value != null) {
-      final adsController = Get.find<UnityAdsController>();
-      adsController.showInterstitialAd(
-        onComplete: () {
-          SharePlus.instance.share(
-            ShareParams(files: [XFile(lastZipFile.value!.path)]),
-          );
-        },
-      );
+      final shareAction = () {
+        SharePlus.instance.share(
+          ShareParams(files: [XFile(lastZipFile.value!.path)]),
+        );
+      };
+
+      if (showAd) {
+        final adsController = Get.find<UnityAdsController>();
+        adsController.showInterstitialAd(onComplete: shareAction);
+      } else {
+        shareAction();
+      }
     } else if (batchSelection.isNotEmpty) {
       showWarningSnackkbar(
         title: 'Not Compressed',

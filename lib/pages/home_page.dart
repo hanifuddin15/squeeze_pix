@@ -69,6 +69,11 @@ class ImageGridPage extends StatelessWidget {
                 ? Row(
                     children: [
                       IconButton(
+                        icon: const Icon(Icons.brightness_6_outlined),
+                        onPressed: homeController.toggleTheme,
+                        tooltip: 'Toggle Theme',
+                      ),
+                      IconButton(
                         icon: const Icon(Icons.select_all),
                         onPressed: homeController.selectAll,
                         tooltip: 'Select All',
@@ -80,7 +85,11 @@ class ImageGridPage extends StatelessWidget {
                       ),
                     ],
                   )
-                : const SizedBox.shrink(),
+                : IconButton(
+                    icon: const Icon(Icons.brightness_6_outlined),
+                    onPressed: homeController.toggleTheme,
+                    tooltip: 'Toggle Theme',
+                  ),
           ),
         ],
       ),
@@ -109,6 +118,15 @@ class ImageGridPage extends StatelessWidget {
           _buildBatchActionBar(homeController, compressorController),
         ],
       ),
+      floatingActionButton: Obx(
+        () => homeController.isSelectionMode.value
+            ? const SizedBox.shrink()
+            : FloatingActionButton(
+                onPressed: homeController.pickMultiple,
+                tooltip: 'Pick Images',
+                child: const Icon(Icons.add_photo_alternate),
+              ),
+      ),
     );
   }
 }
@@ -119,7 +137,7 @@ Widget _buildBatchActionBar(
 ) {
   return Obx(
     () => AnimatedContainer(
-      height: homeController.isSelectionMode.value ? 350 : 0,
+      height: homeController.isSelectionMode.value ? 420 : 0,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       transform: Matrix4.translationValues(
@@ -419,8 +437,11 @@ class _BatchActionBar extends StatelessWidget {
 
                   const SizedBox(height: 20), // Replaced Spacer with SizedBox
                   // Action Buttons
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  Wrap(
+                    // mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    spacing: 8, // horizontal spacing
+                    // runSpacing: 12, // vertical spacing
+                    // alignment: WrapAlignment.center,
                     children: [
                       _ActionButton(
                         icon: Icons.folder_open,
@@ -433,6 +454,11 @@ class _BatchActionBar extends StatelessWidget {
                         onTap: onCompress,
                       ),
                       _ActionButton(
+                        icon: Icons.mobile_screen_share,
+                        label: 'Compress And Share',
+                        onTap: compressorController.compressAndShare,
+                      ),
+                      _ActionButton(
                         icon: Icons.share,
                         label: 'Share',
                         onTap: onShare,
@@ -441,6 +467,15 @@ class _BatchActionBar extends StatelessWidget {
                         icon: Icons.delete_outline,
                         label: 'Delete',
                         onTap: onDelete,
+                      ),
+                      Obx(
+                        () => _ActionButton(
+                          icon: Icons.archive_outlined,
+                          label: 'Extract',
+                          onTap: compressorController.extractZipFile,
+                          isEnabled:
+                              compressorController.lastZipFile.value != null,
+                        ),
                       ),
                     ],
                   ),
@@ -458,30 +493,41 @@ class _ActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final bool isEnabled;
 
   const _ActionButton({
     required this.icon,
     required this.label,
     required this.onTap,
+    this.isEnabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: Colors.white, size: 28),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(color: Colors.white, fontSize: 12),
+    return SizedBox(
+      width: 90,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Opacity(
+          opacity: isEnabled ? 1.0 : 0.4,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: Colors.white, size: 28),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

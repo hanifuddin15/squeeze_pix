@@ -1,5 +1,6 @@
 // lib/controllers/home_controller.dart
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
@@ -28,6 +29,7 @@ class HomeController extends GetxController {
     Get.lazyPut<UnityAdsController>(() => UnityAdsController());
     loadImages();
     loadFavorites();
+    _loadTheme();
     totalSavings.value = box.read('savings') ?? 0;
   }
 
@@ -137,5 +139,16 @@ class HomeController extends GetxController {
       // Clear selection after the process is complete
       clearSelection();
     }
+  }
+
+  void toggleTheme() {
+    final isDark = Get.isDarkMode;
+    Get.changeThemeMode(isDark ? ThemeMode.light : ThemeMode.dark);
+    box.write('isDarkMode', !isDark);
+  }
+
+  void _loadTheme() {
+    final isDarkMode = box.read<bool>('isDarkMode') ?? false;
+    Get.changeThemeMode(isDarkMode ? ThemeMode.dark : ThemeMode.light);
   }
 }
