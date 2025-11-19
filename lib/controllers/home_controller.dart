@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:squeeze_pix/controllers/compressor_controller.dart';
+import 'package:squeeze_pix/controllers/unity_ads_controller.dart';
 import 'package:squeeze_pix/models/app_images_model.dart';
 import 'package:squeeze_pix/pages/editor_hub.dart';
 import 'package:squeeze_pix/services/compressor_service.dart';
@@ -22,6 +24,8 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    Get.lazyPut<CompressorController>(() => CompressorController());
+    Get.lazyPut<UnityAdsController>(() => UnityAdsController());
     loadImages();
     loadFavorites();
     totalSavings.value = box.read('savings') ?? 0;
@@ -60,29 +64,78 @@ class HomeController extends GetxController {
     }
   }
 
-  void deleteSelection() {
-    images.removeWhere((img) => selection.contains(img));
+  // Calculate total size of selected images
+  int get selectionTotalSize {
+    if (selection.isEmpty) return 0;
+    return selection
+        .map((image) => image.file.lengthSync())
+        .reduce((a, b) => a + b);
+  }
+
+  void handleImageTap(AppImage image) {
+    if (isSelectionMode.value) {
+      toggleSelection(image);
+    } else {
+      // Navigate to single image editor
+      Get.to(() => EditorHub(imageFile: image.file));
+    }
+  }
+
+  void selectAll() {
+    selection.assignAll(images);
+  }
+
+  void clearSelection() {
     selection.clear();
     isSelectionMode.value = false;
+  }
+
+  void deleteSelection() {
+    images.removeWhere((img) => selection.contains(img));
+    clearSelection();
     saveImages();
+    Get.snackbar(
+      'Deleted',
+      'Selected images have been removed.',
+      snackPosition: SnackPosition.BOTTOM,
+    );
   }
 
   void saveImages() => box.write('images', images.map((e) => e.path).toList());
   void loadImages() {
     final imagePaths = box.read<List>('images')?.cast<String>() ?? [];
-    images.assignAll(imagePaths.map((p) => AppImage(File(p))));
+    final existingImages = <AppImage>[];
+    for (final path in imagePaths) {
+      final file = File(path);
+      if (file.existsSync()) {
+        existingImages.add(AppImage(file));
+      }
+    }
+    images.assignAll(existingImages);
   }
 
   void saveFavorites() =>
       box.write('favorites', favorites.map((e) => e.path).toList());
   void loadFavorites() {
     final favoritePaths = box.read<List>('favorites')?.cast<String>() ?? [];
-    favorites.assignAll(favoritePaths.map((p) => AppImage(File(p))));
+    favorites.assignAll(
+      favoritePaths
+          .where((p) => File(p).existsSync())
+          .map((p) => AppImage(File(p))),
+    );
   }
 
-  void compressBatch() {
+  Future<void> compressBatch() async {
     if (selection.isNotEmpty) {
-      Get.to(() => EditorHub());
+      final compressor = Get.find<CompressorController>();
+      // Pass the selected files to the compressor controller
+      compressor.batchSelection.assignAll(
+        selection.map((appImage) => appImage.file).toList(),
+      );
+      // Trigger the batch compression process
+      await compressor.compressAll();
+      // Clear selection after the process is complete
+      clearSelection();
     }
   }
 }

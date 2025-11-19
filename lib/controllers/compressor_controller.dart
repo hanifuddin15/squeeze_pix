@@ -6,7 +6,6 @@ import 'package:archive/archive_io.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter/widgets.dart';
-import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -15,7 +14,92 @@ import 'package:path_provider/path_provider.dart';
 // ignore: depend_on_referenced_packages
 import 'package:image/image.dart' as img;
 import 'package:share_plus/share_plus.dart';
+import 'package:squeeze_pix/utils/snackbar.dart';
 import 'package:squeeze_pix/widgets/clear_all_alert.dart';
+import 'package:get/get.dart';
+
+/// A data class to pass parameters to the isolate.
+class _BatchCompressParams {
+  final List<File> imagesToCompress;
+  final int batchCompressionMode;
+  final int? batchTargetSizeKB;
+  final int batchQuality;
+  final bool stripExif;
+
+  _BatchCompressParams({
+    required this.imagesToCompress,
+    required this.batchCompressionMode,
+    this.batchTargetSizeKB,
+    required this.batchQuality,
+    required this.stripExif,
+  });
+}
+
+/// This is a top-level function that will run in a separate isolate.
+Future<List<Uint8List>> _compressBatchIsolate(
+  _BatchCompressParams params,
+) async {
+  final List<Uint8List> compressedBytesList = [];
+
+  for (final file in params.imagesToCompress) {
+    // Read file bytes
+    final imageBytes = await file.readAsBytes();
+
+    // Decode using image package (safe in isolate)
+    final decoded = img.decodeImage(imageBytes);
+    if (decoded == null) {
+      compressedBytesList.add(imageBytes);
+      continue;
+    }
+
+    Uint8List resultBytes;
+
+    // --------------------------
+    // TARGET SIZE MODE
+    // --------------------------
+    if (params.batchCompressionMode == 1 && params.batchTargetSizeKB != null) {
+      int quality = 95;
+
+      resultBytes = Uint8List.fromList(
+        img.encodeJpg(
+          decoded,
+          quality: quality,
+          //  params.stripExif ? null : decoded.exif,
+        ),
+      );
+
+      // Reduce quality until target KB is achieved
+      while (resultBytes.lengthInBytes / 1024 > params.batchTargetSizeKB! &&
+          quality > 10) {
+        quality -= 5;
+
+        resultBytes = Uint8List.fromList(
+          img.encodeJpg(
+            decoded,
+            quality: quality,
+            // exif: params.stripExif ? null : decoded.exif,
+          ),
+        );
+      }
+    }
+    // --------------------------
+    // QUALITY MODE
+    // --------------------------
+    else {
+      resultBytes = Uint8List.fromList(
+        img.encodeJpg(
+          decoded,
+          quality: params.batchQuality,
+          // exif: params.stripExif ? null : decoded.exif,
+        ),
+      );
+    }
+
+    compressedBytesList.add(resultBytes);
+  }
+
+  return compressedBytesList;
+}
 
 class CompressorController extends GetxController {
   final _box = GetStorage();
@@ -49,6 +133,10 @@ class CompressorController extends GetxController {
   final Rxn<int> resizeHeight = Rxn<int>();
   final RxBool keepAspectRatio = true.obs;
   final RxBool stripExif = true.obs;
+
+  // New Batch Feature States
+  final RxInt batchCompressionMode = 0.obs; // 0 for Quality, 1 for Target Size
+  final Rxn<int> batchTargetSizeKB = Rxn<int>();
 
   // Watermark states
   final RxBool enableWatermark = false.obs;
@@ -395,10 +483,12 @@ class CompressorController extends GetxController {
 
   //===== Compress Selected Image with an Ad =====//
   Future<void> compressSelectedWithAd() async {
-    final adsController = Get.find<AdsController>();
-    adsController.showInterstitial(() async {
-      await compressSelected();
-    });
+    final adsController = Get.find<UnityAdsController>();
+    adsController.showInterstitialAd(
+      onComplete: () async {
+        await compressSelected();
+      },
+    );
   }
 
   //===== Compress All Selected Images into a ZIP =====//
@@ -406,16 +496,19 @@ class CompressorController extends GetxController {
     final imagesToCompress = isSelectionMode.value ? batchSelection : images;
 
     if (imagesToCompress.isEmpty) {
-      Get.snackbar('No Images Selected', 'Please select images to compress.');
+      showWarningSnackkbar(
+        message: 'No images selected to compress',
+        title: 'No Images Selected',
+      );
       return;
     }
 
-    if (imagesToCompress.length > 3 && !batchAccessGranted.value) {
-      final adsController = Get.find<AdsController>();
-      adsController.showRewarded(
+    if (imagesToCompress.length > 2 && !batchAccessGranted.value) {
+      final adsController = Get.find<UnityAdsController>();
+      adsController.showInterstitialAd(
         onComplete: () async {
           batchAccessGranted.value = true;
-          await compressAll();
+          await compressAll(); // Re-run the check with access granted
         },
       );
       return;
@@ -430,7 +523,10 @@ class CompressorController extends GetxController {
       saveDir = batchSavePath.value;
       if (saveDir == null) {
         isCompressing.value = false;
-        Get.snackbar('Cancelled', 'No save location was selected.');
+        showErrorSnackkbar(
+          message: 'No save location was selected.',
+          title: 'Cancelled',
+        );
         return;
       }
     }
@@ -443,40 +539,53 @@ class CompressorController extends GetxController {
 
     if (!status.isGranted) {
       isCompressing.value = false;
-      Get.snackbar(
-        'Permission Denied',
-        'Storage permission is required to save the ZIP file.',
+      showWarningSnackkbar(
+        title: 'Permission Denied',
+        message: 'Storage permission is required to save the ZIP file.',
       );
+
       return;
     }
 
     try {
+      showWarningSnackkbar(
+        message:
+            'Compressing ${imagesToCompress.length} images. This may take a moment...',
+        title: 'Starting Batch Compression',
+      );
+
+      // Prepare parameters for the isolate
+      final params = _BatchCompressParams(
+        imagesToCompress: imagesToCompress,
+        batchCompressionMode: batchCompressionMode.value,
+        batchTargetSizeKB: batchTargetSizeKB.value,
+        batchQuality: batchQuality.value,
+        stripExif: stripExif.value,
+      );
+
+      // Run heavy compression in a separate isolate
+      final List<Uint8List> compressedResults = await compute(
+        _compressBatchIsolate,
+        params,
+      );
+
       final archive = Archive();
       int count = 0;
       int totalReduction = 0;
       int totalOriginalSize = 0;
       int totalCompressedSize = 0;
 
-      for (final file in imagesToCompress) {
-        // Use batchQuality for batch compression
-        final compressedFile = await _compressFileWithQuality(
-          file,
-          batchQuality.value,
+      for (int i = 0; i < compressedResults.length; i++) {
+        final originalFile = imagesToCompress[i];
+        final compressedBytes = compressedResults[i];
+        final archiveFile = ArchiveFile(
+          '${DateTime.now().millisecondsSinceEpoch}_${count++}.jpg',
+          compressedBytes.length,
+          compressedBytes,
         );
-
-        if (compressedFile != null) {
-          final archiveFile = ArchiveFile(
-            '${DateTime.now().millisecondsSinceEpoch}_${count++}.jpg',
-            compressedFile.lengthSync(),
-            await compressedFile.readAsBytes(),
-          );
-          archive.addFile(archiveFile);
-          final originalSize = file.lengthSync();
-          final newSize = compressedFile.lengthSync();
-          totalOriginalSize += originalSize;
-          totalCompressedSize += newSize;
-          totalReduction += originalSize - newSize;
-        }
+        archive.addFile(archiveFile);
+        totalOriginalSize += originalFile.lengthSync();
+        totalCompressedSize += compressedBytes.length;
       }
 
       final zipEncoder = ZipEncoder();
@@ -489,19 +598,22 @@ class CompressorController extends GetxController {
       await zipFile.writeAsBytes(zipData);
 
       lastZipFile.value = zipFile;
+      totalReduction = totalOriginalSize - totalCompressedSize;
       batchStats.value = {
         'count': count,
         'sizeReduction': totalReduction,
         'totalOriginalSize': totalOriginalSize,
         'totalCompressedSize': totalCompressedSize,
       };
-      Get.snackbar('Success', 'Batch compression complete. ZIP file saved.');
+      showSuccessSnackkbar(
+        message: 'Batch compression complete. ZIP file saved.',
+      );
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred during batch compression: $e');
+      showErrorSnackkbar(
+        message: 'An error occurred during batch compression: $e',
+      );
     } finally {
       isCompressing.value = false;
-      batchAccessGranted.value = false; // Reset access after use
-      toggleSelectionMode(false); // Exit selection mode
     }
   }
 
@@ -542,11 +654,13 @@ class CompressorController extends GetxController {
       try {
         batchSavePath.value = selectedDirectory;
         _box.write('batchSavePath', selectedDirectory);
-        Get.snackbar('Success', 'Batch save location updated.');
+        showSuccessSnackkbar(
+          message: 'Batch save location set to $selectedDirectory.',
+        );
         debugPrint('Selected save path: $selectedDirectory');
       } catch (e) {
         debugPrint('Failed to set batch save path: $e');
-        Get.snackbar('Error', 'Failed to set save location.');
+        showErrorSnackkbar(message: 'Failed to set save location');
       }
     }
   }
@@ -554,10 +668,12 @@ class CompressorController extends GetxController {
   //===== Open the Location of the Last Compressed File =====//
   Future<void> openLastCompressedLocation() async {
     if (lastCompressed.value != null) {
-      final adsController = Get.find<AdsController>();
-      adsController.showInterstitial(() {
-        OpenFilex.open(lastCompressed.value!.path);
-      });
+      final adsController = Get.find<UnityAdsController>();
+      adsController.showInterstitialAd(
+        onComplete: () {
+          OpenFilex.open(lastCompressed.value!.path);
+        },
+      );
     }
   }
 
@@ -565,54 +681,61 @@ class CompressorController extends GetxController {
   Future<void> extractZipFile() async {
     if (lastZipFile.value == null) return;
 
-    final adsController = Get.find<AdsController>();
-    adsController.showInterstitial(() async {
-      // Request storage permission before proceeding
-      var status = await Permission.manageExternalStorage.status;
-      if (!status.isGranted) {
-        status = await Permission.manageExternalStorage.request();
-      }
+    final adsController = Get.find<UnityAdsController>();
+    adsController.showInterstitialAd(
+      onComplete: () async {
+        // Request storage permission before proceeding
+        var status = await Permission.manageExternalStorage.status;
+        if (!status.isGranted) {
+          status = await Permission.manageExternalStorage.request();
+        }
 
-      if (!status.isGranted) {
-        Get.snackbar(
-          'Permission Denied',
-          'Storage permission is required to extract files.',
-        );
-        return;
-      }
-
-      try {
-        String? saveDir = batchSavePath.value;
-        if (saveDir == null) {
-          Get.snackbar(
-            'No Save Location',
-            'Please set a save location before extracting.',
+        if (!status.isGranted) {
+          showWarningSnackkbar(
+            title: 'Permission Denied',
+            message: 'Storage permission is required to extract files',
           );
-          await setBatchSavePath();
-          saveDir = batchSavePath.value;
-          if (saveDir == null) return;
+
+          return;
         }
 
-        final inputStream = InputFileStream(lastZipFile.value!.path);
-        final archive = ZipDecoder().decodeStream(inputStream);
+        try {
+          String? saveDir = batchSavePath.value;
+          if (saveDir == null) {
+            showErrorSnackkbar(
+              title: 'No Save Location',
+              message: 'Please set a save location.',
+            );
 
-        Get.snackbar('Extracting...', 'Extracting files, please wait.');
-
-        for (final file in archive.files) {
-          final filename = file.name;
-          if (file.isFile) {
-            final data = file.content as List<int>;
-            final path = '$saveDir/$filename';
-            final outFile = File(path);
-            await outFile.create(recursive: true);
-            await outFile.writeAsBytes(data);
+            await setBatchSavePath();
+            saveDir = batchSavePath.value;
+            if (saveDir == null) return;
           }
+
+          final inputStream = InputFileStream(lastZipFile.value!.path);
+          final archive = ZipDecoder().decodeStream(inputStream);
+          showSuccessSnackkbar(
+            message: 'Extracting files, please wait.',
+            title: 'Extracting...',
+          );
+
+          for (final file in archive.files) {
+            final filename = file.name;
+            if (file.isFile) {
+              final data = file.content as List<int>;
+              final path = '$saveDir/$filename';
+              final outFile = File(path);
+              await outFile.create(recursive: true);
+              await outFile.writeAsBytes(data);
+            }
+          }
+          showSuccessSnackkbar(message: 'Files extracted successfully.');
+        } catch (e) {
+          showErrorSnackkbar(message: 'Failed to extract files: $e');
+          debugPrint('Failed to extract files: $e');
         }
-        Get.snackbar('Success', 'Files extracted to your selected folder.');
-      } catch (e) {
-        Get.snackbar('Error', 'Failed to extract files: $e');
-      }
-    });
+      },
+    );
   }
 
   //===== Toggle Batch Selection Mode =====//
@@ -643,7 +766,10 @@ class CompressorController extends GetxController {
   //===== Delete Batch Selection =====//
   void deleteBatchSelection() {
     if (batchSelection.isEmpty) {
-      Get.snackbar('No Images', 'No images selected to delete.');
+      showSuccessSnackkbar(
+        message: 'No images selected to delete.',
+        title: 'No Images',
+      );
       return;
     }
 
@@ -660,9 +786,9 @@ class CompressorController extends GetxController {
     // Persist changes and reset selection state
     _box.write('images', images.map((e) => e.path).toList());
     toggleSelectionMode(false); // This also clears batchSelection
-    Get.snackbar(
-      'Deleted',
-      '${imagesToDelete.length} image(s) have been removed.',
+    showSuccessSnackkbar(
+      message: '${imagesToDelete.length} image(s) deleted.',
+      title: 'Deleted',
     );
   }
 
@@ -671,29 +797,36 @@ class CompressorController extends GetxController {
     try {
       final result = await OpenFilex.open(path);
       if (result.type != ResultType.done) {
-        Get.snackbar('Error', 'Could not open file: ${result.message}');
+        showErrorSnackkbar(
+          message: 'Could not open file: ${result.message}',
+          title: 'Error',
+        );
       }
     } catch (e) {
-      Get.snackbar('Error', 'File not found or could not be opened.');
+      showErrorSnackkbar(message: 'File not found or could not be opened $e');
     }
   }
 
   //===== Share the Last Created ZIP File =====//
   Future<void> shareZipFile() async {
     if (lastZipFile.value != null) {
-      final adsController = Get.find<AdsController>();
-      adsController.showInterstitial(() {
-        SharePlus.instance.share(
-          ShareParams(
-            files: [XFile(lastZipFile.value!.path)],
-            text: 'Here is my compressed images ZIP from Squeeze Pix!',
-          ),
-        );
-      });
+      final adsController = Get.find<UnityAdsController>();
+      adsController.showInterstitialAd(
+        onComplete: () {
+          SharePlus.instance.share(
+            ShareParams(files: [XFile(lastZipFile.value!.path)]),
+          );
+        },
+      );
+    } else if (batchSelection.isNotEmpty) {
+      showWarningSnackkbar(
+        title: 'Not Compressed',
+        message:
+            'Please compress the selected images first to create a ZIP file to share.',
+      );
     }
   }
 
-  //===== Run a Callback on the Main UI Thread =====//
   /// Ensures a callback runs on the main isolate, which is required for UI operations.
   void runOnMainThread(VoidCallback callback) {
     WidgetsBinding.instance.addPostFrameCallback((_) => callback());
