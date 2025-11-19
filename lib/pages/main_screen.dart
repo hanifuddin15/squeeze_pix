@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:squeeze_pix/controllers/history_screen.dart';
-import 'package:squeeze_pix/controllers/pixel_lab_screen.dart';
+import 'package:squeeze_pix/pages/pixel_lab_screen.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 
 // TODO: Make sure to import your main compression screen.

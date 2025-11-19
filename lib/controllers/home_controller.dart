@@ -1,5 +1,6 @@
 // lib/controllers/home_controller.dart
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -44,6 +45,20 @@ class HomeController extends GetxController {
         images.addAll(picked.map((x) => AppImage(File(x.path))));
       }
       saveImages();
+    } finally {
+      isPicking.value = false;
+    }
+  }
+
+  void pickFromCamera() async {
+    if (isPicking.value) return;
+    try {
+      isPicking.value = true;
+      final picked = await ImagePicker().pickImage(source: ImageSource.camera);
+      if (picked != null) {
+        images.add(AppImage(File(picked.path)));
+        saveImages();
+      }
     } finally {
       isPicking.value = false;
     }
@@ -152,5 +167,59 @@ class HomeController extends GetxController {
   void _loadTheme() {
     final isDarkMode = box.read<bool>('isDarkMode') ?? false;
     Get.changeThemeMode(isDarkMode ? ThemeMode.dark : ThemeMode.light);
+  }
+
+  void showImageSourceDialog() {
+    Get.bottomSheet(
+      // Set background to transparent to allow BackdropFilter to show
+      ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(25),
+              ),
+              border: Border(
+                top: BorderSide(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 1.5,
+                ),
+              ),
+            ),
+            child: Wrap(
+              children: <Widget>[
+                ListTile(
+                  leading: const Icon(Icons.photo_library, color: Colors.white),
+                  title: const Text(
+                    'Pick from Gallery',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onTap: () {
+                    Get.back();
+                    pickMultiple();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.camera_alt, color: Colors.white),
+                  title: const Text(
+                    'Use Camera',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onTap: () {
+                    Get.back();
+                    pickFromCamera();
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      backgroundColor: Colors.transparent, // Important for glassmorphic effect
+    );
   }
 }

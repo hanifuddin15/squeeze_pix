@@ -6,7 +6,7 @@ import 'package:squeeze_pix/models/app_images_model.dart';
 import 'package:squeeze_pix/controllers/compressor_controller.dart';
 import 'package:squeeze_pix/controllers/home_controller.dart';
 import 'package:squeeze_pix/controllers/history_screen.dart';
-import 'package:squeeze_pix/controllers/pixel_lab_screen.dart';
+import 'package:squeeze_pix/pages/pixel_lab_screen.dart';
 import 'package:squeeze_pix/utils/formatters.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/controllers/glassmorphic_button.dart';
@@ -85,10 +85,19 @@ class ImageGridPage extends StatelessWidget {
                       ),
                     ],
                   )
-                : IconButton(
-                    icon: const Icon(Icons.brightness_6_outlined),
-                    onPressed: homeController.toggleTheme,
-                    tooltip: 'Toggle Theme',
+                : Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.add_photo_alternate_outlined),
+                        onPressed: homeController.showImageSourceDialog,
+                        tooltip: 'Add Images',
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.brightness_6_outlined),
+                        onPressed: homeController.toggleTheme,
+                        tooltip: 'Toggle Theme',
+                      ),
+                    ],
                   ),
           ),
         ],
@@ -117,15 +126,6 @@ class ImageGridPage extends StatelessWidget {
           ),
           _buildBatchActionBar(homeController, compressorController),
         ],
-      ),
-      floatingActionButton: Obx(
-        () => homeController.isSelectionMode.value
-            ? const SizedBox.shrink()
-            : FloatingActionButton(
-                onPressed: homeController.pickMultiple,
-                tooltip: 'Pick Images',
-                child: const Icon(Icons.add_photo_alternate),
-              ),
       ),
     );
   }
@@ -233,21 +233,58 @@ class _EmptyState extends StatelessWidget {
             style: TextStyle(color: Colors.white70, fontSize: 16),
           ),
           const SizedBox(height: 30),
-          GlassmorphicButton(
-            width: 200,
-            height: 50,
-            onPressed: homeController.isPicking.value
-                ? () {}
-                : homeController.pickMultiple,
-            child: Obx(
-              () => Text(
-                homeController.isPicking.value ? "Loading..." : "Pick Images",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+          Obx(
+            () => homeController.isPicking.value
+                ? const CircularProgressIndicator()
+                : Column(
+                    children: [
+                      GlassmorphicButton(
+                        width: 220,
+                        height: 50,
+                        onPressed: homeController.pickMultiple,
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.photo_library_outlined,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              "Pick from Gallery",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      GlassmorphicButton(
+                        width: 220,
+                        height: 50,
+                        onPressed: homeController.pickFromCamera,
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.camera_alt_outlined,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              "Use Camera",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         ],
       ),
