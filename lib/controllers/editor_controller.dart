@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -27,13 +28,44 @@ class EditorController extends GetxController {
   final Rxn<int> targetSizeKB = Rxn<int>(100);
   // Effects
   final RxDouble brightness = 0.0.obs; // -100 to 100
-  final RxDouble contrast = 1.0.obs; // 0 to 4
+  final RxDouble contrast = 1.0.obs; // 0 to 2
+  final RxDouble saturation = 1.0.obs; // 0 to 2
+  final RxDouble hue = 0.0.obs; // -180 to 180
+  final Rx<ColorFilter> activeColorFilter = const ColorFilter.mode(
+    Colors.transparent,
+    BlendMode.color,
+  ).obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Listen to all effect sliders to update the UI in real-time
+    everAll([
+      brightness,
+      contrast,
+      saturation,
+      hue,
+    ], (_) => _updateColorFilter());
+  }
 
   // This will be called when the EditorHub is opened
   void setImage(File image) {
     originalImage.value = image;
     editedImage.value = image; // Initially, edited is same as original
     resetTools();
+    resetEffects();
+  }
+
+  void resetEffects() {
+    brightness.value = 0.0;
+    contrast.value = 1.0;
+    saturation.value = 1.0;
+    hue.value = 0.0;
+    // This will be updated by the everAll listener
+    activeColorFilter.value = const ColorFilter.mode(
+      Colors.transparent,
+      BlendMode.color,
+    );
   }
 
   void setActiveTool(EditorTool tool) {
@@ -192,35 +224,137 @@ class EditorController extends GetxController {
     activeTool.value = EditorTool.none;
   }
 
-  Future<void> applyEffect(img.Image Function(img.Image) effect) async {
+  Future<void> applyEffect(img.Image Function(img.Image)? effect) async {
     if (editedImage.value == null) return;
     final imageBytes = await editedImage.value!.readAsBytes();
     final image = img.decodeImage(imageBytes);
     if (image == null) return;
 
-    img.Image newImage;
-    // Handle simple effects
-    if (effect == img.grayscale ||
-        effect == img.sepia ||
-        effect == img.invert) {
+    img.Image newImage = image;
+
+    // If a one-tap effect function is provided, apply it first.
+    if (effect != null) {
       newImage = effect(image);
-    } else {
-      // Handle effects that need parameters (brightness, contrast)
-      newImage = image; // Start with the original
-      if (brightness.value != 0) {
-        newImage = img.adjustColor(
-          newImage,
-          brightness: brightness.value / 100,
-        );
-      }
-      if (contrast.value != 1) {
-        newImage = img.contrast(newImage, contrast: contrast.value * 100);
-      }
+    }
+
+    // Then, apply slider adjustments on top.
+    if (brightness.value != 0) {
+      newImage = img.adjustColor(
+        newImage,
+        brightness: brightness.value.toInt(),
+      );
+    }
+    if (contrast.value != 1.0) {
+      newImage = img.contrast(newImage, contrast: contrast.value * 100);
+    }
+    if (saturation.value != 1.0 || hue.value != 0.0) {
+      newImage = img.adjustColor(
+        newImage,
+        saturation: saturation.value * 100,
+        hue: hue.value,
+      );
     }
 
     await _updateEditedImage(Uint8List.fromList(img.encodeJpg(newImage)));
     showSuccessSnackkbar(message: 'Effect applied.');
-    activeTool.value = EditorTool.none;
+    resetEffects(); // Reset sliders and UI filter after applying to bake the changes
+  }
+
+  void applyOneTapEffect(img.Image Function(img.Image) effect) {
+    resetEffects(); // Reset sliders first
+    applyEffect(effect);
+  }
+
+  Future<void> applyAdjustments() async {
+    if (editedImage.value == null) return;
+    final imageBytes = await editedImage.value!.readAsBytes();
+    final image = img.decodeImage(imageBytes);
+    if (image == null) return;
+
+    // Call applyEffect with null to only apply slider values
+    await applyEffect(null);
+  }
+
+  // --- Color Filter Calculation for Real-time Preview ---
+  void _updateColorFilter() {
+    final b = brightness.value;
+    final c = contrast.value;
+    final s = saturation.value;
+    final h = hue.value;
+
+    // This matrix combines brightness, contrast, and saturation
+    List<double> matrix = [
+      c * s,
+      0,
+      0,
+      0,
+      b,
+      0,
+      c * s,
+      0,
+      0,
+      b,
+      0,
+      0,
+      c * s,
+      0,
+      b,
+      0,
+      0,
+      0,
+      1,
+      0,
+    ];
+
+    if (h != 0) {
+      final hueMatrix = _hueMatrix(h);
+      matrix = _multiplyMatrices(matrix, hueMatrix);
+    }
+
+    activeColorFilter.value = ColorFilter.matrix(matrix);
+  }
+
+  List<double> _hueMatrix(double degrees) {
+    final radians = degrees * (pi / 180);
+    final cosVal = cos(radians);
+    final sinVal = sin(radians);
+    final lumR = 0.213, lumG = 0.715, lumB = 0.072;
+    return [
+      lumR + cosVal * (1 - lumR) - sinVal * lumR,
+      lumG - cosVal * lumG - sinVal * lumG,
+      lumB - cosVal * lumB + sinVal * (1 - lumB),
+      0,
+      0,
+      lumR - cosVal * lumR + sinVal * 0.143,
+      lumG + cosVal * (1 - lumG) + sinVal * 0.140,
+      lumB - cosVal * lumB - sinVal * 0.283,
+      0,
+      0,
+      lumR - cosVal * lumR - sinVal * (1 - lumR),
+      lumG - cosVal * lumG + sinVal * lumG,
+      lumB + cosVal * (1 - lumB) + sinVal * lumB,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+    ];
+  }
+
+  List<double> _multiplyMatrices(List<double> a, List<double> b) {
+    final result = List<double>.filled(20, 0.0);
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 5; j++) {
+        double sum = 0;
+        for (int k = 0; k < 4; k++) {
+          sum += a[i * 5 + k] * b[k * 5 + j];
+        }
+        result[i * 5 + j] = sum + (j == 4 ? a[i * 5 + 4] : 0);
+      }
+    }
+    return result;
   }
 
   Future<void> _updateEditedImage(

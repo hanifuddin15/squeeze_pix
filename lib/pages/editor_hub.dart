@@ -46,16 +46,21 @@ class EditorHub extends StatelessWidget {
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Obx(
-                    () => controller.editedImage.value != null
-                        ? Image.file(controller.editedImage.value!)
-                        : const Center(
-                            child: Text(
-                              'No Image Selected',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                  ),
+                  child: Obx(() {
+                    if (controller.editedImage.value == null) {
+                      return const Center(
+                        child: Text(
+                          'No Image Selected',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      );
+                    }
+                    // Wrap the image with ColorFiltered for real-time previews
+                    return ColorFiltered(
+                      colorFilter: controller.activeColorFilter.value,
+                      child: Image.file(controller.editedImage.value!),
+                    );
+                  }),
                 ),
               ),
             ),
@@ -152,7 +157,7 @@ class EditorHub extends StatelessWidget {
       case EditorTool.convert:
         return _ConvertControls(controller: controller);
       case EditorTool.effects:
-        return _EffectsControls(controller: controller);
+        return _EffectsControls();
       default:
         return const SizedBox.shrink();
     }
@@ -406,60 +411,88 @@ class _ConvertControls extends StatelessWidget {
   }
 }
 
-class _EffectsControls extends StatelessWidget {
-  final EditorController controller;
-  const _EffectsControls({required this.controller});
+class _EffectsControls extends GetView<EditorController> {
+  const _EffectsControls({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 150,
-      child: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                _EffectButton(
-                  label: 'Grayscale',
-                  onTap: () => controller.applyEffect(img.grayscale),
-                ),
-                _EffectButton(
-                  label: 'Sepia',
-                  onTap: () => controller.applyEffect((i) => img.sepia(i)),
-                ),
-                _EffectButton(
-                  label: 'Invert',
-                  onTap: () => controller.applyEffect(img.invert),
-                ),
-              ],
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // One-tap effects
+        SizedBox(
+          height: 90,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            children: [
+              _EffectButton(
+                label: 'Grayscale',
+                onTap: () => controller.applyOneTapEffect(img.grayscale),
+              ),
+              _EffectButton(
+                label: 'Sepia',
+                onTap: () => controller.applyOneTapEffect((i) => img.sepia(i)),
+              ),
+              _EffectButton(
+                label: 'Invert',
+                onTap: () => controller.applyOneTapEffect(img.invert),
+              ),
+            ],
           ),
-          _buildEffectSlider(
-            controller: controller,
-            label: 'Brightness',
-            value: controller.brightness,
-            min: -100,
-            max: 100,
+        ),
+        const Divider(color: Colors.white24, height: 1),
+        // Adjustable effects
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Column(
+            children: [
+              _buildEffectSlider(
+                label: 'Brightness',
+                value: controller.brightness,
+                min: -100,
+                max: 100,
+              ),
+              _buildEffectSlider(
+                label: 'Contrast',
+                value: controller.contrast,
+                min: 0.0,
+                max: 2.0,
+              ),
+              _buildEffectSlider(
+                label: 'Saturation',
+                value: controller.saturation,
+                min: 0.0,
+                max: 2.0,
+              ),
+              _buildEffectSlider(
+                label: 'Hue',
+                value: controller.hue,
+                min: -180,
+                max: 180,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  TextButton(
+                    onPressed: controller.resetEffects,
+                    child: const Text('Reset'),
+                  ),
+                  ElevatedButton(
+                    onPressed: controller.applyAdjustments,
+                    child: const Text('Apply Adjustments'),
+                  ),
+                ],
+              ),
+            ],
           ),
-          _buildEffectSlider(
-            controller: controller,
-            label: 'Contrast',
-            value: controller.contrast,
-            min: 0,
-            max: 4,
-          ),
-          ElevatedButton(
-            onPressed: () => controller.applyEffect((i) => i), // Dummy function
-            child: const Text('Apply Adjustments'),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildEffectSlider({
-    required EditorController controller,
     required String label,
     required RxDouble value,
     required double min,
@@ -482,6 +515,8 @@ class _EffectsControls extends StatelessWidget {
               min: min,
               max: max,
               onChanged: (val) => value.value = val,
+              activeColor: Get.theme.colorScheme.primary,
+              inactiveColor: Colors.white38,
             ),
           ),
         ],
