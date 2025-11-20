@@ -38,6 +38,7 @@ dependencies:
   image_cropper: ^11.0.0
   gal: ^2.3.2
   pdf: ^3.11.3
+  flutter_colorpicker: ^1.1.0
   # flutter_document_picker: ^5.4.1
   # google_mobile_ads: ^6.0.0
   # open_file_plus: ^3.4.1+1

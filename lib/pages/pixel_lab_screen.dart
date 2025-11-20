@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:squeeze_pix/controllers/pixel_lab_controller.dart';
+import 'package:squeeze_pix/pages/dp_maker.dart';
+import 'package:squeeze_pix/pages/id_photo_maker.dart';
+import 'package:squeeze_pix/pages/meme_generator.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 
-class PixelLabScreen extends StatelessWidget {
+class PixelLabScreen extends GetView<PixelLabController> {
   const PixelLabScreen({super.key});
 
   @override
@@ -33,10 +37,7 @@ class PixelLabScreen extends StatelessWidget {
                 ),
                 onTap: () {
                   // TODO: Navigate to your DP Maker screen
-                  Get.snackbar(
-                    'Coming Soon',
-                    'DP Maker feature is under development.',
-                  );
+                  Get.to(DPMaker());
                 },
               ),
               _buildFeatureCard(
@@ -49,10 +50,7 @@ class PixelLabScreen extends StatelessWidget {
                 ),
                 onTap: () {
                   // TODO: Navigate to your ID Photo screen
-                  Get.snackbar(
-                    'Coming Soon',
-                    'ID Photo feature is under development.',
-                  );
+                  Get.to(IDPhotoMaker());
                 },
               ),
               _buildFeatureCard(
@@ -65,10 +63,7 @@ class PixelLabScreen extends StatelessWidget {
                 ),
                 onTap: () {
                   // TODO: Navigate to your Meme Gen screen
-                  Get.snackbar(
-                    'Coming Soon',
-                    'Meme Generator is under development.',
-                  );
+                  Get.to(MemeGenerator());
                 },
               ),
               _buildFeatureCard(
@@ -81,10 +76,7 @@ class PixelLabScreen extends StatelessWidget {
                 ),
                 onTap: () {
                   // TODO: Navigate to your AI Tools screen
-                  Get.snackbar(
-                    'Coming Soon',
-                    'AI features are under development.',
-                  );
+                  // Get.to(AiToolsScreen());
                 },
               ),
             ],
