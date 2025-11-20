@@ -226,8 +226,14 @@ class EditorController extends GetxController {
 
   Future<void> applyEffect(img.Image Function(img.Image)? effect) async {
     if (editedImage.value == null) return;
-    final imageBytes = await editedImage.value!.readAsBytes();
-    final image = img.decodeImage(imageBytes);
+
+    // If applying a one-tap effect, always start from the original image.
+    // Otherwise, use the currently edited image for adjustments.
+    final sourceImageFile = (effect != null && originalImage.value != null)
+        ? originalImage.value!
+        : editedImage.value!;
+
+    final image = img.decodeImage(await sourceImageFile.readAsBytes());
     if (image == null) return;
 
     img.Image newImage = image;

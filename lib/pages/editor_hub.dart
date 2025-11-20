@@ -438,6 +438,52 @@ class _EffectsControls extends GetView<EditorController> {
                 label: 'Invert',
                 onTap: () => controller.applyOneTapEffect(img.invert),
               ),
+              _EffectButton(
+                label: 'Sketch',
+                onTap: () => controller.applyOneTapEffect((i) => img.sketch(i)),
+              ),
+              _EffectButton(
+                label: 'Vignette',
+                onTap: () =>
+                    controller.applyOneTapEffect((i) => img.vignette(i)),
+              ),
+              _EffectButton(
+                label: 'MonoChrome',
+                onTap: () =>
+                    controller.applyOneTapEffect((i) => img.monochrome(i)),
+              ),
+              _EffectButton(
+                label: 'Sobel',
+                onTap: () => controller.applyOneTapEffect((i) => img.sobel(i)),
+              ),
+              _EffectButton(
+                label: 'Quantize',
+                onTap: () =>
+                    controller.applyOneTapEffect((i) => img.quantize(i)),
+              ),
+              _EffectButton(
+                label: 'Smooth',
+                onTap: () => controller.applyOneTapEffect(
+                  (i) => img.smooth(
+                    weight: (2 + Random().nextInt(5)).toDouble(),
+                    i,
+                  ),
+                ),
+              ),
+              _EffectButton(
+                label: 'Solarize',
+                onTap: () => controller.applyOneTapEffect(
+                  (i) => img.solarize(
+                    threshold: (128 * (1 + Random().nextDouble())).toInt(),
+                    i,
+                  ),
+                ),
+              ),
+              _EffectButton(
+                label: 'MonoChrome',
+                onTap: () =>
+                    controller.applyOneTapEffect((i) => img.monochrome(i)),
+              ),
             ],
           ),
         ),
