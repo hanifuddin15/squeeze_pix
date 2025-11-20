@@ -29,10 +29,7 @@ class EditorHub extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.save),
-            onPressed: () {
-              // TODO: Implement save logic
-              Get.snackbar('Info', 'Save functionality coming soon!');
-            },
+            onPressed: controller.saveImage,
             tooltip: 'Save Image',
           ),
         ],
