@@ -39,41 +39,57 @@ class EditorHub extends StatelessWidget {
       extendBodyBehindAppBar: true,
       body: Container(
         decoration: BoxDecoration(gradient: AppTheme.gradient),
-        child: Column(
-          children: [
-            // Image Preview Area
-            Expanded(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Obx(() {
-                    if (controller.editedImage.value == null) {
-                      return const Center(
-                        child: Text(
-                          'No Image Selected',
-                          style: TextStyle(color: Colors.white),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        // Image Preview Area
+                        Expanded(
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Obx(() {
+                                if (controller.editedImage.value == null) {
+                                  return const Center(
+                                    child: Text(
+                                      'No Image Selected',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  );
+                                }
+                                // Wrap the image with ColorFiltered for real-time previews
+                                return Container(
+                                  margin: EdgeInsets.only(
+                                    top: kToolbarHeight + 5,
+                                  ),
+                                  child: ColorFiltered(
+                                    colorFilter:
+                                        controller.activeColorFilter.value,
+                                    child: Image.file(
+                                      controller.editedImage.value!,
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ),
+                          ),
                         ),
-                      );
-                    }
-                    // Wrap the image with ColorFiltered for real-time previews
-                    return ColorFiltered(
-                      colorFilter: controller.activeColorFilter.value,
-                      child: Image.file(controller.editedImage.value!),
-                    );
-                  }),
+                        // Editing Controls Area
+                        Obx(() {
+                          return _buildToolUI(controller);
+                        }),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            // Editing Controls Area
-            Obx(() {
-              switch (controller.activeTool.value) {
-                case EditorTool.none:
-                  return _buildMainToolbar(controller);
-                default:
-                  return _buildToolPanel(controller);
-              }
-            }),
-          ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -115,6 +131,17 @@ class EditorHub extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildToolUI(EditorController controller) {
+    // This function decides which tool panel to show.
+    // It's separated to be used within the Obx.
+    switch (controller.activeTool.value) {
+      case EditorTool.none:
+        return _buildMainToolbar(controller);
+      default:
+        return _buildToolPanel(controller);
+    }
   }
 
   Widget _buildToolPanel(EditorController controller) {
