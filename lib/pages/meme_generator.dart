@@ -5,10 +5,9 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' as ui;
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart' as cp;
 import 'package:gal/gal.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -45,7 +44,7 @@ class Frame {
   Frame({this.image});
 }
 
-enum FrameLayout { single, twoVertical, twoHorizontal }
+enum FrameLayout { single, twoVertical, twoHorizontal, threeVertical, fourGrid }
 
 const Map<String, String> memeTemplates = {
   'Doge': 'assets/templates/doge.jpg',
@@ -85,6 +84,30 @@ const Map<String, String> memeTemplates = {
   'Sweating Guy': 'assets/templates/sweating.png',
   'Teacher Copy': 'assets/templates/teachers_copy.png',
   'Think Brain': 'assets/templates/think_brain.png',
+  'Bean Copying': 'assets/templates/bean_copying.png',
+  'Calculating': 'assets/templates/calculating.png',
+  'Cars Passing': 'assets/templates/cars_passing.png',
+  'Disappearing': 'assets/templates/disappearing.png',
+  'Here We Go Again': 'assets/templates/here_we_go_again.png',
+  'Knights Round Table': 'assets/templates/knights_round_table.png',
+  'Looking Up': 'assets/templates/looking_up.png',
+  'Waking Up': 'assets/templates/waking_up.png',
+  'Math is Math': 'assets/templates/math_is_math.png',
+  'Woman Shouting': 'assets/templates/woman_shouting.png',
+  'Aj Styles & Undertaker': 'assets/templates/aj_undertaker.png',
+  'Batman Slapping': 'assets/templates/batman_slap.png',
+  'Bean Waiting': 'assets/templates/bean_waiting.png',
+  'Brain Before Sleep': 'assets/templates/brain_sleep.png',
+  'Train & Car Collision': 'assets/templates/collision.png',
+  'First Time': 'assets/templates/first_time.png',
+  'GooseBumps': 'assets/templates/goosebumps.png',
+  'Here\'s Johnny': 'assets/templates/heres_johnny.png',
+  'Iceberg': 'assets/templates/iceberg.png',
+  'Orangutan Interview': 'assets/templates/orangutan_interview.png',
+  'Red Pill Blue Pill': 'assets/templates/red_pill_blue_pill.png',
+  'I See Dead People': 'assets/templates/see_dead_people.png',
+  'Unsettled Tom': 'assets/templates/unsettled_tom.png',
+  'Wife Doubting': 'assets/templates/wife_doubting.png',
 };
 
 final Map<String, TextStyle> appFonts = {
@@ -256,6 +279,40 @@ class _MemeGeneratorState extends State<MemeGenerator> {
             Expanded(child: _buildFrame(1)),
           ],
         );
+      case FrameLayout.threeVertical:
+        return Column(
+          children: [
+            Expanded(child: _buildFrame(0)),
+            const SizedBox(height: 6),
+            Expanded(child: _buildFrame(1)),
+            const SizedBox(height: 6),
+            Expanded(child: _buildFrame(2)),
+          ],
+        );
+      case FrameLayout.fourGrid:
+        return Column(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(child: _buildFrame(0)),
+                  const SizedBox(width: 6),
+                  Expanded(child: _buildFrame(1)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 6),
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(child: _buildFrame(2)),
+                  const SizedBox(width: 6),
+                  Expanded(child: _buildFrame(3)),
+                ],
+              ),
+            ),
+          ],
+        );
     }
   }
 
@@ -321,26 +378,68 @@ class _MemeGeneratorState extends State<MemeGenerator> {
   }
 
   Future<void> _showFontPicker(MemeText memeText) async {
-    final selected = await showModalBottomSheet<String>(
+    final selectedFontKey = await showModalBottomSheet<String>(
       context: context,
-      builder: (context) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: appFonts.entries.map((entry) {
-            return ListTile(
-              title: Text(entry.key, style: entry.value.copyWith(fontSize: 20)),
-              onTap: () => Navigator.pop(context, entry.key),
-            );
-          }).toList(),
-        ),
-      ),
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(25),
+                ),
+              ),
+              child: SafeArea(
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: appFonts.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 3,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemBuilder: (context, index) {
+                    final entry = appFonts.entries.elementAt(index);
+                    return InkWell(
+                      onTap: () => Navigator.pop(context, entry.key),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white24),
+                        ),
+                        child: Center(
+                          child: Text(
+                            entry.key,
+                            textAlign: TextAlign.center,
+                            style: entry.value.copyWith(
+                              fontSize: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
 
-    if (selected != null && appFonts.containsKey(selected)) {
+    if (selectedFontKey != null && appFonts.containsKey(selectedFontKey)) {
       setState(() {
         final oldSize = memeText.style.fontSize ?? 40;
         final oldColor = memeText.style.color ?? Colors.white;
-        memeText.style = appFonts[selected]!.copyWith(
+        memeText.style = appFonts[selectedFontKey]!.copyWith(
           fontSize: oldSize,
           color: oldColor,
         );
@@ -351,42 +450,105 @@ class _MemeGeneratorState extends State<MemeGenerator> {
   void _showLayoutPicker() {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.check_box_outline_blank),
-            title: const Text('Single Frame'),
-            onTap: () {
-              Navigator.pop(context);
-              _updateLayout(FrameLayout.single);
-            },
+      backgroundColor: Colors.transparent,
+      builder: (context) => ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(25),
+              ),
+            ),
+            child: SafeArea(
+              child: Wrap(
+                children: [
+                  ListTile(
+                    leading: const Icon(
+                      Icons.check_box_outline_blank,
+                      color: Colors.white,
+                    ),
+                    title: const Text(
+                      'Single Frame',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onTap: () => Navigator.pop(context, FrameLayout.single),
+                  ),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.view_agenda_outlined,
+                      color: Colors.white,
+                    ),
+                    title: const Text(
+                      'Two Frames (Vertical)',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onTap: () =>
+                        Navigator.pop(context, FrameLayout.twoVertical),
+                  ),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.view_column_outlined,
+                      color: Colors.white,
+                    ),
+                    title: const Text(
+                      'Two Frames (Horizontal)',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onTap: () =>
+                        Navigator.pop(context, FrameLayout.twoHorizontal),
+                  ),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.view_stream_outlined,
+                      color: Colors.white,
+                    ),
+                    title: const Text(
+                      'Three Frames (Vertical)',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onTap: () =>
+                        Navigator.pop(context, FrameLayout.threeVertical),
+                  ),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.grid_on_outlined,
+                      color: Colors.white,
+                    ),
+                    title: const Text(
+                      'Four Frames (Grid)',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onTap: () => Navigator.pop(context, FrameLayout.fourGrid),
+                  ),
+                ],
+              ),
+            ),
           ),
-          ListTile(
-            leading: const Icon(Icons.view_agenda_outlined),
-            title: const Text('Two Frames (Vertical)'),
-            onTap: () {
-              Navigator.pop(context);
-              _updateLayout(FrameLayout.twoVertical);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.view_column_outlined),
-            title: const Text('Two Frames (Horizontal)'),
-            onTap: () {
-              Navigator.pop(context);
-              _updateLayout(FrameLayout.twoHorizontal);
-            },
-          ),
-        ],
+        ),
       ),
-    );
+    ).then((value) {
+      if (value != null) {
+        _updateLayout(value);
+      }
+    });
   }
 
   void _updateLayout(FrameLayout newLayout) {
     setState(() {
       _layout = newLayout;
-      int requiredFrames = (newLayout == FrameLayout.single) ? 1 : 2;
+      int requiredFrames;
+      if (newLayout == FrameLayout.single)
+        requiredFrames = 1;
+      else if (newLayout == FrameLayout.twoVertical ||
+          newLayout == FrameLayout.twoHorizontal)
+        requiredFrames = 2;
+      else if (newLayout == FrameLayout.threeVertical)
+        requiredFrames = 3;
+      else
+        requiredFrames = 4; // fourGrid
       while (_frames.length < requiredFrames) _frames.add(Frame());
       while (_frames.length > requiredFrames) _frames.removeLast();
     });
@@ -395,21 +557,42 @@ class _MemeGeneratorState extends State<MemeGenerator> {
   void _showTemplatePicker() async {
     final selectedTemplate = await showModalBottomSheet<String>(
       context: context,
-      builder: (context) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: memeTemplates.entries.map((entry) {
-            return ListTile(
-              leading: Image.asset(
-                entry.value,
-                width: 60,
-                height: 40,
-                fit: BoxFit.cover,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.8,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(25),
               ),
-              title: Text(entry.key),
-              onTap: () => Navigator.pop(context, entry.value),
-            );
-          }).toList(),
+            ),
+            child: SafeArea(
+              child: GridView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: memeTemplates.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                ),
+                itemBuilder: (context, index) {
+                  final entry = memeTemplates.entries.elementAt(index);
+                  return GestureDetector(
+                    onTap: () => Navigator.pop(context, entry.value),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.asset(entry.value, fit: BoxFit.cover),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -542,6 +725,8 @@ class _MemeGeneratorState extends State<MemeGenerator> {
               child: TextField(
                 controller: _textEditingController,
                 textAlign: TextAlign.center,
+                maxLines: null,
+                keyboardType: TextInputType.multiline,
                 style: const TextStyle(color: Colors.white, fontSize: 18),
                 decoration: InputDecoration(
                   hintText: 'Edit text here...',
@@ -617,10 +802,18 @@ class _MemeGeneratorState extends State<MemeGenerator> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Pick a color'),
         content: SingleChildScrollView(
-          child: ColorPicker(
+          child: cp.ColorPicker(
             pickerColor: initialColor,
+            enableAlpha: false,
+            displayThumbColor: true,
+            pickerAreaHeightPercent: 0.8,
+            labelTypes: const [],
+            colorPickerWidth: 300,
+            paletteType: cp.PaletteType.hueWheel,
             onColorChanged: (color) {
               setState(() {
                 if (isStroke) {
@@ -630,11 +823,15 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                 }
               });
             },
+            // Other styling options
           ),
         ),
         actions: [
           ElevatedButton(
             child: const Text('Got it'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+            ),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
