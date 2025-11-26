@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' as ui;
-import 'package:flutter_colorpicker/flutter_colorpicker.dart' as cp;
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:gal/gal.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -170,7 +170,9 @@ class _MemeGeneratorState extends State<MemeGenerator> {
     if (picked != null) {
       final file = File(picked.path);
       setState(() {
-        while (_frames.length <= frameIndex) _frames.add(Frame());
+        while (_frames.length <= frameIndex) {
+          _frames.add(Frame());
+        }
         _frames[frameIndex].image = file;
         // Add default texts only if there are none
         if (_texts.isEmpty &&
@@ -237,10 +239,12 @@ class _MemeGeneratorState extends State<MemeGenerator> {
           child: _frames[frameIndex].image == null
               ? Container(
                   color: Colors.black12,
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.add_a_photo,
-                      color: Colors.white54,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.54),
                       size: 48,
                     ),
                   ),
@@ -251,7 +255,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                   maxScale: 5.0,
                   child: Image.file(
                     _frames[frameIndex].image!,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
                   ),
                 ),
         ),
@@ -388,7 +392,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
             filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.15),
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(25),
                 ),
@@ -410,9 +414,15 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white24),
+                          border: Border.all(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.24),
+                          ),
                         ),
                         child: Center(
                           child: Text(
@@ -420,7 +430,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                             textAlign: TextAlign.center,
                             style: entry.value.copyWith(
                               fontSize: 18,
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ),
@@ -457,7 +467,9 @@ class _MemeGeneratorState extends State<MemeGenerator> {
           filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
+              color: Theme.of(
+                context,
+              ).colorScheme.primaryFixedDim.withOpacity(0.15),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(25),
               ),
@@ -466,60 +478,74 @@ class _MemeGeneratorState extends State<MemeGenerator> {
               child: Wrap(
                 children: [
                   ListTile(
-                    leading: const Icon(
+                    leading: Icon(
                       Icons.check_box_outline_blank,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
-                    title: const Text(
+                    title: Text(
                       'Single Frame',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                     onTap: () => Navigator.pop(context, FrameLayout.single),
                   ),
                   ListTile(
                     leading: const Icon(
                       Icons.view_agenda_outlined,
-                      color: Colors.white,
+                      color:
+                          Colors.white, // This is fine as it's an example icon
                     ),
-                    title: const Text(
+                    title: Text(
                       'Two Frames (Vertical)',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                     onTap: () =>
                         Navigator.pop(context, FrameLayout.twoVertical),
                   ),
                   ListTile(
                     leading: const Icon(
-                      Icons.view_column_outlined,
-                      color: Colors.white,
+                      Icons.view_list_rounded,
+                      color:
+                          Colors.white, // This is fine as it's an example icon
                     ),
-                    title: const Text(
+                    title: Text(
                       'Two Frames (Horizontal)',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                     onTap: () =>
                         Navigator.pop(context, FrameLayout.twoHorizontal),
                   ),
                   ListTile(
                     leading: const Icon(
-                      Icons.view_stream_outlined,
-                      color: Colors.white,
+                      Icons.view_column_outlined,
+                      color:
+                          Colors.white, // This is fine as it's an example icon
                     ),
-                    title: const Text(
+                    title: Text(
                       'Three Frames (Vertical)',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                     onTap: () =>
                         Navigator.pop(context, FrameLayout.threeVertical),
                   ),
                   ListTile(
                     leading: const Icon(
-                      Icons.grid_on_outlined,
-                      color: Colors.white,
+                      Icons.view_comfy_alt_rounded,
+                      color:
+                          Colors.white, // This is fine as it's an example icon
                     ),
-                    title: const Text(
+                    title: Text(
                       'Four Frames (Grid)',
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                     onTap: () => Navigator.pop(context, FrameLayout.fourGrid),
                   ),
@@ -540,17 +566,22 @@ class _MemeGeneratorState extends State<MemeGenerator> {
     setState(() {
       _layout = newLayout;
       int requiredFrames;
-      if (newLayout == FrameLayout.single)
+      if (newLayout == FrameLayout.single) {
         requiredFrames = 1;
-      else if (newLayout == FrameLayout.twoVertical ||
-          newLayout == FrameLayout.twoHorizontal)
+      } else if (newLayout == FrameLayout.twoVertical ||
+          newLayout == FrameLayout.twoHorizontal) {
         requiredFrames = 2;
-      else if (newLayout == FrameLayout.threeVertical)
+      } else if (newLayout == FrameLayout.threeVertical) {
         requiredFrames = 3;
-      else
+      } else {
         requiredFrames = 4; // fourGrid
-      while (_frames.length < requiredFrames) _frames.add(Frame());
-      while (_frames.length > requiredFrames) _frames.removeLast();
+      }
+      while (_frames.length < requiredFrames) {
+        _frames.add(Frame());
+      }
+      while (_frames.length > requiredFrames) {
+        _frames.removeLast();
+      }
     });
   }
 
@@ -559,42 +590,98 @@ class _MemeGeneratorState extends State<MemeGenerator> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-          child: Container(
-            height: MediaQuery.of(context).size.height * 0.8,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
+      builder: (context) {
+        String searchQuery = ""; // Moved here
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            final filteredTemplates = memeTemplates.entries.where((entry) {
+              return entry.key.toLowerCase().contains(
+                searchQuery.toLowerCase(),
+              );
+            }).toList();
+            return ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(25),
               ),
-            ),
-            child: SafeArea(
-              child: GridView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: memeTemplates.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                ),
-                itemBuilder: (context, index) {
-                  final entry = memeTemplates.entries.elementAt(index);
-                  return GestureDetector(
-                    onTap: () => Navigator.pop(context, entry.value),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(entry.value, fit: BoxFit.cover),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.8,
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surface.withOpacity(0.15),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(25),
                     ),
-                  );
-                },
+                  ),
+                  child: SafeArea(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: TextField(
+                            onChanged: (value) {
+                              setModalState(() {
+                                searchQuery = value;
+                              });
+                            },
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Search templates...',
+                              hintStyle: TextStyle(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.7),
+                              ),
+                              filled: true,
+                              fillColor: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.1),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: filteredTemplates.isEmpty
+                              ? _buildNoSearchResults()
+                              : GridView.builder(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    0,
+                                    16,
+                                    16,
+                                  ),
+                                  itemCount: filteredTemplates.length,
+                                  gridDelegate:
+                                      _buildGridDelegateForTemplates(),
+                                  itemBuilder: (context, index) =>
+                                      _buildTemplateGridItem(
+                                        context,
+                                        filteredTemplates[index],
+                                      ),
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
 
     if (selectedTemplate != null) {
@@ -613,6 +700,79 @@ class _MemeGeneratorState extends State<MemeGenerator> {
         }
       });
     }
+  }
+
+  SliverGridDelegate _buildGridDelegateForTemplates() {
+    return const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 3,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 0.7,
+    );
+  }
+
+  Widget _buildTemplateGridItem(
+    BuildContext context,
+    MapEntry<String, String> entry,
+  ) {
+    return GestureDetector(
+      onTap: () => Navigator.pop(context, entry.value),
+      child: Column(
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                entry.value,
+                fit: BoxFit.cover,
+                width: double.infinity,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            entry.key,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoSearchResults() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // These are fine as they are part of a specific "empty" state design
+          Icon(
+            Icons.search_off,
+            size: 64,
+            color: Colors.white54,
+          ), // Keeping as is for design
+          SizedBox(height: 16),
+          Text(
+            'No Templates Found',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Try a different search term.',
+            style: TextStyle(color: Colors.white70, fontSize: 16),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildMainToolbar() {
@@ -660,8 +820,12 @@ class _MemeGeneratorState extends State<MemeGenerator> {
     final memeText = _texts[_selectedTextIndex!];
 
     return Material(
-      elevation: 8,
-      color: Theme.of(context).colorScheme.surface.withOpacity(0.06),
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(20),
+        topRight: Radius.circular(20),
+      ),
+      elevation: 18,
+      color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -671,19 +835,28 @@ class _MemeGeneratorState extends State<MemeGenerator> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 IconButton(
-                  icon: Icon(Icons.font_download, color: Colors.white),
+                  icon: Icon(
+                    Icons.font_download,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    size: 24,
+                  ),
                   onPressed: () => _showFontPicker(memeText),
                   tooltip: 'Change Font',
                 ),
                 IconButton(
-                  icon: Icon(Icons.color_lens, color: memeText.style.color),
+                  icon: Icon(
+                    Icons.color_lens,
+                    color: memeText.style.color,
+                    size: 24,
+                  ),
                   onPressed: () => _pickColor(memeText, isStroke: false),
                   tooltip: 'Fill Color',
                 ),
                 IconButton(
                   icon: Icon(
                     Icons.colorize_rounded,
-                    color: memeText.strokeColor,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    size: 24,
                   ),
                   onPressed: () => _pickColor(memeText, isStroke: true),
                   tooltip: 'Stroke Color',
@@ -691,7 +864,8 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                 IconButton(
                   icon: Icon(
                     Icons.swap_horiz,
-                    color: Get.context?.theme.colorScheme.onPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    size: 24,
                   ),
                   onPressed: () {
                     // toggle fill/stroke color quick swap
@@ -707,7 +881,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                 ),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                  icon: const Icon(Icons.delete, color: Colors.red, size: 24),
                   onPressed: () {
                     setState(() {
                       _texts.removeAt(_selectedTextIndex!);
@@ -727,10 +901,17 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                 textAlign: TextAlign.center,
                 maxLines: null,
                 keyboardType: TextInputType.multiline,
-                style: const TextStyle(color: Colors.white, fontSize: 18),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 18,
+                ),
                 decoration: InputDecoration(
                   hintText: 'Edit text here...',
-                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+                  hintStyle: TextStyle(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.5),
+                  ),
                   border: const UnderlineInputBorder(
                     borderSide: BorderSide(color: Colors.white54),
                   ),
@@ -739,6 +920,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
             ),
             _buildSliderRow(
               label: 'Size',
+              icon: Icons.format_size,
               value: memeText.style.fontSize ?? 40,
               min: 8,
               max: 200,
@@ -748,6 +930,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
             ),
             _buildSliderRow(
               label: 'Stroke',
+              icon: Icons.border_style,
               value: memeText.strokeWidth,
               min: 0,
               max: 12,
@@ -755,6 +938,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
             ),
             _buildSliderRow(
               label: 'Rotate',
+              icon: Icons.rotate_right,
               value: memeText.rotation,
               min: -3.14,
               max: 3.14,
@@ -768,30 +952,40 @@ class _MemeGeneratorState extends State<MemeGenerator> {
 
   Widget _buildSliderRow({
     required String label,
+    required IconData icon,
     required double value,
     required double min,
     required double max,
     required ValueChanged<double> onChanged,
   }) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 64,
-          child: Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.w600),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          Icon(icon, color: Theme.of(context).colorScheme.onSurface),
+          Expanded(
+            child: Slider(
+              activeColor: Theme.of(context).colorScheme.inverseSurface,
+              inactiveColor: Theme.of(
+                context,
+              ).colorScheme.onSurface.withOpacity(0.24),
+              value: value,
+              min: min,
+              max: max,
+              label: value.toStringAsFixed(1),
+              onChanged: onChanged,
+            ),
           ),
-        ),
-        Expanded(
-          child: Slider(
-            value: value,
-            min: min,
-            max: max,
-            label: value.toStringAsFixed(1),
-            onChanged: onChanged,
+          SizedBox(
+            width: 50,
+            child: Text(
+              value.toStringAsFixed(1),
+              textAlign: TextAlign.end,
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -802,18 +996,20 @@ class _MemeGeneratorState extends State<MemeGenerator> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+        backgroundColor: Theme.of(
+          context,
+        ).colorScheme.inversePrimary.withOpacity(0.8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Pick a color'),
         content: SingleChildScrollView(
-          child: cp.ColorPicker(
+          child: ColorPicker(
             pickerColor: initialColor,
             enableAlpha: false,
             displayThumbColor: true,
             pickerAreaHeightPercent: 0.8,
-            labelTypes: const [],
+            labelTypes: const [ColorLabelType.rgb, ColorLabelType.hsv],
             colorPickerWidth: 300,
-            paletteType: cp.PaletteType.hueWheel,
+            paletteType: PaletteType.hsvWithSaturation,
             onColorChanged: (color) {
               setState(() {
                 if (isStroke) {
@@ -828,9 +1024,17 @@ class _MemeGeneratorState extends State<MemeGenerator> {
         ),
         actions: [
           ElevatedButton(
-            child: const Text('Got it'),
+            child: Text(
+              'Got it',
+              style: context.textTheme.labelSmall?.copyWith(
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
+              textStyle: Get.textTheme.labelSmall?.copyWith(
+                color: Theme.of(context).colorScheme.surface,
+              ),
             ),
             onPressed: () => Navigator.of(context).pop(),
           ),
@@ -963,6 +1167,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // These are fine for the initial prompt screen
             const Icon(Icons.photo, size: 80, color: Colors.white70),
             const SizedBox(height: 16),
             const Text(

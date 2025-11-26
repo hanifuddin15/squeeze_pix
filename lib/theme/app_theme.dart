@@ -95,6 +95,7 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   static final light = ThemeData(
+    // colorSchemeSeed: Colors.teal,
     useMaterial3: true,
     brightness: Brightness.light,
     fontFamily: 'SolaimanLipi',
@@ -102,6 +103,7 @@ class AppTheme {
   );
 
   static final dark = ThemeData(
+    // colorSchemeSeed: Colors.teal,
     useMaterial3: true,
     brightness: Brightness.dark,
     fontFamily: 'SolaimanLipi',

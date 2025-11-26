@@ -188,7 +188,7 @@ class _DPMakerState extends State<DPMaker> {
   Widget _buildControls() {
     return Material(
       elevation: 8,
-      color: Theme.of(context).colorScheme.tertiaryFixedDim,
+      color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(20),
         topRight: Radius.circular(20),
@@ -264,24 +264,30 @@ class _DPMakerState extends State<DPMaker> {
     required ValueChanged<double> onChanged,
     VoidCallback? onTapIcon,
   }) {
-    return Row(
-      children: [
-        InkWell(
-          onTap: onTapIcon,
-          child: Icon(icon, color: onTapIcon != null ? _borderColor : null),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Slider(
-            value: value,
-            min: min,
-            max: max,
-            label: value.toStringAsFixed(1),
-            onChanged: onChanged,
-            activeColor: Colors.blueAccent,
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          InkWell(
+            onTap: onTapIcon,
+            child: Icon(icon, color: onTapIcon != null ? _borderColor : null),
           ),
-        ),
-      ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: Slider(
+              activeColor: Theme.of(context).colorScheme.inverseSurface,
+              inactiveColor: Theme.of(
+                context,
+              ).colorScheme.onSurface.withOpacity(0.24),
+              value: value,
+              min: min,
+              max: max,
+              label: value.toStringAsFixed(1),
+              onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

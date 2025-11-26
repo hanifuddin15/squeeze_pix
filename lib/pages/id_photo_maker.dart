@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
+import 'package:get/get_utils/src/extensions/export.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -268,7 +269,7 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
   Widget _buildControls() {
     return Material(
       elevation: 8,
-      color: Theme.of(context).colorScheme.tertiaryFixedDim,
+      color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(20),
         topRight: Radius.circular(20),
@@ -285,15 +286,22 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
             ),
             DropdownButton<IdPhotoSpec>(
               isExpanded: true,
-              dropdownColor: Theme.of(context).colorScheme.tertiaryFixed,
+              dropdownColor: Theme.of(context).colorScheme.surface,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onTertiaryFixed,
               ),
               value: _selectedSpec,
               items: idPhotoSpecs
                   .map(
-                    (spec) =>
-                        DropdownMenuItem(value: spec, child: Text(spec.name)),
+                    (spec) => DropdownMenuItem(
+                      value: spec,
+                      child: Text(
+                        spec.name,
+                        style: TextStyle(
+                          color: context.theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
                   )
                   .toList(),
               onChanged: (spec) {
@@ -345,22 +353,30 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
                 ),
               ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               "Paper Size",
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: context.theme.colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 8),
             DropdownButton<PaperSize>(
               isExpanded: true,
-              dropdownColor: Theme.of(context).colorScheme.tertiaryFixed,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onTertiaryFixed,
-              ),
+              dropdownColor: Theme.of(context).colorScheme.surface,
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               value: _selectedPaper,
               items: paperSizes
                   .map(
-                    (paper) =>
-                        DropdownMenuItem(value: paper, child: Text(paper.name)),
+                    (paper) => DropdownMenuItem(
+                      value: paper,
+                      child: Text(
+                        paper.name,
+                        style: TextStyle(
+                          color: context.theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
                   )
                   .toList(),
               onChanged: (paper) {
