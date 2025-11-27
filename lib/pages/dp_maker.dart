@@ -86,6 +86,7 @@ class _DPMakerState extends State<DPMaker> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
+
       appBar: AppBar(
         title: const Text("DP Maker"),
         flexibleSpace: Container(
@@ -154,33 +155,40 @@ class _DPMakerState extends State<DPMaker> {
 
   Widget _buildImagePickerPrompt() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.photo, size: 80, color: Colors.grey),
-          const SizedBox(height: 16),
-          const Text(
-            'No Image Selected',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Tap the button below to select an image.',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: _pickImage,
-            icon: const Icon(Icons.add_a_photo),
-            label: const Text('Select Image'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              textStyle: const TextStyle(fontSize: 16),
-              backgroundColor: Colors.blueAccent,
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(gradient: AppTheme.gradient),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.photo, size: 80, color: Colors.grey),
+            const SizedBox(height: 16),
+            const Text(
+              'No Image Selected',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            const Text(
+              'Tap the button below to select an image.',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _pickImage,
+              icon: const Icon(Icons.add_a_photo),
+              label: const Text('Select Image'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                textStyle: const TextStyle(fontSize: 16),
+                backgroundColor: Colors.blueAccent,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

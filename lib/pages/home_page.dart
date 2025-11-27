@@ -68,11 +68,11 @@ class ImageGridPage extends StatelessWidget {
             () => homeController.isSelectionMode.value
                 ? Row(
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.brightness_6_outlined),
-                        onPressed: homeController.toggleTheme,
-                        tooltip: 'Toggle Theme',
-                      ),
+                      // IconButton(
+                      //   icon: const Icon(Icons.brightness_6_outlined),
+                      //   onPressed: homeController.toggleTheme,
+                      //   tooltip: 'Toggle Theme',
+                      // ),
                       IconButton(
                         icon: const Icon(Icons.select_all),
                         onPressed: homeController.selectAll,
@@ -92,11 +92,11 @@ class ImageGridPage extends StatelessWidget {
                         onPressed: homeController.showImageSourceDialog,
                         tooltip: 'Add Images',
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.brightness_6_outlined),
-                        onPressed: homeController.toggleTheme,
-                        tooltip: 'Toggle Theme',
-                      ),
+                      // IconButton(
+                      //   icon: const Icon(Icons.brightness_6_outlined),
+                      //   onPressed: homeController.toggleTheme,
+                      //   tooltip: 'Toggle Theme',
+                      // ),
                     ],
                   ),
           ),
@@ -306,7 +306,8 @@ class GlassBottomNav extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Obx(
           () => BottomNavigationBar(
-            backgroundColor: Colors.black.withValues(alpha: .6),
+            backgroundColor: Colors.black.withOpacity(0.7),
+            elevation: 5,
             selectedItemColor: Colors.cyanAccent,
             unselectedItemColor: Colors.white70,
             currentIndex: homeController.tabIndex.value,
