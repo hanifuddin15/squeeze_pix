@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:squeeze_pix/controllers/history_controller.dart';
 import 'package:squeeze_pix/controllers/editor_controller.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:image/image.dart' as img;

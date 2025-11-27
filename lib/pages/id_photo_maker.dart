@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
-import 'package:get/get_utils/src/extensions/export.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -13,6 +13,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/utils/snackbar.dart';
+import '../controllers/history_controller.dart';
 
 import '../models/id_photo_spec.dart';
 
@@ -554,6 +555,8 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
         message:
             "Single photo saved to gallery. Use 'Share' for the full PDF sheet.",
       );
+      // Add to history
+      Get.find<HistoryController>().addHistoryItem(file, HistoryType.id);
     } catch (e) {
       showErrorSnackkbar(message: "Failed to save photo: $e");
     }

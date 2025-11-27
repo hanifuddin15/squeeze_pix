@@ -14,6 +14,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/utils/snackbar.dart';
+import '../controllers/history_controller.dart';
 
 class MemeText {
   int id;
@@ -1071,6 +1072,8 @@ class _MemeGeneratorState extends State<MemeGenerator> {
       final file = await File('${tempDir.path}/meme_output.png').create();
       await file.writeAsBytes(imageBytes);
       await Gal.putImage(file.path);
+      // Add to history
+      Get.find<HistoryController>().addHistoryItem(file, HistoryType.meme);
       showSuccessSnackkbar(message: "Meme saved to gallery!");
     } catch (e) {
       showErrorSnackkbar(message: "Failed to save meme: $e");

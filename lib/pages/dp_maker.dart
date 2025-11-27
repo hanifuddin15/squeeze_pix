@@ -9,10 +9,12 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:gal/gal.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/utils/snackbar.dart';
 import '../../theme/app_theme.dart';
+import '../controllers/history_controller.dart';
 
 enum DPShape { circle, square, rounded }
 
@@ -175,7 +177,7 @@ class _DPMakerState extends State<DPMaker> {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: _pickImage,
+              onPressed: () => _pickImage,
               icon: const Icon(Icons.add_a_photo),
               label: const Text('Select Image'),
               style: ElevatedButton.styleFrom(
@@ -184,7 +186,6 @@ class _DPMakerState extends State<DPMaker> {
                   vertical: 12,
                 ),
                 textStyle: const TextStyle(fontSize: 16),
-                backgroundColor: Colors.blueAccent,
               ),
             ),
           ],
@@ -345,6 +346,8 @@ class _DPMakerState extends State<DPMaker> {
       final file = await File('${tempDir.path}/dp_maker_output.png').create();
       await file.writeAsBytes(imageBytes);
       await Gal.putImage(file.path);
+      // Add to history
+      Get.find<HistoryController>().addHistoryItem(file, HistoryType.dp);
       showSuccessSnackkbar(message: "DP saved to gallery!");
     } catch (e) {
       showErrorSnackkbar(message: "Failed to save DP: $e");

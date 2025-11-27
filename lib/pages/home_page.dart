@@ -2,9 +2,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:squeeze_pix/controllers/home_controller.dart';
 import 'package:squeeze_pix/models/app_images_model.dart';
 import 'package:squeeze_pix/controllers/compressor_controller.dart';
-import 'package:squeeze_pix/controllers/home_controller.dart';
+import 'package:squeeze_pix/controllers/history_controller.dart';
 import 'package:squeeze_pix/controllers/history_screen.dart';
 import 'package:squeeze_pix/pages/pixel_lab_screen.dart';
 import 'package:squeeze_pix/utils/formatters.dart';
@@ -17,8 +18,8 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final homeController = Get.put(HomeController());
-    // Ensure CompressorController is initialized for the HistoryScreen
     Get.put(CompressorController());
+    Get.put(HistoryController());
 
     final List<Widget> pages = [
       const ImageGridPage(),
