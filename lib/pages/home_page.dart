@@ -306,20 +306,20 @@ class GlassBottomNav extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Obx(
           () => BottomNavigationBar(
-            backgroundColor: Colors.white.withValues(alpha: .2),
-            selectedItemColor: Colors.cyan,
+            backgroundColor: Colors.black.withValues(alpha: .6),
+            selectedItemColor: Colors.cyanAccent,
             unselectedItemColor: Colors.white70,
             currentIndex: homeController.tabIndex.value,
             onTap: (i) => homeController.tabIndex.value = i,
-            type:
-                BottomNavigationBarType.fixed, // This makes all labels visible
+            type: BottomNavigationBarType
+                .shifting, // This makes all labels visible
             items: const [
               BottomNavigationBarItem(
-                icon: Icon(Icons.photo_library),
+                icon: Icon(Icons.maps_home_work_outlined),
                 label: "Home",
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.grid_view_rounded),
+                icon: Icon(Icons.temple_buddhist_rounded),
                 label: "Pixel Lab",
               ),
               BottomNavigationBarItem(
@@ -357,7 +357,7 @@ class _BatchActionBar extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
+            color: Colors.black.withOpacity(0.7),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
             border: Border(
               top: BorderSide(color: Colors.white.withOpacity(0.3), width: 1.5),

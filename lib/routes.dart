@@ -10,6 +10,6 @@ class AppRoutes {
     GetPage(name: '/splash', page: () => const SplashScreen()),
     GetPage(name: '/home', page: () => const HomeScreen()),
     GetPage(name: '/editor', page: () => const EditorHub()),
-    GetPage(name: '/result', page: () => const ResultScreen(compressed: null)),
+    // GetPage(name: '/result', page: () => const ResultScreen(compressed: null)),
   ];
 }
