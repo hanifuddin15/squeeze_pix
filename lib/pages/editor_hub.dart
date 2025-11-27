@@ -461,6 +461,7 @@ class _EffectsControls extends GetView<EditorController> {
               ),
               _EffectButton(
                 label: 'Sepia',
+                imageFile: controller.editedImage.value,
                 effect: (i) => img.sepia(i),
                 onTap: () => controller.applyOneTapEffect((i) => img.sepia(i)),
               ),
@@ -676,29 +677,38 @@ class _EffectButtonState extends State<_EffectButton> {
   @override
   Widget build(BuildContext context) {
     final buttonContent = _thumbnail != null
-        ? ClipOval(child: Image.memory(img.encodePng(_thumbnail!)))
-        : const Icon(Icons.auto_awesome);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ElevatedButton(
-            onPressed: widget.onTap,
-            style: ElevatedButton.styleFrom(
-              shape: const CircleBorder(),
-              padding: const EdgeInsets.all(20),
+        ? ClipOval(
+            child: SizedBox(
+              width: 44, // Set your desired circular size
+              height: 44,
+              child: Image.memory(
+                img.encodePng(_thumbnail!),
+                fit: BoxFit.cover, // Important for full coverage
+              ),
             ),
-            child: SizedBox(width: 24, height: 24, child: buttonContent),
+          )
+        : Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: const Icon(Icons.auto_awesome, size: 24),
+          );
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ElevatedButton(
+          onPressed: widget.onTap,
+          style: ElevatedButton.styleFrom(
+            shape: const CircleBorder(),
+            padding: const EdgeInsets.all(0), // Remove extra padding
           ),
-          const SizedBox(height: 4),
-          Text(
-            widget.label,
-            style: const TextStyle(color: Colors.white, fontSize: 12),
-          ),
-        ],
-      ),
+          child: buttonContent,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          widget.label,
+          style: const TextStyle(color: Colors.white, fontSize: 12),
+        ),
+      ],
     );
   }
 }
