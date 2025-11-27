@@ -455,41 +455,59 @@ class _EffectsControls extends GetView<EditorController> {
             children: [
               _EffectButton(
                 label: 'Grayscale',
+                imageFile: controller.editedImage.value,
+                effect: img.grayscale,
                 onTap: () => controller.applyOneTapEffect(img.grayscale),
               ),
               _EffectButton(
                 label: 'Sepia',
+                effect: (i) => img.sepia(i),
                 onTap: () => controller.applyOneTapEffect((i) => img.sepia(i)),
               ),
               _EffectButton(
                 label: 'Invert',
+                imageFile: controller.editedImage.value,
+                effect: img.invert,
                 onTap: () => controller.applyOneTapEffect(img.invert),
               ),
               _EffectButton(
                 label: 'Sketch',
+                imageFile: controller.editedImage.value,
+                effect: (i) => img.sketch(i),
                 onTap: () => controller.applyOneTapEffect((i) => img.sketch(i)),
               ),
               _EffectButton(
                 label: 'Vignette',
+                imageFile: controller.editedImage.value,
+                effect: (i) => img.vignette(i),
                 onTap: () =>
                     controller.applyOneTapEffect((i) => img.vignette(i)),
               ),
               _EffectButton(
                 label: 'MonoChrome',
+                imageFile: controller.editedImage.value,
+                effect: (i) => img.monochrome(i),
                 onTap: () =>
                     controller.applyOneTapEffect((i) => img.monochrome(i)),
               ),
               _EffectButton(
                 label: 'Sobel',
+                imageFile: controller.editedImage.value,
+                effect: (i) => img.sobel(i),
                 onTap: () => controller.applyOneTapEffect((i) => img.sobel(i)),
               ),
               _EffectButton(
                 label: 'Quantize',
+                imageFile: controller.editedImage.value,
+                effect: (i) => img.quantize(i),
                 onTap: () =>
                     controller.applyOneTapEffect((i) => img.quantize(i)),
               ),
               _EffectButton(
                 label: 'Smooth',
+                imageFile: controller.editedImage.value,
+                effect: (i) =>
+                    img.smooth(weight: (2 + Random().nextInt(5)).toDouble(), i),
                 onTap: () => controller.applyOneTapEffect(
                   (i) => img.smooth(
                     weight: (2 + Random().nextInt(5)).toDouble(),
@@ -499,6 +517,11 @@ class _EffectsControls extends GetView<EditorController> {
               ),
               _EffectButton(
                 label: 'Solarize',
+                imageFile: controller.editedImage.value,
+                effect: (i) => img.solarize(
+                  threshold: (128 * (1 + Random().nextDouble())).toInt(),
+                  i,
+                ),
                 onTap: () => controller.applyOneTapEffect(
                   (i) => img.solarize(
                     threshold: (128 * (1 + Random().nextDouble())).toInt(),
@@ -508,6 +531,8 @@ class _EffectsControls extends GetView<EditorController> {
               ),
               _EffectButton(
                 label: 'MonoChrome',
+                imageFile: controller.editedImage.value,
+                effect: (i) => img.monochrome(i),
                 onTap: () =>
                     controller.applyOneTapEffect((i) => img.monochrome(i)),
               ),
@@ -598,29 +623,78 @@ class _EffectsControls extends GetView<EditorController> {
   }
 }
 
-class _EffectButton extends StatelessWidget {
+class _EffectButton extends StatefulWidget {
   final String label;
   final VoidCallback onTap;
-  const _EffectButton({required this.label, required this.onTap});
+  final File? imageFile;
+  final img.Image Function(img.Image) effect;
+
+  const _EffectButton({
+    required this.label,
+    required this.onTap,
+    this.imageFile,
+    required this.effect,
+  });
+
+  @override
+  State<_EffectButton> createState() => _EffectButtonState();
+}
+
+class _EffectButtonState extends State<_EffectButton> {
+  img.Image? _thumbnail;
+
+  @override
+  void initState() {
+    super.initState();
+    _generateThumbnail();
+  }
+
+  Future<void> _generateThumbnail() async {
+    if (widget.imageFile == null) return;
+
+    try {
+      final imageBytes = await widget.imageFile!.readAsBytes();
+      final originalImage = img.decodeImage(imageBytes);
+
+      if (originalImage != null) {
+        // Create a small thumbnail
+        final thumbnail = img.copyResize(originalImage, width: 60);
+        // Apply the effect
+        final effectedThumbnail = widget.effect(thumbnail);
+        if (mounted) {
+          setState(() {
+            _thumbnail = effectedThumbnail;
+          });
+        }
+      }
+    } catch (e) {
+      // Handle potential errors during image processing
+      debugPrint('Error generating thumbnail: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final buttonContent = _thumbnail != null
+        ? ClipOval(child: Image.memory(img.encodePng(_thumbnail!)))
+        : const Icon(Icons.auto_awesome);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ElevatedButton(
-            onPressed: onTap,
+            onPressed: widget.onTap,
             style: ElevatedButton.styleFrom(
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(20),
             ),
-            child: const Icon(Icons.auto_awesome),
+            child: SizedBox(width: 24, height: 24, child: buttonContent),
           ),
           const SizedBox(height: 4),
           Text(
-            label,
+            widget.label,
             style: const TextStyle(color: Colors.white, fontSize: 12),
           ),
         ],
