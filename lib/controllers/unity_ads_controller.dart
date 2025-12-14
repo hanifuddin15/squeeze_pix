@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:squeeze_pix/controllers/compressor_controller.dart';
 import 'package:squeeze_pix/controllers/home_controller.dart';
+import 'package:squeeze_pix/controllers/iap_controller.dart';
 import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 
 class UnityAdsController extends GetxController {
-  final CompressorController _compressorController = Get.find();
-  final HomeController _homeController = Get.find();
+  final CompressorController _compressorController = Get.put(CompressorController());
+  final HomeController _homeController = Get.put(HomeController());
 
   // Game ID from Unity Dashboard
   static const String _androidGameId = '5970117';
@@ -144,6 +145,20 @@ class UnityAdsController extends GetxController {
       _compressorController.batchAccessGranted.value = true;
       _compressorController.compressAll();
     }
+  }
+
+  //===== Perform Action with Ad Check =====//
+  void performAction(VoidCallback action) {
+    if (Get.isRegistered<IAPController>()) {
+      final iapController = Get.find<IAPController>();
+      if (iapController.isPro.value || iapController.isUltra.value) {
+        action();
+        return;
+      }
+    }
+
+    // Show Interstitial Ad for free users
+    showInterstitialAd(onComplete: action);
   }
 }
 

@@ -484,11 +484,9 @@ class CompressorController extends GetxController {
   //===== Compress Selected Image with an Ad =====//
   Future<void> compressSelectedWithAd() async {
     final adsController = Get.find<UnityAdsController>();
-    adsController.showInterstitialAd(
-      onComplete: () async {
-        await compressSelected();
-      },
-    );
+    adsController.performAction(() async {
+      await compressSelected();
+    });
   }
 
   //===== Compress All Selected Images into a ZIP =====//
@@ -505,12 +503,10 @@ class CompressorController extends GetxController {
 
     if (imagesToCompress.length > 2 && !batchAccessGranted.value) {
       final adsController = Get.find<UnityAdsController>();
-      adsController.showInterstitialAd(
-        onComplete: () async {
-          batchAccessGranted.value = true;
-          await compressAll(); // Re-run the check with access granted
-        },
-      );
+      adsController.performAction(() async {
+        batchAccessGranted.value = true;
+        await compressAll(); // Re-run the check with access granted
+      });
       return;
     }
 
@@ -623,12 +619,12 @@ class CompressorController extends GetxController {
 
     // If compression was successful and a zip file was created, share it.
     if (lastZipFile.value != null) {
+    if (lastZipFile.value != null) {
       final adsController = Get.find<UnityAdsController>();
-      adsController.showInterstitialAd(
-        onComplete: () {
-          shareZipFile(showAd: true); // Share without showing another ad
-        },
-      );
+      adsController.performAction(() {
+        shareZipFile(showAd: true); // Share without showing another ad
+      });
+    }
     }
   }
 
@@ -683,12 +679,12 @@ class CompressorController extends GetxController {
   //===== Open the Location of the Last Compressed File =====//
   Future<void> openLastCompressedLocation() async {
     if (lastCompressed.value != null) {
+    if (lastCompressed.value != null) {
       final adsController = Get.find<UnityAdsController>();
-      adsController.showInterstitialAd(
-        onComplete: () {
-          OpenFilex.open(lastCompressed.value!.path);
-        },
-      );
+      adsController.performAction(() {
+        OpenFilex.open(lastCompressed.value!.path);
+      });
+    }
     }
   }
 
@@ -697,60 +693,58 @@ class CompressorController extends GetxController {
     if (lastZipFile.value == null) return;
 
     final adsController = Get.find<UnityAdsController>();
-    adsController.showInterstitialAd(
-      onComplete: () async {
-        // Request storage permission before proceeding
-        var status = await Permission.manageExternalStorage.status;
-        if (!status.isGranted) {
-          status = await Permission.manageExternalStorage.request();
-        }
+    adsController.performAction(() async {
+      // Request storage permission before proceeding
+      var status = await Permission.manageExternalStorage.status;
+      if (!status.isGranted) {
+        status = await Permission.manageExternalStorage.request();
+      }
 
-        if (!status.isGranted) {
-          showWarningSnackkbar(
-            title: 'Permission Denied',
-            message: 'Storage permission is required to extract files',
+      if (!status.isGranted) {
+        showWarningSnackkbar(
+          title: 'Permission Denied',
+          message: 'Storage permission is required to extract files',
+        );
+
+        return;
+      }
+
+      try {
+        String? saveDir = batchSavePath.value;
+        if (saveDir == null) {
+          showErrorSnackkbar(
+            title: 'No Save Location',
+            message: 'Please set a save location.',
           );
 
-          return;
+          await setBatchSavePath();
+          saveDir = batchSavePath.value;
+          if (saveDir == null) return;
         }
 
-        try {
-          String? saveDir = batchSavePath.value;
-          if (saveDir == null) {
-            showErrorSnackkbar(
-              title: 'No Save Location',
-              message: 'Please set a save location.',
-            );
+        final inputStream = InputFileStream(lastZipFile.value!.path);
+        final archive = ZipDecoder().decodeStream(inputStream);
+        showSuccessSnackkbar(
+          message: 'Extracting files, please wait.',
+          title: 'Extracting...',
+        );
 
-            await setBatchSavePath();
-            saveDir = batchSavePath.value;
-            if (saveDir == null) return;
+        for (final file in archive.files) {
+          final filename = file.name;
+          if (file.isFile) {
+            final data = file.content as List<int>;
+            final path = '$saveDir/$filename';
+            final outFile = File(path);
+            await outFile.create(recursive: true);
+            await outFile.writeAsBytes(data);
           }
-
-          final inputStream = InputFileStream(lastZipFile.value!.path);
-          final archive = ZipDecoder().decodeStream(inputStream);
-          showSuccessSnackkbar(
-            message: 'Extracting files, please wait.',
-            title: 'Extracting...',
-          );
-
-          for (final file in archive.files) {
-            final filename = file.name;
-            if (file.isFile) {
-              final data = file.content as List<int>;
-              final path = '$saveDir/$filename';
-              final outFile = File(path);
-              await outFile.create(recursive: true);
-              await outFile.writeAsBytes(data);
-            }
-          }
-          showSuccessSnackkbar(message: 'Files extracted successfully.');
-        } catch (e) {
-          showErrorSnackkbar(message: 'Failed to extract files: $e');
-          debugPrint('Failed to extract files: $e');
         }
-      },
-    );
+        showSuccessSnackkbar(message: 'Files extracted successfully.');
+      } catch (e) {
+        showErrorSnackkbar(message: 'Failed to extract files: $e');
+        debugPrint('Failed to extract files: $e');
+      }
+    });
   }
 
   //===== Toggle Batch Selection Mode =====//

@@ -15,6 +15,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/utils/snackbar.dart';
 import '../../controllers/history_controller.dart';
+import '../../controllers/unity_ads_controller.dart';
 
 class MemeText {
   int id;
@@ -1064,33 +1065,39 @@ class _MemeGeneratorState extends State<MemeGenerator> {
   }
 
   Future<void> _saveMeme() async {
-    final imageBytes = await _captureMeme();
-    if (imageBytes == null) return;
+    final adsController = Get.find<UnityAdsController>();
+    adsController.performAction(() async {
+      final imageBytes = await _captureMeme();
+      if (imageBytes == null) return;
 
-    try {
-      final tempDir = await getTemporaryDirectory();
-      final file = await File('${tempDir.path}/meme_output.png').create();
-      await file.writeAsBytes(imageBytes);
-      await Gal.putImage(file.path);
-      // Add to history
-      Get.find<HistoryController>().addHistoryItem(file, HistoryType.meme);
-      showSuccessSnackkbar(message: "Meme saved to gallery!");
-    } catch (e) {
-      showErrorSnackkbar(message: "Failed to save meme: $e");
-    }
+      try {
+        final tempDir = await getTemporaryDirectory();
+        final file = await File('${tempDir.path}/meme_output.png').create();
+        await file.writeAsBytes(imageBytes);
+        await Gal.putImage(file.path);
+        // Add to history
+        Get.find<HistoryController>().addHistoryItem(file, HistoryType.meme);
+        showSuccessSnackkbar(message: "Meme saved to gallery!");
+      } catch (e) {
+        showErrorSnackkbar(message: "Failed to save meme: $e");
+      }
+    });
   }
 
   Future<void> _shareMeme() async {
-    final imageBytes = await _captureMeme();
-    if (imageBytes == null) return;
+    final adsController = Get.find<UnityAdsController>();
+    adsController.performAction(() async {
+      final imageBytes = await _captureMeme();
+      if (imageBytes == null) return;
 
-    final tempDir = await getTemporaryDirectory();
-    final file = await File('${tempDir.path}/meme_share.png').create();
-    await file.writeAsBytes(imageBytes);
+      final tempDir = await getTemporaryDirectory();
+      final file = await File('${tempDir.path}/meme_share.png').create();
+      await file.writeAsBytes(imageBytes);
 
-    await Share.shareXFiles([
-      XFile(file.path),
-    ], text: 'Check out this meme I made!');
+      await Share.shareXFiles([
+        XFile(file.path),
+      ], text: 'Check out this meme I made!');
+    });
   }
 
   @override

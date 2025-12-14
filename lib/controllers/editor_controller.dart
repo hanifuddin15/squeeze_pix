@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/utils/snackbar.dart';
+import 'package:squeeze_pix/controllers/unity_ads_controller.dart';
 import 'package:image/image.dart' as img;
 
 enum EditorTool { none, crop, resize, compress, convert, effects }
@@ -83,187 +84,229 @@ class EditorController extends GetxController {
   Future<void> cropImage() async {
     if (editedImage.value == null) return;
 
-    final croppedFile = await ImageCropper().cropImage(
-      sourcePath: editedImage.value!.path,
-      aspectRatio: const CropAspectRatio(
-        ratioX: 1,
-        ratioY: 1,
-      ), // default = square
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Crop Image',
-          toolbarColor: Get.theme.colorScheme.primary,
-          toolbarWidgetColor: Colors.white,
-          lockAspectRatio: false,
-        ),
-        IOSUiSettings(title: 'Crop Image'),
-      ],
-    );
+    final adsController = Get.find<UnityAdsController>();
+    adsController.performAction(() async {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: editedImage.value!.path,
+        aspectRatio: const CropAspectRatio(
+          ratioX: 1,
+          ratioY: 1,
+        ), // default = square
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Image',
+            toolbarColor: Get.theme.colorScheme.primary,
+            toolbarWidgetColor: Colors.white,
+            lockAspectRatio: false,
+          ),
+          IOSUiSettings(title: 'Crop Image'),
+        ],
+      );
 
-    if (croppedFile != null) {
-      final bytes = await croppedFile.readAsBytes();
-      await _updateEditedImage(bytes);
-      showSuccessSnackkbar(message: 'Image cropped.');
-    }
+      if (croppedFile != null) {
+        final bytes = await croppedFile.readAsBytes();
+        await _updateEditedImage(bytes);
+        showSuccessSnackkbar(message: 'Image cropped.');
+      }
+    });
   }
 
   Future<void> applyResize(int newWidth, int newHeight) async {
     if (editedImage.value == null) return;
-    final img.Image? image = img.decodeImage(
-      await editedImage.value!.readAsBytes(),
-    );
-    if (image == null) return;
-    final resizedImage = img.copyResize(
-      image,
-      width: newWidth,
-      height: newHeight,
-    );
-    await _updateEditedImage(Uint8List.fromList(img.encodeJpg(resizedImage)));
-    showSuccessSnackkbar(message: 'Image resized.');
-    activeTool.value = EditorTool.none;
+    
+    final adsController = Get.find<UnityAdsController>();
+    adsController.performAction(() async {
+      final img.Image? image = img.decodeImage(
+        await editedImage.value!.readAsBytes(),
+      );
+      if (image == null) return;
+      final resizedImage = img.copyResize(
+        image,
+        width: newWidth,
+        height: newHeight,
+      );
+      await _updateEditedImage(Uint8List.fromList(img.encodeJpg(resizedImage)));
+      showSuccessSnackkbar(message: 'Image resized.');
+      activeTool.value = EditorTool.none;
+    });
   }
 
   Future<void> applyCompression() async {
     if (editedImage.value == null) return;
-    final imageBytes = await editedImage.value!.readAsBytes();
+    
+    final adsController = Get.find<UnityAdsController>();
+    adsController.performAction(() async {
+      final imageBytes = await editedImage.value!.readAsBytes();
 
-    Uint8List resultBytes;
+      Uint8List resultBytes;
 
-    // Target Size Mode
-    if (compressionMode.value == 1 && targetSizeKB.value != null) {
-      int quality = 95;
-      resultBytes = await FlutterImageCompress.compressWithList(
-        imageBytes,
-        quality: quality,
-      );
-      // Iteratively reduce quality to meet the target size
-      while (resultBytes.lengthInBytes / 1024 > targetSizeKB.value! &&
-          quality > 10) {
-        quality -= 5;
+      // Target Size Mode
+      if (compressionMode.value == 1 && targetSizeKB.value != null) {
+        int quality = 95;
         resultBytes = await FlutterImageCompress.compressWithList(
           imageBytes,
           quality: quality,
         );
+        // Iteratively reduce quality to meet the target size
+        while (resultBytes.lengthInBytes / 1024 > targetSizeKB.value! &&
+            quality > 10) {
+          quality -= 5;
+          resultBytes = await FlutterImageCompress.compressWithList(
+            imageBytes,
+            quality: quality,
+          );
+        }
       }
-    }
-    // Quality Mode
-    else {
-      resultBytes = await FlutterImageCompress.compressWithList(
-        imageBytes,
-        quality: compressionQuality.value.toInt(),
-      );
-    }
+      // Quality Mode
+      else {
+        resultBytes = await FlutterImageCompress.compressWithList(
+          imageBytes,
+          quality: compressionQuality.value.toInt(),
+        );
+      }
 
-    if (resultBytes.isEmpty) {
-      showErrorSnackkbar(message: 'Compression failed.');
-      return;
-    }
+      if (resultBytes.isEmpty) {
+        showErrorSnackkbar(message: 'Compression failed.');
+        return;
+      }
 
-    final originalSize = imageBytes.lengthInBytes;
-    final newSize = resultBytes.lengthInBytes;
-    final reduction = ((originalSize - newSize) / originalSize * 100)
-        .toStringAsFixed(1);
+      final originalSize = imageBytes.lengthInBytes;
+      final newSize = resultBytes.lengthInBytes;
+      final reduction = ((originalSize - newSize) / originalSize * 100)
+          .toStringAsFixed(1);
 
-    await _updateEditedImage(resultBytes);
-    showSuccessSnackkbar(message: 'Compressed by $reduction%');
-    activeTool.value = EditorTool.none;
+      await _updateEditedImage(resultBytes);
+      showSuccessSnackkbar(message: 'Compressed by $reduction%');
+      activeTool.value = EditorTool.none;
+    });
   }
 
   Future<void> applyConversion(String format) async {
     if (editedImage.value == null) return;
-    final imageBytes = await editedImage.value!.readAsBytes();
-    final image = img.decodeImage(imageBytes);
-    if (image == null) return;
 
-    // Handle PDF conversion as a special case: save and exit the tool.
-    if (format == 'PDF') {
-      final pdf = pw.Document();
-      final pdfImage = pw.MemoryImage(imageBytes);
-      pdf.addPage(
-        pw.Page(
-          build: (pw.Context context) {
-            return pw.Center(child: pw.Image(pdfImage));
-          },
-        ),
-      );
-      final pdfBytes = await pdf.save();
+    final adsController = Get.find<UnityAdsController>();
+    adsController.performAction(() async {
+      final imageBytes = await editedImage.value!.readAsBytes();
+      final image = img.decodeImage(imageBytes);
+      if (image == null) return;
 
-      // Save the PDF to a temporary file to be able to save/share it
-      final tempDir = await getTemporaryDirectory();
-      final pdfFile = File('${tempDir.path}/converted.pdf');
-      await pdfFile.writeAsBytes(pdfBytes);
-
-      try {
-        // Use Share sheet for the PDF
-        await SharePlus.instance.share(
-          ShareParams(files: [XFile(pdfFile.path)]),
+      // Handle PDF conversion as a special case: save and exit the tool.
+      if (format == 'PDF') {
+        final pdf = pw.Document();
+        final pdfImage = pw.MemoryImage(imageBytes);
+        pdf.addPage(
+          pw.Page(
+            build: (pw.Context context) {
+              return pw.Center(child: pw.Image(pdfImage));
+            },
+          ),
         );
-        showSuccessSnackkbar(message: 'PDF ready to be shared!');
-      } catch (e) {
-        showErrorSnackkbar(message: 'Failed to share PDF: $e');
+        final pdfBytes = await pdf.save();
+
+        // Save the PDF to a temporary file to be able to save/share it
+        final tempDir = await getTemporaryDirectory();
+        final pdfFile = File('${tempDir.path}/converted.pdf');
+        await pdfFile.writeAsBytes(pdfBytes);
+
+        try {
+          // Use Share sheet for the PDF
+          await SharePlus.instance.share(
+            ShareParams(files: [XFile(pdfFile.path)]),
+          );
+          showSuccessSnackkbar(message: 'PDF ready to be shared!');
+        } catch (e) {
+          showErrorSnackkbar(message: 'Failed to share PDF: $e');
+        }
+
+        activeTool.value = EditorTool.none;
+        return; // Exit here, do not try to display the PDF
       }
 
+      // --- Handle normal image format conversions (JPG, PNG) ---
+      List<int> encoded;
+      if (format == 'PNG') {
+        encoded = img.encodePng(image, level: 6);
+      } else {
+        // Default to JPG
+        encoded = img.encodeJpg(image);
+      }
+
+      await _updateEditedImage(
+        Uint8List.fromList(encoded),
+        newExtension: '.${format.toLowerCase()}',
+      );
+      showSuccessSnackkbar(message: 'Image converted to $format.');
       activeTool.value = EditorTool.none;
-      return; // Exit here, do not try to display the PDF
-    }
-
-    // --- Handle normal image format conversions (JPG, PNG) ---
-    List<int> encoded;
-    if (format == 'PNG') {
-      encoded = img.encodePng(image, level: 6);
-    } else {
-      // Default to JPG
-      encoded = img.encodeJpg(image);
-    }
-
-    await _updateEditedImage(
-      Uint8List.fromList(encoded),
-      newExtension: '.${format.toLowerCase()}',
-    );
-    showSuccessSnackkbar(message: 'Image converted to $format.');
-    activeTool.value = EditorTool.none;
+    });
   }
 
   Future<void> applyEffect(img.Image Function(img.Image)? effect) async {
     if (editedImage.value == null) return;
 
-    // If applying a one-tap effect, always start from the original image.
-    // Otherwise, use the currently edited image for adjustments.
-    final sourceImageFile = (effect != null && originalImage.value != null)
-        ? originalImage.value!
-        : editedImage.value!;
+    // If it's a one-tap effect (effect != null), wrap with Ad.
+    // If it's manual adjustment (effect == null), we usually don't show ads for every slider change.
+    // But verify if the USER wants ads on "Effects" generally.
+    // The requirement is "Integrate in app purchases and unityads in all necessary actions... effects".
+    // So if I apply an effect, I should probably show an ad?
+    // BUT, slider adjustments recall this function repeatedly. That would be bad.
+    // So ONLY wrap if effect != null (One Tap Effect).
+    // For slider adjustments (applyAdjustments checks/Apply button), we need to check where that is called.
+    // applyAdjustments calls applyEffect(null).
+    
+    // Wait, let's look at applyAdjustments. It calls applyEffect(null).
+    // Let's wrap applyEffect logic only when it's a meaningful action.
+    // Real-time slider updates shouldn't trigger ads.
+    // But "applying" them might?
+    // Actually, `applyEffect` commits the change to `editedImage`?
+    // It creates a new image and updates `editedImage`. Yes.
+    // So every slider move updates the file? That seems inefficient if it happens on `onChanged`.
+    // Let's check `onInit`: `everAll(...) => _updateColorFilter()`. This only updates the filter for preview.
+    // `applyEffect` is likely called when user clicks "Apply" or a preset.
+    // Ah, `applyOneTapEffect` calls `applyEffect(effect)`.
+    // `applyAdjustments` calls `applyEffect(null)`.
+    
+    // So yes, these are commit actions. I should wrap them.
 
-    final image = img.decodeImage(await sourceImageFile.readAsBytes());
-    if (image == null) return;
+    final adsController = Get.find<UnityAdsController>();
+    adsController.performAction(() async {
+        // If applying a one-tap effect, always start from the original image.
+        // Otherwise, use the currently edited image for adjustments.
+        final sourceImageFile = (effect != null && originalImage.value != null)
+            ? originalImage.value!
+            : editedImage.value!;
 
-    img.Image newImage = image;
+        final image = img.decodeImage(await sourceImageFile.readAsBytes());
+        if (image == null) return;
 
-    // If a one-tap effect function is provided, apply it first.
-    if (effect != null) {
-      newImage = effect(image);
-    }
+        img.Image newImage = image;
 
-    // Then, apply slider adjustments on top.
-    if (brightness.value != 0) {
-      newImage = img.adjustColor(
-        newImage,
-        brightness: brightness.value.toInt(),
-      );
-    }
-    if (contrast.value != 1.0) {
-      newImage = img.contrast(newImage, contrast: contrast.value * 100);
-    }
-    if (saturation.value != 1.0 || hue.value != 0.0) {
-      newImage = img.adjustColor(
-        newImage,
-        saturation: saturation.value * 100,
-        hue: hue.value,
-      );
-    }
+        // If a one-tap effect function is provided, apply it first.
+        if (effect != null) {
+          newImage = effect(image);
+        }
 
-    await _updateEditedImage(Uint8List.fromList(img.encodeJpg(newImage)));
-    showSuccessSnackkbar(message: 'Effect applied.');
-    resetEffects(); // Reset sliders and UI filter after applying to bake the changes
+        // Then, apply slider adjustments on top.
+        if (brightness.value != 0) {
+          newImage = img.adjustColor(
+            newImage,
+            brightness: brightness.value.toInt(),
+          );
+        }
+        if (contrast.value != 1.0) {
+          newImage = img.contrast(newImage, contrast: contrast.value * 100);
+        }
+        if (saturation.value != 1.0 || hue.value != 0.0) {
+          newImage = img.adjustColor(
+            newImage,
+            saturation: saturation.value * 100,
+            hue: hue.value,
+          );
+        }
+
+        await _updateEditedImage(Uint8List.fromList(img.encodeJpg(newImage)));
+        showSuccessSnackkbar(message: 'Effect applied.');
+        resetEffects(); // Reset sliders and UI filter after applying to bake the changes
+    });
   }
 
   void applyOneTapEffect(img.Image Function(img.Image) effect) {
@@ -380,25 +423,31 @@ class EditorController extends GetxController {
   }
 
   void shareImage() {
-    if (editedImage.value != null) {
-      SharePlus.instance.share(
-        ShareParams(files: [XFile(editedImage.value!.path)]),
-      );
-    } else {
-      showErrorSnackkbar(message: 'No image to share.');
-    }
+    final adsController = Get.find<UnityAdsController>();
+    adsController.performAction(() {
+      if (editedImage.value != null) {
+        SharePlus.instance.share(
+          ShareParams(files: [XFile(editedImage.value!.path)]),
+        );
+      } else {
+        showErrorSnackkbar(message: 'No image to share.');
+      }
+    });
   }
 
   Future<void> saveImage() async {
-    if (editedImage.value != null) {
-      try {
-        await Gal.putImage(editedImage.value!.path);
-        showSuccessSnackkbar(message: 'Image saved to gallery!');
-      } catch (e) {
-        showErrorSnackkbar(message: 'Failed to save image: $e');
+    final adsController = Get.find<UnityAdsController>();
+    adsController.performAction(() async {
+      if (editedImage.value != null) {
+        try {
+          await Gal.putImage(editedImage.value!.path);
+          showSuccessSnackkbar(message: 'Image saved to gallery!');
+        } catch (e) {
+          showErrorSnackkbar(message: 'Failed to save image: $e');
+        }
+      } else {
+        showErrorSnackkbar(message: 'No image to save.');
       }
-    } else {
-      showErrorSnackkbar(message: 'No image to save.');
-    }
+    });
   }
 }

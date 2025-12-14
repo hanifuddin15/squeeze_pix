@@ -15,6 +15,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/utils/snackbar.dart';
 import '../../../theme/app_theme.dart';
 import '../../controllers/history_controller.dart';
+import '../../controllers/unity_ads_controller.dart';
 
 enum DPShape { circle, square, rounded }
 
@@ -338,30 +339,36 @@ class _DPMakerState extends State<DPMaker> {
   }
 
   Future<void> _saveDP() async {
-    final imageBytes = await _captureWidget();
-    if (imageBytes == null) return;
+    final adsController = Get.find<UnityAdsController>();
+    adsController.performAction(() async {
+      final imageBytes = await _captureWidget();
+      if (imageBytes == null) return;
 
-    try {
-      final tempDir = await getTemporaryDirectory();
-      final file = await File('${tempDir.path}/dp_maker_output.png').create();
-      await file.writeAsBytes(imageBytes);
-      await Gal.putImage(file.path);
-      // Add to history
-      Get.find<HistoryController>().addHistoryItem(file, HistoryType.dp);
-      showSuccessSnackkbar(message: "DP saved to gallery!");
-    } catch (e) {
-      showErrorSnackkbar(message: "Failed to save DP: $e");
-    }
+      try {
+        final tempDir = await getTemporaryDirectory();
+        final file = await File('${tempDir.path}/dp_maker_output.png').create();
+        await file.writeAsBytes(imageBytes);
+        await Gal.putImage(file.path);
+        // Add to history
+        Get.find<HistoryController>().addHistoryItem(file, HistoryType.dp);
+        showSuccessSnackkbar(message: "DP saved to gallery!");
+      } catch (e) {
+        showErrorSnackkbar(message: "Failed to save DP: $e");
+      }
+    });
   }
 
   Future<void> _shareDP() async {
-    final imageBytes = await _captureWidget();
-    if (imageBytes == null) return;
+    final adsController = Get.find<UnityAdsController>();
+    adsController.performAction(() async {
+      final imageBytes = await _captureWidget();
+      if (imageBytes == null) return;
 
-    final tempDir = await getTemporaryDirectory();
-    final file = await File('${tempDir.path}/dp_maker_share.png').create();
-    await file.writeAsBytes(imageBytes);
+      final tempDir = await getTemporaryDirectory();
+      final file = await File('${tempDir.path}/dp_maker_share.png').create();
+      await file.writeAsBytes(imageBytes);
 
-    await Share.shareXFiles([XFile(file.path)], text: 'Check out my new DP!');
+      await Share.shareXFiles([XFile(file.path)], text: 'Check out my new DP!');
+    });
   }
 }

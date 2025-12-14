@@ -14,6 +14,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/utils/snackbar.dart';
 import '../../controllers/history_controller.dart';
+import '../../controllers/unity_ads_controller.dart';
 
 import '../../models/id_photo_spec.dart';
 
@@ -538,43 +539,49 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
   }
 
   Future<void> _saveSheet() async {
-    final pdfBytes = await _generatePdfBytes();
-    final tempDir = await getTemporaryDirectory();
-    final file = await File(
-      '${tempDir.path}/id_photo_sheet.pdf',
-    ).writeAsBytes(pdfBytes);
-
-    try {
-      // Saving PDF to gallery is not standard, so we offer to share/open it.
-      // For a direct "save", we can save an image representation instead.
-      // Let's save as an image for the "Save" button.
-      // A better approach would be to render the PDF page to an image.
-      // For simplicity, we'll just save the first photo.
-      await Gal.putImage(_image!.path);
-      showSuccessSnackkbar(
-        message:
-            "Single photo saved to gallery. Use 'Share' for the full PDF sheet.",
-      );
-      // Add to history
-      Get.find<HistoryController>().addHistoryItem(file, HistoryType.id);
-    } catch (e) {
-      showErrorSnackkbar(message: "Failed to save photo: $e");
-    }
-  }
-
-  Future<void> _shareSheet() async {
-    try {
+    final adsController = Get.find<UnityAdsController>();
+    adsController.performAction(() async {
       final pdfBytes = await _generatePdfBytes();
       final tempDir = await getTemporaryDirectory();
       final file = await File(
         '${tempDir.path}/id_photo_sheet.pdf',
       ).writeAsBytes(pdfBytes);
 
-      await Share.shareXFiles([
-        XFile(file.path),
-      ], text: 'Here is my ID Photo Sheet.');
-    } catch (e) {
-      showErrorSnackkbar(message: "Failed to generate or share PDF: $e");
-    }
+      try {
+        // Saving PDF to gallery is not standard, so we offer to share/open it.
+        // For a direct "save", we can save an image representation instead.
+        // Let's save as an image for the "Save" button.
+        // A better approach would be to render the PDF page to an image.
+        // For simplicity, we'll just save the first photo.
+        await Gal.putImage(_image!.path);
+        showSuccessSnackkbar(
+          message:
+              "Single photo saved to gallery. Use 'Share' for the full PDF sheet.",
+        );
+        // Add to history
+        Get.find<HistoryController>().addHistoryItem(file, HistoryType.id);
+      } catch (e) {
+        showErrorSnackkbar(message: "Failed to save photo: $e");
+      }
+    });
+  }
+
+  Future<void> _shareSheet() async {
+    final adsController = Get.find<UnityAdsController>();
+    adsController.performAction(() async {
+      try {
+        final pdfBytes = await _generatePdfBytes();
+        final tempDir = await getTemporaryDirectory();
+        final file = await File(
+          '${tempDir.path}/id_photo_sheet.pdf',
+        ).writeAsBytes(pdfBytes);
+
+        await Share.shareXFiles([
+          XFile(file.path),
+        ], text: 'Here is my ID Photo Sheet.');
+      } catch (e) {
+        showErrorSnackkbar(message: "Failed to generate or share PDF: $e");
+      }
+    });
   }
 }

@@ -4,9 +4,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:squeeze_pix/controllers/iap_controller.dart';
-import 'package:squeeze_pix/pages/pro_upgrade_screen.dart';
+
+
 import 'package:squeeze_pix/services/bg_remover_service.dart';
+import '../../controllers/unity_ads_controller.dart';
 
 class BackgroundRemover extends StatefulWidget {
   const BackgroundRemover({super.key});
@@ -21,18 +22,9 @@ class _BackgroundRemoverState extends State<BackgroundRemover> {
 
   @override
   Widget build(BuildContext context) {
-    final iap = Get.find<IAPController>();
-    // ignore: unrelated_type_equality_checks
-    if (!(iap.isUltra == true)) {
-      return Scaffold(
-        body: Center(
-          child: ElevatedButton(
-            onPressed: () => Get.to(() => ProUpgradeScreen()),
-            child: const Text("Upgrade to Ultra"),
-          ),
-        ),
-      );
-    }
+
+    // The blocker is removed to allow ad-supported access for all users.
+    // Pro/Ultra users will bypass ads via performAction in _removeBG.
 
     return Scaffold(
       appBar: AppBar(title: const Text("Remove Background")),
@@ -61,7 +53,10 @@ class _BackgroundRemoverState extends State<BackgroundRemover> {
   }
 
   void _removeBG() async {
-    result = await Get.find<BgRemoverService>().remove(image!);
-    setState(() {});
+    final adsController = Get.find<UnityAdsController>();
+    adsController.performAction(() async {
+      result = await Get.find<BgRemoverService>().remove(image!);
+      setState(() {});
+    });
   }
 }
