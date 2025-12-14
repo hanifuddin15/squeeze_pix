@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:squeeze_pix/controllers/iap_controller.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
-import 'package:squeeze_pix/controllers/glassmorphic_button.dart';
+import 'package:squeeze_pix/widgets/glassmorphic_button.dart';
 
 class ProUpgradeScreen extends StatelessWidget {
   const ProUpgradeScreen({super.key});

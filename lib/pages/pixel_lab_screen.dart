@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:squeeze_pix/controllers/pixel_lab_controller.dart';
-import 'package:squeeze_pix/pages/dp_maker.dart';
-import 'package:squeeze_pix/pages/id_photo_maker.dart';
-import 'package:squeeze_pix/pages/meme_generator.dart';
+import 'package:squeeze_pix/pages/pixel_lab/dp_maker.dart';
+import 'package:squeeze_pix/pages/pixel_lab/id_photo_maker.dart';
+import 'package:squeeze_pix/pages/pixel_lab/meme_generator.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 
 class PixelLabScreen extends GetView<PixelLabController> {

@@ -6,11 +6,11 @@ import 'package:squeeze_pix/controllers/home_controller.dart';
 import 'package:squeeze_pix/models/app_images_model.dart';
 import 'package:squeeze_pix/controllers/compressor_controller.dart';
 import 'package:squeeze_pix/controllers/history_controller.dart';
-import 'package:squeeze_pix/controllers/history_screen.dart';
+import 'package:squeeze_pix/pages/history_screen.dart';
 import 'package:squeeze_pix/pages/pixel_lab_screen.dart';
 import 'package:squeeze_pix/utils/formatters.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
-import 'package:squeeze_pix/controllers/glassmorphic_button.dart';
+import 'package:squeeze_pix/widgets/glassmorphic_button.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

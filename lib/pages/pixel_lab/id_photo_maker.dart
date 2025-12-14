@@ -13,9 +13,9 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/utils/snackbar.dart';
-import '../controllers/history_controller.dart';
+import '../../controllers/history_controller.dart';
 
-import '../models/id_photo_spec.dart';
+import '../../models/id_photo_spec.dart';
 
 // A map of standard ID photo specifications
 class IDPhotoMaker extends StatefulWidget {

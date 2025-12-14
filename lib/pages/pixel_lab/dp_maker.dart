@@ -13,8 +13,8 @@ import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/utils/snackbar.dart';
-import '../../theme/app_theme.dart';
-import '../controllers/history_controller.dart';
+import '../../../theme/app_theme.dart';
+import '../../controllers/history_controller.dart';
 
 enum DPShape { circle, square, rounded }
 
