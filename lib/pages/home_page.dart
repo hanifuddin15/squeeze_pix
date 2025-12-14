@@ -69,11 +69,6 @@ class ImageGridPage extends StatelessWidget {
             () => homeController.isSelectionMode.value
                 ? Row(
                     children: [
-                      // IconButton(
-                      //   icon: const Icon(Icons.brightness_6_outlined),
-                      //   onPressed: homeController.toggleTheme,
-                      //   tooltip: 'Toggle Theme',
-                      // ),
                       IconButton(
                         icon: const Icon(Icons.select_all),
                         onPressed: homeController.selectAll,
@@ -93,11 +88,11 @@ class ImageGridPage extends StatelessWidget {
                         onPressed: homeController.showImageSourceDialog,
                         tooltip: 'Add Images',
                       ),
-                      // IconButton(
-                      //   icon: const Icon(Icons.brightness_6_outlined),
-                      //   onPressed: homeController.toggleTheme,
-                      //   tooltip: 'Toggle Theme',
-                      // ),
+                       IconButton(
+                        icon: const Icon(Icons.brightness_6_outlined),
+                        onPressed: homeController.toggleTheme,
+                       tooltip: 'Toggle Theme',
+                       ),
                     ],
                   ),
           ),
@@ -305,30 +300,41 @@ class GlassBottomNav extends StatelessWidget {
       borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Obx(
-          () => BottomNavigationBar(
-            backgroundColor: Colors.black.withOpacity(0.7),
-            elevation: 5,
-            selectedItemColor: Colors.cyanAccent,
-            unselectedItemColor: Colors.white70,
-            currentIndex: homeController.tabIndex.value,
-            onTap: (i) => homeController.tabIndex.value = i,
-            type: BottomNavigationBarType
-                .shifting, // This makes all labels visible
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.maps_home_work_outlined),
-                label: "Home",
+        child: Container(
+               decoration: BoxDecoration(
+            color:context.theme.colorScheme.surface.withOpacity(0.2), // 👈 glass tint
+            border: Border(
+              top: BorderSide(
+                color: Colors.white.withOpacity(0.2),
+                width: 1,
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.temple_buddhist_rounded),
-                label: "Pixel Lab",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.history),
-                label: "History",
-              ),
-            ],
+            ),
+          ),
+          child: Obx(
+            () => BottomNavigationBar(
+              backgroundColor: Colors.transparent, 
+              elevation: 5,
+              selectedItemColor:  Colors.amber,
+              unselectedItemColor: Colors.white70,
+              currentIndex: homeController.tabIndex.value,
+              onTap: (i) => homeController.tabIndex.value = i,
+              type: BottomNavigationBarType
+                  .fixed, // This makes all labels visible
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.maps_home_work_outlined),
+                  label: "Home",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.temple_buddhist_rounded),
+                  label: "Pixel Lab",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.history),
+                  label: "History",
+                ),
+              ],
+            ),
           ),
         ),
       ),
