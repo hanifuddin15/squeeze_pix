@@ -8,6 +8,7 @@ import 'package:squeeze_pix/controllers/compressor_controller.dart';
 import 'package:squeeze_pix/controllers/history_controller.dart';
 import 'package:squeeze_pix/pages/history_screen.dart';
 import 'package:squeeze_pix/pages/pixel_lab_screen.dart';
+import 'package:squeeze_pix/pages/pro_upgrade_screen.dart';
 import 'package:squeeze_pix/utils/formatters.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/widgets/glassmorphic_button.dart';
@@ -84,14 +85,21 @@ class ImageGridPage extends StatelessWidget {
                 : Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.add_photo_alternate_outlined),
+                        icon:  Icon(Icons.add_photo_alternate_outlined, color:Colors.amber),
                         onPressed: homeController.showImageSourceDialog,
                         tooltip: 'Add Images',
                       ),
                        IconButton(
-                        icon: const Icon(Icons.brightness_6_outlined),
+                        icon: const Icon(Icons.brightness_6_outlined, color:Colors.amber),
                         onPressed: homeController.toggleTheme,
                        tooltip: 'Toggle Theme',
+                       ),
+                       IconButton(
+                        icon: const Icon(Icons.workspace_premium_outlined, color:Colors.amber),
+                        onPressed: (){
+                          Get.to(ProUpgradeScreen());
+                        },
+                       tooltip: 'Buy Premium',
                        ),
                     ],
                   ),
