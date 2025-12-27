@@ -497,11 +497,7 @@ class _BatchActionBar extends StatelessWidget {
                     // runSpacing: 12, // vertical spacing
                     // alignment: WrapAlignment.center,
                     children: [
-                      _ActionButton(
-                        icon: Icons.folder_open,
-                        label: 'Save To',
-                        onTap: compressorController.setBatchSavePath,
-                      ),
+
                       _ActionButton(
                         icon: Icons.compress,
                         label: 'Compress',

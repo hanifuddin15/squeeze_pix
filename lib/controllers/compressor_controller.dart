@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
+import 'package:file_saver/file_saver.dart';
 import 'package:squeeze_pix/controllers/unity_ads_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:archive/archive_io.dart';
@@ -8,7 +8,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
+
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 // ignore: depend_on_referenced_packages
@@ -125,7 +125,7 @@ class CompressorController extends GetxController {
   final RxList<File> batchSelection = <File>[].obs;
   final RxBool isSelectionMode = false.obs;
   final RxString zipFileName = 'squeezepix_batch'.obs;
-  final RxnString batchSavePath = RxnString(null);
+
 
   // New Feature States
   final Rxn<int> targetSizeKB = Rxn<int>();
@@ -167,7 +167,7 @@ class CompressorController extends GetxController {
     final List<dynamic>? storedFavorites = _box.read<List>('favorites');
     final List<dynamic>? storedImages = _box.read<List>('images');
     totalBytesSaved.value = _box.read<int>('totalBytesSaved') ?? 0;
-    batchSavePath.value = _box.read<String>('batchSavePath');
+
 
     if (storedHistory != null) {
       history.assignAll(
@@ -511,37 +511,6 @@ class CompressorController extends GetxController {
     }
 
     isCompressing.value = true;
-    String? saveDir = batchSavePath.value;
-
-    // Prompt user to select a directory if it's not set
-    if (saveDir == null) {
-      await setBatchSavePath();
-      saveDir = batchSavePath.value;
-      if (saveDir == null) {
-        isCompressing.value = false;
-        showErrorSnackkbar(
-          message: 'No save location was selected.',
-          title: 'Cancelled',
-        );
-        return;
-      }
-    }
-
-    // Request storage permission before writing
-    var status = await Permission.manageExternalStorage.status;
-    if (!status.isGranted) {
-      status = await Permission.manageExternalStorage.request();
-    }
-
-    if (!status.isGranted) {
-      isCompressing.value = false;
-      showWarningSnackkbar(
-        title: 'Permission Denied',
-        message: 'Storage permission is required to save the ZIP file.',
-      );
-
-      return;
-    }
 
     try {
       showWarningSnackkbar(
@@ -588,9 +557,19 @@ class CompressorController extends GetxController {
       final zipData = zipEncoder.encode(archive);
 
       final zipName =
-          '${zipFileName.value.isNotEmpty ? zipFileName.value : 'squeezepix_batch'}.zip';
-      final fullPath = '$saveDir/$zipName';
-      final zipFile = File(fullPath);
+          '${zipFileName.value.isNotEmpty ? zipFileName.value : 'squeezepix_batch'}';
+      
+      // Save using FileSaver (Appending extension to name, omitting 'ext'/'extension' param)
+      await FileSaver.instance.saveFile(
+        name: '$zipName.zip',
+        bytes: Uint8List.fromList(zipData),
+        mimeType: MimeType.zip,
+      );
+
+      // Create a temp copy for 'lastZipFile' (sharing/extracting)
+      final tempDir = await getTemporaryDirectory();
+      final tempZipPath = '${tempDir.path}/$zipName.zip';
+      final zipFile = File(tempZipPath);
       await zipFile.writeAsBytes(zipData);
 
       lastZipFile.value = zipFile;
@@ -656,25 +635,7 @@ class CompressorController extends GetxController {
     return resultFile;
   }
 
-  //===== Set Batch Save Path =====//
-  Future<void> setBatchSavePath() async {
-    // Use flutter_document_picker to get a writable content URI for a directory
-    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
 
-    if (selectedDirectory != null) {
-      try {
-        batchSavePath.value = selectedDirectory;
-        _box.write('batchSavePath', selectedDirectory);
-        showSuccessSnackkbar(
-          message: 'Batch save location set to $selectedDirectory.',
-        );
-        debugPrint('Selected save path: $selectedDirectory');
-      } catch (e) {
-        debugPrint('Failed to set batch save path: $e');
-        showErrorSnackkbar(message: 'Failed to set save location');
-      }
-    }
-  }
 
   //===== Open the Location of the Last Compressed File =====//
   Future<void> openLastCompressedLocation() async {
@@ -694,33 +655,9 @@ class CompressorController extends GetxController {
 
     final adsController = Get.find<UnityAdsController>();
     adsController.performAction(() async {
-      // Request storage permission before proceeding
-      var status = await Permission.manageExternalStorage.status;
-      if (!status.isGranted) {
-        status = await Permission.manageExternalStorage.request();
-      }
-
-      if (!status.isGranted) {
-        showWarningSnackkbar(
-          title: 'Permission Denied',
-          message: 'Storage permission is required to extract files',
-        );
-
-        return;
-      }
-
       try {
-        String? saveDir = batchSavePath.value;
-        if (saveDir == null) {
-          showErrorSnackkbar(
-            title: 'No Save Location',
-            message: 'Please set a save location.',
-          );
-
-          await setBatchSavePath();
-          saveDir = batchSavePath.value;
-          if (saveDir == null) return;
-        }
+        final appDocDir = await getApplicationDocumentsDirectory();
+        final saveDir = appDocDir.path;
 
         final inputStream = InputFileStream(lastZipFile.value!.path);
         final archive = ZipDecoder().decodeStream(inputStream);
@@ -737,9 +674,15 @@ class CompressorController extends GetxController {
             final outFile = File(path);
             await outFile.create(recursive: true);
             await outFile.writeAsBytes(data);
+            
+            // Add to app images list so user can see/access them
+            images.add(outFile);
           }
         }
-        showSuccessSnackkbar(message: 'Files extracted successfully.');
+        // Save images list update
+        _box.write('images', images.map((e) => e.path).toList());
+        
+        showSuccessSnackkbar(message: 'Files extracted and added to gallery.');
       } catch (e) {
         showErrorSnackkbar(message: 'Failed to extract files: $e');
         debugPrint('Failed to extract files: $e');
