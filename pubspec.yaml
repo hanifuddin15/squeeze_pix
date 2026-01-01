@@ -3,7 +3,7 @@ description: "An App To Compress Large and Bulky Images and Share Instanly."
 
 publish_to: 'none'
 
-version: 1.0.0+2
+version: 1.0.0+5
 
 environment:
   sdk: ^3.9.2
