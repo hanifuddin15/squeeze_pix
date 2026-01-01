@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:squeeze_pix/controllers/compressor_controller.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/widgets/primary_button.dart';
-import 'package:path/path.dart' as p;
+
 
 class BatchStatsCard extends GetView<CompressorController> {
   const BatchStatsCard({super.key});
@@ -72,53 +72,7 @@ class BatchStatsCard extends GetView<CompressorController> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context, // This was missing a comma
-                    ).colorScheme.surface.withValues(alpha: .5),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
 
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Save Location',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Obx(
-                          () => Text(
-                            controller.batchSavePath.value != null
-                                ? '.../${p.basename(controller.batchSavePath.value!)}'
-                                : 'Default (Downloads)',
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          height: 52,
-                          width: double.infinity,
-                          child: PrimaryButton(
-                            label: 'Change',
-                            onPressed: () => controller.setBatchSavePath(),
-                            icon: Icons.folder_open,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 16),
                 if (controller.lastZipFile.value != null) ...[
                   Row(
