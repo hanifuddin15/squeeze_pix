@@ -4,6 +4,9 @@ import 'package:squeeze_pix/controllers/pixel_lab_controller.dart';
 import 'package:squeeze_pix/pages/pixel_lab/dp_maker.dart';
 import 'package:squeeze_pix/pages/pixel_lab/id_photo_maker.dart';
 import 'package:squeeze_pix/pages/pixel_lab/meme_generator.dart';
+import 'package:squeeze_pix/pages/pixel_lab/bg_remover.dart';
+import 'package:squeeze_pix/pages/pixel_lab/ai_enhancer_screen.dart';
+import 'package:squeeze_pix/pages/pixel_lab/ai_headshot_screen.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 
 class PixelLabScreen extends GetView<PixelLabController> {
@@ -36,8 +39,7 @@ class PixelLabScreen extends GetView<PixelLabController> {
                   end: Alignment.bottomRight,
                 ),
                 onTap: () {
-                  // TODO: Navigate to your DP Maker screen
-                  Get.to(DPMaker());
+                  Get.to(() => const DPMaker());
                 },
               ),
               _buildFeatureCard(
@@ -49,8 +51,7 @@ class PixelLabScreen extends GetView<PixelLabController> {
                   end: Alignment.bottomRight,
                 ),
                 onTap: () {
-                  // TODO: Navigate to your ID Photo screen
-                  Get.to(IDPhotoMaker());
+                  Get.to(() => const IDPhotoMaker());
                 },
               ),
               _buildFeatureCard(
@@ -62,21 +63,45 @@ class PixelLabScreen extends GetView<PixelLabController> {
                   end: Alignment.bottomRight,
                 ),
                 onTap: () {
-                  // TODO: Navigate to your Meme Gen screen
-                  Get.to(MemeGenerator());
+                  Get.to(() => const MemeGenerator());
                 },
               ),
-              _buildFeatureCard(
-                title: 'AI Tools',
-                icon: Icons.auto_awesome,
+               _buildFeatureCard(
+                title: 'Remove BG',
+                icon: Icons.layers_clear,
+                gradient: const LinearGradient(
+                  colors: [Colors.redAccent, Colors.pinkAccent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                onTap: () {
+                  Get.to(() => const BackgroundRemover());
+                },
+              ),
+               _buildFeatureCard(
+                title: 'AI Enhancer',
+                icon: Icons.auto_fix_high,
+                 subtitle: 'Ultra', 
                 gradient: const LinearGradient(
                   colors: [Colors.teal, Colors.greenAccent],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 onTap: () {
-                  // TODO: Navigate to your AI Tools screen
-                  // Get.to(AiToolsScreen());
+                  Get.to(() => const AIEnhancerScreen());
+                },
+              ),
+               _buildFeatureCard(
+                title: 'Headshot Pro',
+                icon: Icons.person_add_alt_1,
+                subtitle: 'Ultra',
+                gradient: const LinearGradient(
+                  colors: [Colors.indigo, Colors.blue],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                onTap: () {
+                  Get.to(() => const AIHeadshotScreen());
                 },
               ),
             ],
@@ -91,6 +116,7 @@ class PixelLabScreen extends GetView<PixelLabController> {
     required IconData icon,
     required Gradient gradient,
     required VoidCallback onTap,
+    String? subtitle,
   }) {
     return Card(
       elevation: 8.0,
@@ -100,19 +126,41 @@ class PixelLabScreen extends GetView<PixelLabController> {
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(gradient: gradient),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Stack(
             children: [
-              Icon(icon, size: 50, color: Colors.white),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+               Center(
+                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon, size: 40, color: Colors.white),
+                    const SizedBox(height: 8),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                               ),
+               ),
+              if (subtitle != null)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.black26,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      subtitle,
+                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ),
-              ),
             ],
           ),
         ),
