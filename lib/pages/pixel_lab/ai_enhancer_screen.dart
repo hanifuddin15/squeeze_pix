@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:squeeze_pix/controllers/iap_controller.dart';
 import 'package:squeeze_pix/pages/pro_upgrade_screen.dart';
+import 'package:squeeze_pix/services/ai_service.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/utils/snackbar.dart';
 
@@ -107,7 +108,16 @@ class _AIEnhancerScreenState extends State<AIEnhancerScreen> {
           ),
         ),
         if (_isProcessing)
-          const CircularProgressIndicator(color: Colors.white)
+          Column(
+            children: const [
+              CircularProgressIndicator(color: Colors.white),
+              SizedBox(height: 10),
+              Text(
+                "Enhancing Photo... (Takes ~5-10s)",
+                style: TextStyle(color: Colors.white70),
+              ),
+            ],
+          )
         else
           Padding(
             padding: const EdgeInsets.all(20.0),
@@ -154,12 +164,26 @@ class _AIEnhancerScreenState extends State<AIEnhancerScreen> {
     if (_iapController.useToken()) {
       setState(() => _isProcessing = true);
       
-      // TODO: Call Actual AI API here
-      await Future.delayed(const Duration(seconds: 3)); // Mock delay
-      
-      setState(() => _isProcessing = false);
-      showSuccessSnackkbar(message: "Photo Enhanced! (Mock Result)");
-      // For now, we just show success. In real implementation, replace _image with result.
+      try {
+        // Use the real AI Service
+        final aiService = Get.put(AIService()); 
+        
+        // This might take 5-10 seconds
+        final resultFile = await aiService.enhancePhoto(_image!);
+        
+        if (resultFile != null) {
+          setState(() {
+             _image = resultFile; 
+             _isProcessing = false;
+          });
+          showSuccessSnackkbar(message: "Photo Enhanced Successfully!");
+        } else {
+           throw Exception("Result was null");
+        }
+      } catch (e) {
+         setState(() => _isProcessing = false);
+         showErrorSnackkbar(message: "AI Error: $e");
+      }
     }
   }
 }

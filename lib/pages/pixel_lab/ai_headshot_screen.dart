@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:squeeze_pix/controllers/iap_controller.dart';
 import 'package:squeeze_pix/pages/pro_upgrade_screen.dart';
+import 'package:squeeze_pix/services/ai_service.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/utils/snackbar.dart';
 
@@ -21,7 +22,7 @@ class _AIHeadshotScreenState extends State<AIHeadshotScreen> {
   String _selectedStyle = "Suit & Tie";
   final IAPController _iapController = Get.find<IAPController>();
 
-  final List<String> _styles = ["Suit & Tie", "Business Casual", "Tuxedo", "Doctor Coat"];
+  final List<String> _styles = ["Suit & Tie", "Business Casual", "Tuxedo", "Doctor Coat", "Cyan Suit", "Red Dress"];
 
   @override
   Widget build(BuildContext context) {
@@ -139,9 +140,15 @@ class _AIHeadshotScreenState extends State<AIHeadshotScreen> {
           ),
         ),
         if (_isProcessing)
-          const Padding(
-            padding: EdgeInsets.all(20.0),
-            child: CircularProgressIndicator(color: Colors.white),
+           Column(
+            children: const [
+              CircularProgressIndicator(color: Colors.white),
+              SizedBox(height: 10),
+              Text(
+                "Generating Headshot... (Takes ~15-30s)",
+                style: TextStyle(color: Colors.white70),
+              ),
+            ],
           )
         else
           Padding(
@@ -190,11 +197,25 @@ class _AIHeadshotScreenState extends State<AIHeadshotScreen> {
     if (_iapController.useToken()) {
       setState(() => _isProcessing = true);
       
-      // TODO: Call Actual AI API here (Stable Diffusion / Replicate etc.)
-      await Future.delayed(const Duration(seconds: 4)); // Mock delay
-      
-      setState(() => _isProcessing = false);
-      showSuccessSnackkbar(message: "Headshot Generated! (Mock Result)");
+      try {
+        final aiService = Get.put(AIService());
+        
+        final prompt = "wearing a $_selectedStyle";
+        final resultFile = await aiService.generateHeadshot(_image!, prompt);
+
+        if (resultFile != null) {
+          setState(() {
+             _image = resultFile; 
+             _isProcessing = false;
+          });
+          showSuccessSnackkbar(message: "Headshot Generated Successfully!");
+        } else {
+           throw Exception("Result was null");
+        }
+      } catch (e) {
+         setState(() => _isProcessing = false);
+         showErrorSnackkbar(message: "AI Error: $e");
+      }
     }
   }
 }

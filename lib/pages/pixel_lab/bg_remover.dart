@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 
-import 'package:squeeze_pix/services/bg_remover_service.dart';
+import 'package:squeeze_pix/services/ai_service.dart';
 import 'package:squeeze_pix/controllers/iap_controller.dart';
 import 'package:squeeze_pix/pages/pro_upgrade_screen.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
@@ -23,6 +23,7 @@ class _BackgroundRemoverState extends State<BackgroundRemover> {
   File? image;
   File? result;
   final IAPController _iapController = Get.find<IAPController>();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +33,7 @@ class _BackgroundRemoverState extends State<BackgroundRemover> {
       appBar: AppBar(title: const Text("Remove Background",),backgroundColor: Colors.transparent,
         elevation: 0,),
       body: Container(
-        padding: EdgeInsets.only(top: 100),
+        padding: const EdgeInsets.only(top: 100),
         width: double.infinity,
         decoration: BoxDecoration(gradient: AppTheme.gradient),
         child: Column(
@@ -52,14 +53,20 @@ class _BackgroundRemoverState extends State<BackgroundRemover> {
             ),
             if (image != null) ...[
               Expanded(child: Image.file(image!)),
-              ElevatedButton(
-                onPressed: _removeBG,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                  foregroundColor: Colors.white,
+              if (_isLoading)
+                 const Padding(
+                   padding: EdgeInsets.all(8.0),
+                   child: CircularProgressIndicator(color: Colors.white),
+                 )
+              else
+                ElevatedButton(
+                  onPressed: _removeBG,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text("Remove BG (1 Token)"),
                 ),
-                child: const Text("Remove BG (1 Token)"),
-              ),
             ],
             if (result != null) Expanded(child: Image.file(result!)),
           ],
@@ -70,7 +77,12 @@ class _BackgroundRemoverState extends State<BackgroundRemover> {
 
   void _pickImage() async {
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (picked != null) setState(() => image = File(picked.path));
+    if (picked != null) {
+      setState(() {
+         image = File(picked.path);
+         result = null; 
+      });
+    }
   }
 
   void _removeBG() async {
@@ -86,11 +98,25 @@ class _BackgroundRemoverState extends State<BackgroundRemover> {
 
     // Proceed
     if (_iapController.useToken()) {
+       setState(() => _isLoading = true);
        try {
-          result = await Get.find<BgRemoverService>().remove(image!);
-          setState(() {});
-          showSuccessSnackkbar(message: "Background removed! Tokens remaining: ${_iapController.remainingTokens}");
+          // Use Replicate AI Service instead of BgRemoverService
+          final aiService = Get.put(AIService());
+          
+          final resultFile = await aiService.removeBackground(image!);
+          
+          if (resultFile != null) {
+              setState(() {
+                result = resultFile; 
+                _isLoading = false;
+              });
+              showSuccessSnackkbar(message: "Background removed! Tokens remaining: ${_iapController.remainingTokens}");
+          } else {
+             throw Exception("Result was null");
+          }
+
        } catch (e) {
+          setState(() => _isLoading = false);
           showErrorSnackkbar(message: "Error processing image: $e");
        }
     }
