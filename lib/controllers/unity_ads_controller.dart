@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:squeeze_pix/controllers/compressor_controller.dart';
+// import 'package:squeeze_pix/controllers/compressor_controller.dart'; 
 import 'package:squeeze_pix/controllers/home_controller.dart';
 import 'package:squeeze_pix/controllers/iap_controller.dart';
 import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 
 class UnityAdsController extends GetxController {
-  final CompressorController _compressorController = Get.put(CompressorController());
+  // final CompressorController _compressorController = Get.put(CompressorController());
   final HomeController _homeController = Get.put(HomeController());
 
   // Game ID from Unity Dashboard
@@ -124,8 +124,8 @@ class UnityAdsController extends GetxController {
         placementId: _rewardedPlacementId,
         onComplete: (placementId) {
           debugPrint('Rewarded Ad ($placementId) complete');
-          _compressorController.batchAccessGranted.value = true;
-          _compressorController.compressAll();
+          _homeController.batchAccessGranted.value = true;
+          _homeController.compressAll();
           isRewardedReady.value = false;
           _loadRewardedAd(); // Load next ad
         },
@@ -142,8 +142,8 @@ class UnityAdsController extends GetxController {
     } else {
       debugPrint('Rewarded ad not ready, granting access and proceeding.');
       // Grant reward and proceed if ad is not ready, so user is not blocked.
-      _compressorController.batchAccessGranted.value = true;
-      _compressorController.compressAll();
+      _homeController.batchAccessGranted.value = true;
+      _homeController.compressAll();
     }
   }
 

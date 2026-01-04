@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:squeeze_pix/controllers/home_controller.dart';
 import 'package:squeeze_pix/models/app_images_model.dart';
-import 'package:squeeze_pix/controllers/compressor_controller.dart';
 import 'package:squeeze_pix/controllers/history_controller.dart';
 import 'package:squeeze_pix/pages/history_screen.dart';
 import 'package:squeeze_pix/pages/pixel_lab_screen.dart';
@@ -19,7 +18,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final homeController = Get.put(HomeController());
-    Get.put(CompressorController());
+    // Get.put(CompressorController()); // Removed as it is merged into HomeController
     Get.put(HistoryController());
 
     final List<Widget> pages = [
@@ -50,7 +49,6 @@ class ImageGridPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final homeController = Get.find<HomeController>();
-    final compressorController = Get.find<CompressorController>();
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -128,17 +126,14 @@ class ImageGridPage extends StatelessWidget {
               );
             }),
           ),
-          _buildBatchActionBar(homeController, compressorController),
+          _buildBatchActionBar(homeController),
         ],
       ),
     );
   }
 }
 
-Widget _buildBatchActionBar(
-  HomeController homeController,
-  CompressorController compressorController,
-) {
+Widget _buildBatchActionBar(HomeController homeController) {
   return Obx(
     () => AnimatedContainer(
       height: homeController.isSelectionMode.value ? 420 : 0,
@@ -152,13 +147,10 @@ Widget _buildBatchActionBar(
         0,
       ),
       child: _BatchActionBar(
-        onCompress: homeController.compressBatch,
+        onCompress: homeController.compressAll, // Now directly on homeController
         onShare: () {
-          // This assumes you have a share method for batch
-          compressorController.batchSelection.assignAll(
-            homeController.selection.map((e) => e.file).toList(),
-          );
-          compressorController.shareZipFile();
+          // Logic moved to homeController, using selected state internally
+          homeController.shareZipFile();
         },
         onDelete: homeController.deleteSelection,
       ),
@@ -363,7 +355,7 @@ class _BatchActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final compressorController = Get.find<CompressorController>();
+    // Uses HomeController now
     final homeController = Get.find<HomeController>();
 
     return ClipRRect(
@@ -394,10 +386,10 @@ class _BatchActionBar extends StatelessWidget {
                           'Total Size: ${formatBytes(homeController.selectionTotalSize, 2)}',
                           style: const TextStyle(color: Colors.white),
                         ),
-                        if (compressorController.batchStats['sizeReduction'] !=
+                        if (homeController.batchStats['sizeReduction'] !=
                             null)
                           Text(
-                            'Saved: ${formatBytes(compressorController.batchStats['sizeReduction'], 2)}',
+                            'Saved: ${formatBytes(homeController.batchStats['sizeReduction'], 2)}',
                             style: const TextStyle(color: Colors.greenAccent),
                           ),
                       ],
@@ -408,11 +400,11 @@ class _BatchActionBar extends StatelessWidget {
                   // Compression Mode Toggle
                   ToggleButtons(
                     isSelected: [
-                      compressorController.batchCompressionMode.value == 0,
-                      compressorController.batchCompressionMode.value == 1,
+                      homeController.batchCompressionMode.value == 0,
+                      homeController.batchCompressionMode.value == 1,
                     ],
                     onPressed: (index) {
-                      compressorController.batchCompressionMode.value = index;
+                      homeController.batchCompressionMode.value = index;
                     },
                     borderRadius: BorderRadius.circular(10),
                     selectedColor: Colors.white,
@@ -433,27 +425,27 @@ class _BatchActionBar extends StatelessWidget {
                   const SizedBox(height: 10),
 
                   // Dynamic Controls (Slider or TextField)
-                  if (compressorController.batchCompressionMode.value == 0)
+                  if (homeController.batchCompressionMode.value == 0)
                     // Quality Slider
                     Row(
                       children: [
                         const Icon(Icons.photo_filter, color: Colors.white),
                         Expanded(
                           child: Slider(
-                            value: compressorController.batchQuality.value
+                            value: homeController.batchQuality.value
                                 .toDouble(),
                             min: 1,
                             max: 100,
                             divisions: 99,
                             label:
-                                '${compressorController.batchQuality.value}%',
+                                '${homeController.batchQuality.value}%',
                             onChanged: (val) =>
-                                compressorController.batchQuality.value = val
+                                homeController.batchQuality.value = val
                                     .round(),
                           ),
                         ),
                         Text(
-                          '${compressorController.batchQuality.value}%',
+                          '${homeController.batchQuality.value}%',
                           style: const TextStyle(color: Colors.white),
                         ),
                       ],
@@ -467,7 +459,7 @@ class _BatchActionBar extends StatelessWidget {
                         Expanded(
                           child: TextField(
                             onChanged: (value) {
-                              compressorController.batchTargetSizeKB.value =
+                              homeController.batchTargetSizeKB.value =
                                   int.tryParse(value);
                             },
                             keyboardType: TextInputType.number,
@@ -506,7 +498,7 @@ class _BatchActionBar extends StatelessWidget {
                       _ActionButton(
                         icon: Icons.mobile_screen_share,
                         label: 'Compress And Share',
-                        onTap: compressorController.compressAndShare,
+                        onTap: homeController.compressAndShare,
                       ),
                       _ActionButton(
                         icon: Icons.share,
@@ -522,9 +514,9 @@ class _BatchActionBar extends StatelessWidget {
                         () => _ActionButton(
                           icon: Icons.archive_outlined,
                           label: 'Extract',
-                          onTap: compressorController.extractZipFile,
+                          onTap: homeController.extractZipFile,
                           isEnabled:
-                              compressorController.lastZipFile.value != null,
+                              homeController.lastZipFile.value != null,
                         ),
                       ),
                     ],

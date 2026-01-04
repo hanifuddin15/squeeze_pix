@@ -1,11 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:squeeze_pix/controllers/compressor_controller.dart';
+// import 'package:get/get.dart'; // Unused if StatelessWidget
 import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 
-class UnitBannerAdsWidget extends GetView<CompressorController> {
+class UnitBannerAdsWidget extends StatelessWidget {
   const UnitBannerAdsWidget({super.key});
 
   @override

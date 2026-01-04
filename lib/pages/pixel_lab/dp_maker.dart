@@ -98,12 +98,12 @@ class _DPMakerState extends State<DPMaker> {
         actions: [
           if (_selectedImage != null)
             IconButton(
-              icon: const Icon(Icons.check),
+              icon: const Icon(Icons.check, color: Colors.amber,),
               onPressed: _saveDP,
               tooltip: 'Save DP',
             ),
           IconButton(
-            icon: const Icon(Icons.share),
+            icon: const Icon(Icons.share, color: Colors.amber,),
             onPressed: _shareDP,
             tooltip: 'Share DP',
           ),
@@ -219,7 +219,7 @@ class _DPMakerState extends State<DPMaker> {
               onChanged: (val) => setState(() => _rotation = val),
             ),
             _buildSliderRow(
-              icon: Icons.border_style,
+              icon: Icons.border_style_outlined,
               label: 'Border',
               value: _borderWidth,
               min: 0,
@@ -256,8 +256,9 @@ class _DPMakerState extends State<DPMaker> {
             _selectedShape = value;
 
             // Default radius for shapes
-            if (value == DPShape.square && _borderRadius == 30)
+            if (value == DPShape.square && _borderRadius == 30) {
               _borderRadius = 0;
+            }
             if (value == DPShape.rounded) _borderRadius = 30;
           });
         }
@@ -288,7 +289,7 @@ class _DPMakerState extends State<DPMaker> {
               activeColor: Theme.of(context).colorScheme.inverseSurface,
               inactiveColor: Theme.of(
                 context,
-              ).colorScheme.onSurface.withOpacity(0.24),
+              ).colorScheme.onSurface.withValues(alpha: .24),
               value: value,
               min: min,
               max: max,
@@ -368,7 +369,7 @@ class _DPMakerState extends State<DPMaker> {
       final file = await File('${tempDir.path}/dp_maker_share.png').create();
       await file.writeAsBytes(imageBytes);
 
-      await Share.shareXFiles([XFile(file.path)], text: 'Check out my new DP!');
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)], text: 'Check out my new DP!'));
     });
   }
 }

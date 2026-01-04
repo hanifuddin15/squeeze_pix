@@ -1,8 +1,6 @@
 // lib/widgets/pixel_lab/id_photo_maker.dart
 import 'dart:io';
 import 'dart:typed_data';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
 import 'package:get/get.dart';
@@ -47,6 +45,9 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
   );
   late TextEditingController _customPaperWidthController;
   late TextEditingController _customPaperHeightController;
+  
+  // New Controller for Quantity
+  final TextEditingController _quantityController = TextEditingController();
 
   @override
   void initState() {
@@ -74,6 +75,11 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
 
     _customPaperWidthController.addListener(_updateCustomPaperSpec);
     _customPaperHeightController.addListener(_updateCustomPaperSpec);
+    
+    // Listen to quantity changes to refresh UI 
+    _quantityController.addListener(() {
+         setState(() {});
+    });
   }
 
   void _updateCustomSpec() {
@@ -111,6 +117,7 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
     _customHeightController.dispose();
     _customPaperWidthController.dispose();
     _customPaperHeightController.dispose();
+    _quantityController.dispose();
     super.dispose();
   }
 
@@ -128,13 +135,13 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
         actions: [
           if (_image != null)
             IconButton(
-              icon: const Icon(Icons.save_alt),
+              icon: const Icon(Icons.save_alt, color: Colors.amber,),
               onPressed: _saveSheet,
               tooltip: 'Save Sheet',
             ),
           if (_image != null)
             IconButton(
-              icon: const Icon(Icons.share),
+              icon: const Icon(Icons.share, color: Colors.amber,),
               onPressed: _shareSheet,
               tooltip: 'Share Sheet',
             ),
@@ -332,6 +339,7 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
+                         style: TextStyle(color: context.theme.colorScheme.onSurface),
                         decoration: const InputDecoration(
                           labelText: 'Width (mm)',
                           border: OutlineInputBorder(),
@@ -345,6 +353,7 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
+                        style: TextStyle(color: context.theme.colorScheme.onSurface),
                         decoration: const InputDecoration(
                           labelText: 'Height (mm)',
                           border: OutlineInputBorder(),
@@ -396,6 +405,7 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
+                         style: TextStyle(color: context.theme.colorScheme.onSurface),
                         decoration: const InputDecoration(
                           labelText: 'Width (mm)',
                           border: OutlineInputBorder(),
@@ -409,6 +419,7 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
+                        style: TextStyle(color: context.theme.colorScheme.onSurface),
                         decoration: const InputDecoration(
                           labelText: 'Height (mm)',
                           border: OutlineInputBorder(),
@@ -418,7 +429,22 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
                   ],
                 ),
               ),
+            
             const SizedBox(height: 16),
+            // --- NEW: Quantity Selector ---
+            TextField(
+              controller: _quantityController,
+              keyboardType: TextInputType.number,
+              style: TextStyle(color: context.theme.colorScheme.onSurface),
+              decoration: const InputDecoration(
+                labelText: 'Quantity (Empty = Fill Page)',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.numbers),
+                hintText: 'e.g. 4',
+              ),
+            ),
+            const SizedBox(height: 16),
+
             Center(
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.visibility),
@@ -450,6 +476,13 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final (cols, rows) = _calculateLayout();
+            final maxItems = cols * rows;
+            // Parse quantity
+            int reqCount = int.tryParse(_quantityController.text) ?? 0;
+            if (reqCount <= 0 || reqCount > maxItems) {
+              reqCount = maxItems;
+            }
+
             return GridView.builder(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: cols,
@@ -457,7 +490,7 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
                     ? (_customSpec.heightMM > 0 ? _customSpec.aspectRatio : 1.0)
                     : _selectedSpec.aspectRatio,
               ),
-              itemCount: cols * rows,
+              itemCount: reqCount,
               itemBuilder: (context, index) {
                 return Container(
                   decoration: BoxDecoration(
@@ -518,6 +551,13 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
     final paper = _isCustomPaperSelected() ? _customPaper : _selectedPaper;
 
     final (cols, rows) = _calculateLayout();
+    final maxItems = cols * rows;
+    
+    // Parse quantity logic for PDF
+    int reqCount = int.tryParse(_quantityController.text) ?? 0;
+    if (reqCount <= 0 || reqCount > maxItems) {
+      reqCount = maxItems;
+    }
 
     pdf.addPage(
       pw.Page(
@@ -527,7 +567,7 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
             crossAxisCount: cols,
             childAspectRatio: spec.heightMM > 0 ? spec.aspectRatio : 1.0,
             children: List.generate(
-              cols * rows,
+              reqCount,
               (index) => pw.Image(pdfImage, fit: pw.BoxFit.cover),
             ),
           );
