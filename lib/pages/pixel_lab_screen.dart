@@ -68,6 +68,8 @@ class PixelLabScreen extends GetView<PixelLabController> {
               ),
                _buildFeatureCard(
                 title: 'Remove BG',
+                 subtitle: 'Ultra', 
+
                 icon: Icons.layers_clear,
                 gradient: const LinearGradient(
                   colors: [Colors.redAccent, Colors.pinkAccent],
