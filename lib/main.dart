@@ -27,15 +27,17 @@ class MyApp extends StatelessWidget {
       initialRoute: '/splash',
       theme: ThemeData(
         useMaterial3: true,
-        fontFamily: GoogleFonts.poppins().fontFamily,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+        primaryColor: Colors.amber,
+        fontFamily: GoogleFonts.amaranth().fontFamily,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
         scaffoldBackgroundColor: Colors.grey[50],
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
-        fontFamily: GoogleFonts.poppins().fontFamily,
+        fontFamily: GoogleFonts.amaranth().fontFamily,
+        primaryColor: Colors.amber,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.teal,
+          seedColor:Colors.amber,
           brightness: Brightness.dark,
         ),
       ),

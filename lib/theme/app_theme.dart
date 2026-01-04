@@ -1,37 +1,6 @@
 import 'package:flutter/material.dart';
 
-// class AppTheme {
-//   static final light = ThemeData(
-//     // colorSchemeSeed: Colors.teal,
-//     useMaterial3: true,
-//     brightness: Brightness.light,
-//     fontFamily: 'SolaimanLipi',
-//     scaffoldBackgroundColor: Colors.transparent,
-//   );
 
-//   static final dark = ThemeData(
-//     // colorSchemeSeed: Colors.teal,
-//     useMaterial3: true,
-//     brightness: Brightness.dark,
-//     fontFamily: 'SolaimanLipi',
-//     scaffoldBackgroundColor: Colors.black,
-//   );
-
-//   static final LinearGradient gradient = const LinearGradient(
-//     colors: [Color(0xFF00D2FF), Color(0xFF3A7BD5), Color(0xFF9D00FF)],
-//     begin: Alignment.topLeft,
-//     end: Alignment.bottomRight,
-//   );
-
-//   static final LinearGradient glassGradient = LinearGradient(
-//     colors: [
-//       Colors.white.withValues(alpha: .25),
-//       Colors.white.withValues(alpha: .05),
-//     ],
-//     begin: Alignment.topLeft,
-//     end: Alignment.bottomRight,
-//   );
-// }
 
 class AppTheme {
   // ------------------------- LIGHT THEME -------------------------

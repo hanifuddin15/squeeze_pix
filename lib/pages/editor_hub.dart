@@ -25,12 +25,12 @@ class EditorHub extends StatelessWidget {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.share),
+            icon: const Icon(Icons.share, color: Colors.amber,),
             onPressed: controller.shareImage,
             tooltip: 'Share Image',
           ),
           IconButton(
-            icon: const Icon(Icons.save),
+            icon: const Icon(Icons.download, color: Colors.amber,),
             onPressed: controller.saveImage,
             tooltip: 'Save Image',
           ),
@@ -616,7 +616,7 @@ class _EffectsControls extends GetView<EditorController> {
               min: min,
               max: max,
               onChanged: (val) => value.value = val,
-              activeColor: Get.theme.colorScheme.primary,
+              activeColor: Colors.amber,
               inactiveColor: Colors.white38,
             ),
           ),
