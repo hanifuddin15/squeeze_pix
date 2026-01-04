@@ -49,7 +49,7 @@ class AppTheme {
       onSurface: Color(0xFF1E1E1E),
       onPrimary: Colors.white,
       onSecondary: Colors.black,
-      background: Color(0xFFEFF2F5),
+      // background: Color(0xFFEFF2F5),
     ),
 
     appBarTheme: const AppBarTheme(
@@ -73,7 +73,7 @@ class AppTheme {
       onSurface: Color(0xFFE6E6E6),
       onPrimary: Colors.white,
       onSecondary: Colors.white,
-      background: Color(0xFF0D0F12),
+      // background: Color(0xFF0D0F12),
     ),
 
     appBarTheme: const AppBarTheme(
@@ -99,7 +99,7 @@ class AppTheme {
 
   // ---------------------- GLASS EFFECT GRADIENT ----------------------
   static final LinearGradient glassGradient = LinearGradient(
-    colors: [Colors.white.withOpacity(0.15), Colors.white.withOpacity(0.04)],
+    colors: [Colors.white.withValues(alpha: .15), Colors.white.withValues(alpha: .04)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

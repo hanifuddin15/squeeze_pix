@@ -781,7 +781,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
   Widget _buildMainToolbar() {
     return Material(
       elevation: 8,
-      color: Theme.of(context).colorScheme.surface.withOpacity(0.06),
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: .06),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
         child: Row(
@@ -828,7 +828,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
         topRight: Radius.circular(20),
       ),
       elevation: 18,
-      color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: .7),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -913,7 +913,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                   hintStyle: TextStyle(
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurface.withOpacity(0.5),
+                    ).colorScheme.onSurface.withValues(alpha: .5),
                   ),
                   border: const UnderlineInputBorder(
                     borderSide: BorderSide(color: Colors.white54),
@@ -971,7 +971,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
               activeColor: Theme.of(context).colorScheme.inverseSurface,
               inactiveColor: Theme.of(
                 context,
-              ).colorScheme.onSurface.withOpacity(0.24),
+              ).colorScheme.onSurface.withValues(alpha: .24),
               value: value,
               min: min,
               max: max,
@@ -1001,7 +1001,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(
           context,
-        ).colorScheme.inversePrimary.withOpacity(0.8),
+        ).colorScheme.inversePrimary.withValues(alpha: .8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Pick a color'),
         content: SingleChildScrollView(
@@ -1095,9 +1095,9 @@ class _MemeGeneratorState extends State<MemeGenerator> {
       final file = await File('${tempDir.path}/meme_share.png').create();
       await file.writeAsBytes(imageBytes);
 
-      await Share.shareXFiles([
+      await SharePlus.instance.share(ShareParams(files: [
         XFile(file.path),
-      ], text: 'Check out this meme I made!');
+      ],text: 'Check out this meme I made!'));
     });
   }
 
@@ -1148,7 +1148,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                                     top: t.position.dy,
                                     child: _buildMemeTextWidget(t, index),
                                   );
-                                }).toList(),
+                                }),
                               ],
                             ),
                           ),

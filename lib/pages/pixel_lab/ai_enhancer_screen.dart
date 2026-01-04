@@ -54,7 +54,7 @@ class _AIEnhancerScreenState extends State<AIEnhancerScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: .1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white24),
       ),

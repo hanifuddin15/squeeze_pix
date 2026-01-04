@@ -28,7 +28,6 @@ class IDPhotoMaker extends StatefulWidget {
 class _IDPhotoMakerState extends State<IDPhotoMaker> {
   File? _image;
   final _imageKey = GlobalKey();
-  final _sheetKey = GlobalKey();
 
   // --- State ---
   final TransformationController _transformationController =
@@ -49,8 +48,8 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
   // New Controller for Quantity
   final TextEditingController _quantityController = TextEditingController();
   // Sheet spacing (in mm for PDF, logical px for UI preview)
-static const double sheetMarginMM = 10; // page margin
-static const double photoSpacingMM = 5; // gap between photos
+// page margin
+// gap between photos
 
   @override
   void initState() {
@@ -281,7 +280,7 @@ static const double photoSpacingMM = 5; // gap between photos
   Widget _buildControls() {
     return Material(
       elevation: 8,
-      color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: .7),
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(20),
         topRight: Radius.circular(20),
@@ -623,9 +622,9 @@ static const double photoSpacingMM = 5; // gap between photos
           '${tempDir.path}/id_photo_sheet.pdf',
         ).writeAsBytes(pdfBytes);
 
-        await Share.shareXFiles([
-          XFile(file.path),
-        ], text: 'Here is my ID Photo Sheet.');
+        await SharePlus.instance.share(ShareParams(
+        files: [XFile(file.path)], text: 'Here is my ID Photo Sheet.'
+        ),);
       } catch (e) {
         showErrorSnackkbar(message: "Failed to generate or share PDF: $e");
       }

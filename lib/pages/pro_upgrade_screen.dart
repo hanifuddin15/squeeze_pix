@@ -56,7 +56,7 @@ class ProUpgradeScreen extends StatelessWidget {
                       "Contains Ads",
                       "No AI Tools",
                     ],
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: .1),
                     buttonText: "Current Plan",
                     onTap: () {},
                     isCurrent: true,
@@ -70,7 +70,7 @@ class ProUpgradeScreen extends StatelessWidget {
                       "Premium Editing Tools",
                       "No AI Tools",
                     ],
-                    color: Colors.amber.withOpacity(0.2),
+                    color: Colors.amber.withValues(alpha: .2),
                     borderColor: Colors.amber,
                     buttonText: "Upgrade to Gold",
                     onTap: () => iapController.buyPro(),
@@ -84,7 +84,7 @@ class ProUpgradeScreen extends StatelessWidget {
                       "BG Remover",
                       "Priority Support",
                     ],
-                    color: Colors.cyan.withOpacity(0.2),
+                    color: Colors.cyan.withValues(alpha: .2),
                     borderColor: Colors.cyanAccent,
                     buttonText: "Upgrade to Platinum",
                     onTap: () => iapController.buyUltra(),
@@ -118,12 +118,12 @@ class ProUpgradeScreen extends StatelessWidget {
         color: color,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: borderColor ?? Colors.white.withOpacity(0.2),
+          color: borderColor ?? Colors.white.withValues(alpha: .2),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: .2),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -165,7 +165,7 @@ class ProUpgradeScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: .9),
             ),
           ),
           const SizedBox(height: 24),
@@ -207,7 +207,7 @@ class ProUpgradeScreen extends StatelessWidget {
                child: Text(
                 "Active Plan",
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: .5),
                   fontWeight: FontWeight.bold,
                 ),
                            ),

@@ -87,7 +87,7 @@ class _HistoryList extends StatelessWidget {
         final fileName = file.path.split(Platform.pathSeparator).last;
 
         return Card(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: .1),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           child: ListTile(
             leading: ClipRRect(
@@ -108,7 +108,7 @@ class _HistoryList extends StatelessWidget {
             ),
             subtitle: Text(
               'Tap to open',
-              style: TextStyle(color: Colors.white.withOpacity(0.7)),
+              style: TextStyle(color: Colors.white.withValues(alpha: .7)),
             ),
             onTap: () => OpenFilex.open(item.path),
           ),

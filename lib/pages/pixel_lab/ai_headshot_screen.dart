@@ -55,7 +55,7 @@ class _AIHeadshotScreenState extends State<AIHeadshotScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: .1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white24),
       ),
@@ -124,7 +124,7 @@ class _AIHeadshotScreenState extends State<AIHeadshotScreen> {
                   width: 100,
                   margin: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.cyanAccent.withOpacity(0.2) : Colors.black12,
+                    color: isSelected ? Colors.cyanAccent.withValues(alpha: .2) : Colors.black12,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: isSelected ? Colors.cyanAccent : Colors.transparent, width: 2),
                   ),

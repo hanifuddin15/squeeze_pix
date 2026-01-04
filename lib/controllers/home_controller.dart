@@ -4,7 +4,6 @@ import 'dart:ui';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
@@ -491,7 +490,7 @@ class HomeController extends GetxController {
       final zipData = zipEncoder.encode(archive);
 
       final zipName =
-          '${zipFileName.value.isNotEmpty ? zipFileName.value : 'squeezepix_batch'}';
+          zipFileName.value.isNotEmpty ? zipFileName.value : 'squeezepix_batch';
       
       // Save using FileSaver
       await FileSaver.instance.saveFile(
@@ -810,13 +809,13 @@ class HomeController extends GetxController {
           child: Container(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: .15),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(25),
               ),
               border: Border(
                 top: BorderSide(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: .3),
                   width: 1.5,
                 ),
               ),

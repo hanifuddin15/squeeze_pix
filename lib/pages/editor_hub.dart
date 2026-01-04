@@ -98,7 +98,7 @@ class EditorHub extends StatelessWidget {
   Widget _buildMainToolbar(EditorController controller) {
     return Container(
       height: 100,
-      color: Colors.black.withOpacity(0.3),
+      color: Colors.black.withValues(alpha: .3),
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -147,7 +147,7 @@ class EditorHub extends StatelessWidget {
   Widget _buildToolPanel(EditorController controller) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-      color: Colors.black.withOpacity(0.5),
+      color: Colors.black.withValues(alpha: .5),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -227,6 +227,7 @@ class _ResizeControlsState extends State<_ResizeControls> {
   }
 
   void _onWidthChanged() {
+    // ignore: invalid_use_of_protected_member
     if (!_keepAspectRatio || !_heightController.hasListeners) return;
     final width = int.tryParse(_widthController.text);
     if (width != null) {
@@ -237,6 +238,7 @@ class _ResizeControlsState extends State<_ResizeControls> {
   }
 
   void _onHeightChanged() {
+    // ignore: invalid_use_of_protected_member
     if (!_keepAspectRatio || !_widthController.hasListeners) return;
     final height = int.tryParse(_heightController.text);
     if (height != null) {
@@ -274,7 +276,7 @@ class _ResizeControlsState extends State<_ResizeControls> {
           ),
           value: _keepAspectRatio,
           onChanged: (val) => setState(() => _keepAspectRatio = val),
-          activeColor: Get.theme.colorScheme.primary,
+          activeThumbColor : Get.theme.colorScheme.primary,
         ),
         ElevatedButton(
           onPressed: () {
@@ -297,7 +299,7 @@ class _ResizeControlsState extends State<_ResizeControls> {
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+        labelStyle: TextStyle(color: Colors.white.withValues(alpha: .7)),
         enabledBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Colors.white54),
         ),
@@ -394,7 +396,7 @@ class _CompressControls extends StatelessWidget {
               isDense: true,
               contentPadding: const EdgeInsets.all(8),
               enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.white.withOpacity(0.5)),
+                borderSide: BorderSide(color: Colors.white.withValues(alpha: .5)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Get.theme.colorScheme.primary),
@@ -439,7 +441,7 @@ class _ConvertControls extends StatelessWidget {
 }
 
 class _EffectsControls extends GetView<EditorController> {
-  const _EffectsControls({super.key});
+  const _EffectsControls();
 
   @override
   Widget build(BuildContext context) {

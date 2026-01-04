@@ -181,7 +181,7 @@ class _GridItem extends StatelessWidget {
                 duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Colors.black.withOpacity(0.5)
+                      ? Colors.black.withValues(alpha: .5)
                       : Colors.transparent,
                   border: Border.all(
                     color: isSelected
@@ -302,10 +302,10 @@ class GlassBottomNav extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
                decoration: BoxDecoration(
-            color:context.theme.colorScheme.surface.withOpacity(0.2), // 👈 glass tint
+            color:context.theme.colorScheme.surface.withValues(alpha: .2), // 👈 glass tint
             border: Border(
               top: BorderSide(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: .2),
                 width: 1,
               ),
             ),
@@ -365,10 +365,10 @@ class _BatchActionBar extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.7),
+            color: Colors.black.withValues(alpha: .7),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
             border: Border(
-              top: BorderSide(color: Colors.white.withOpacity(0.3), width: 1.5),
+              top: BorderSide(color: Colors.white.withValues(alpha: .3), width: 1.5),
             ),
           ),
           child: Obx(
@@ -409,7 +409,7 @@ class _BatchActionBar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                     selectedColor: Colors.white,
                     color: Colors.white70,
-                    fillColor: Colors.cyan.withOpacity(0.5),
+                    fillColor: Colors.cyan.withValues(alpha: .5),
                     renderBorder: false,
                     children: const [
                       Padding(
