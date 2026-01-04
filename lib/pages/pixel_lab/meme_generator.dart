@@ -141,7 +141,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
   int? _selectedTextIndex;
   int _nextTextId = 0;
 
-  List<Frame> _frames = [Frame()];
+  final List<Frame> _frames = [Frame()];
   FrameLayout _layout = FrameLayout.single;
 
   // For gesture handling
@@ -246,7 +246,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                       Icons.add_a_photo,
                       color: Theme.of(
                         context,
-                      ).colorScheme.onSurface.withOpacity(0.54),
+                      ).colorScheme.onSurface.withValues(alpha: .54),
                       size: 48,
                     ),
                   ),
@@ -394,7 +394,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
             filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
             child: Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface.withOpacity(0.15),
+                color: Theme.of(context).colorScheme.surface.withValues(alpha: .15),
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(25),
                 ),
@@ -418,12 +418,12 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                         decoration: BoxDecoration(
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withOpacity(0.1),
+                          ).colorScheme.onSurface.withValues(alpha: .1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: Theme.of(
                               context,
-                            ).colorScheme.onSurface.withOpacity(0.24),
+                            ).colorScheme.onSurface.withValues(alpha: .24),
                           ),
                         ),
                         child: Center(
@@ -471,7 +471,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
             decoration: BoxDecoration(
               color: Theme.of(
                 context,
-              ).colorScheme.primaryFixedDim.withOpacity(0.15),
+              ).colorScheme.primaryFixedDim.withValues(alpha: .15),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(25),
               ),
@@ -612,7 +612,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
-                    ).colorScheme.surface.withOpacity(0.15),
+                    ).colorScheme.surface.withValues(alpha: .15),
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(25),
                     ),
@@ -636,18 +636,18 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                               hintStyle: TextStyle(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withOpacity(0.7),
+                                ).colorScheme.onSurface.withValues(alpha: .7),
                               ),
                               prefixIcon: Icon(
                                 Icons.search,
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withOpacity(0.7),
+                                ).colorScheme.onSurface.withValues(alpha: .7),
                               ),
                               filled: true,
                               fillColor: Theme.of(
                                 context,
-                              ).colorScheme.onSurface.withOpacity(0.1),
+                              ).colorScheme.onSurface.withValues(alpha: .1),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide.none,
@@ -688,6 +688,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
 
     if (selectedTemplate != null) {
       final byteData = await DefaultAssetBundle.of(
+        // ignore: use_build_context_synchronously
         context,
       ).load(selectedTemplate);
       final tempDir = await getTemporaryDirectory();
@@ -787,27 +788,27 @@ class _MemeGeneratorState extends State<MemeGenerator> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             IconButton(
-              icon: const Icon(Icons.add_comment),
+              icon: const Icon(Icons.add_comment, color: Colors.amber,),
               onPressed: _addText,
               tooltip: 'Add Text',
             ),
             IconButton(
-              icon: const Icon(Icons.view_quilt),
+              icon: const Icon(Icons.view_quilt, color: Colors.amber,),
               onPressed: _showLayoutPicker,
               tooltip: 'Change Layout',
             ),
             IconButton(
-              icon: const Icon(Icons.burst_mode),
+              icon: const Icon(Icons.burst_mode, color: Colors.amber,),
               onPressed: _showTemplatePicker,
               tooltip: 'Templates',
             ),
             IconButton(
-              icon: const Icon(Icons.save_alt),
+              icon: const Icon(Icons.save_alt, color: Colors.amber,),
               onPressed: _saveMeme,
               tooltip: 'Save',
             ),
             IconButton(
-              icon: const Icon(Icons.share),
+              icon: const Icon(Icons.share, color: Colors.amber,),
               onPressed: _shareMeme,
               tooltip: 'Share',
             ),
@@ -1026,12 +1027,6 @@ class _MemeGeneratorState extends State<MemeGenerator> {
         ),
         actions: [
           ElevatedButton(
-            child: Text(
-              'Got it',
-              style: context.textTheme.labelSmall?.copyWith(
-                color: Theme.of(context).colorScheme.onPrimary,
-              ),
-            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
               textStyle: Get.textTheme.labelSmall?.copyWith(
@@ -1039,6 +1034,12 @@ class _MemeGeneratorState extends State<MemeGenerator> {
               ),
             ),
             onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Got it',
+              style: context.textTheme.labelSmall?.copyWith(
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
+            ),
           ),
         ],
       ),
@@ -1111,9 +1112,9 @@ class _MemeGeneratorState extends State<MemeGenerator> {
         ),
         actions: [
           if (_frames.any((f) => f.image != null))
-            IconButton(icon: const Icon(Icons.save_alt), onPressed: _saveMeme),
+            IconButton(icon: const Icon(Icons.save_alt,color: Colors.amber,), onPressed: _saveMeme),
           if (_frames.any((f) => f.image != null))
-            IconButton(icon: const Icon(Icons.share), onPressed: _shareMeme),
+            IconButton(icon: const Icon(Icons.share,color: Colors.amber,), onPressed: _shareMeme),
         ],
       ),
       body: _frames.every((f) => f.image == null)
