@@ -48,6 +48,9 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
   
   // New Controller for Quantity
   final TextEditingController _quantityController = TextEditingController();
+  // Sheet spacing (in mm for PDF, logical px for UI preview)
+static const double sheetMarginMM = 10; // page margin
+static const double photoSpacingMM = 5; // gap between photos
 
   @override
   void initState() {
@@ -483,25 +486,29 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
               reqCount = maxItems;
             }
 
-            return GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: cols,
-                childAspectRatio: _isCustomSelected()
-                    ? (_customSpec.heightMM > 0 ? _customSpec.aspectRatio : 1.0)
-                    : _selectedSpec.aspectRatio,
-              ),
-              itemCount: reqCount,
-              itemBuilder: (context, index) {
-                return Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300, width: 0.5),
-                    image: DecorationImage(
-                      image: FileImage(_image!),
-                      fit: BoxFit.cover,
+            return Padding(
+                padding: const EdgeInsets.all(8), // UI margin preview
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: cols,
+                  childAspectRatio: _isCustomSelected()
+                      ? (_customSpec.heightMM > 0 ? _customSpec.aspectRatio : 1.0)
+                      : _selectedSpec.aspectRatio,
+                ),
+                itemCount: reqCount,
+                itemBuilder: (context, index) {
+                  return Container(
+                    margin: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300, width: 0.5),
+                      image: DecorationImage(
+                        image: FileImage(_image!),
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             );
           },
         ),
