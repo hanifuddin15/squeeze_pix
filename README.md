@@ -2,7 +2,7 @@
 
 ---
 
-````md
+<!-- ````md -->
 # 📸 Squeeze Pix
 ### All-in-One Image Compression, Editing & AI Toolkit
 
@@ -165,7 +165,6 @@ lib/
 * 😂 Meme creation
 * 🧑‍💼 Professional headshots
 
----
 
 ## 📌 Future Roadmap
 
@@ -174,52 +173,39 @@ lib/
 * 🖨️ Print-ready templates
 * 🎞️ Video compression
 
----
 
 ## 🤝 Contribution
 
 Contributions and feature ideas are welcome.
 Open an issue or submit a pull request.
 
----
 
 ## 📄 License
 
 MIT License
 
----
 
 ## 🙌 Author
 <p align="center">
   <img src="assets/images/hanif_uddin.jpeg" width="100%" alt="Squeeze Pix App Banner detailed">
 
 </p>
-**Hanif Uddin**
-Flutter Developer | Tech Enthusiast
 
----
+## 👑 Hanif Uddin
+#### 💼 Flutter Developer | Tech Enthusiast
+#### 📧 Email: hanifuddin.dev@gmail.com
+#### 📱 Phone: +8801963978074
+#### 🌐 Website: https://devhanifuddinportfolio.vercel.app/
+#### 🌐 GitHub: https://github.com/hanifuddin15
+#### 🌐 LinkedIn: https://www.linkedin.com/in/hanif-uddin-10b014113/
+
+
+
 
 ⭐ If you like this project, give it a star and share **Squeeze Pix**!
 
-````
 
 ---
 
-## 🔥 Pro Tips (Important)
-1. **GitHub autoplay videos**
-   - Works best when hosted via **GitHub issues uploads**
-   - Or convert MP4 → GIF if autoplay fails
 
-2. **Recommended asset structure**
-```text
-assets/
- ├── logo.png
- ├── banner.png
- ├── features.png
- └── videos/
-     ├── logo_animation.mp4
-     └── key_features.mp4
-````
-
----
 
