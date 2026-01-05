@@ -1,14 +1,4 @@
-Awesome — below is a **fully redefined, polished `README.md`** with **proper visual hierarchy and placement** for:
 
-* ✅ App Logo
-* ✅ Logo animation (MP4)
-* ✅ App banner image
-* ✅ Key feature animation video (MP4)
-* ✅ Key feature image
-
-This layout follows **top open-source apps**, **Play Store branding**, and **portfolio best practices**.
-
-You can **copy–paste this entire file** 👇
 
 ---
 
@@ -17,7 +7,7 @@ You can **copy–paste this entire file** 👇
 ### All-in-One Image Compression, Editing & AI Toolkit
 
 <p align="center">
-  <img src="assets/logo.png" width="140" alt="Squeeze Pix Logo">
+  <img src="assets/images/sq_pix_logo_new.jpg" width="140" alt="Squeeze Pix Logo">
 </p>
 
 <p align="center">
@@ -30,10 +20,12 @@ You can **copy–paste this entire file** 👇
 
 ## 🎬 Brand Animation
 
+<!-- <p align="center"> -->
+  <!-- <video src="assets/videos/logo_animation.mp4" width="320" autoplay loop muted></video> -->
+<!-- </p> -->
 <p align="center">
-  <video src="assets/videos/logo_animation.mp4" width="320" autoplay loop muted></video>
+  <img src="assets/gifs/sq_Pix_logo_animation.gif" width="45%" alt="Squeeze Pix Logo Animation"/>
 </p>
-
 > *Animated brand logo introducing Squeeze Pix*
 
 ---
@@ -51,17 +43,19 @@ You can **copy–paste this entire file** 👇
 ## 🖼️ App Banner
 
 <p align="center">
-  <img src="assets/banner.png" width="100%" alt="Squeeze Pix App Banner">
+  <img src="assets/images/sq_pix_banner.jpg" width="100%" alt="Squeeze Pix App Banner">
 </p>
 
 ---
 
 ## 🎬 App in Action
 
+<!-- <p align="center"> -->
+  <!-- <video src="assets/videos/key_features.mp4" width="90%" autoplay loop muted></video> -->
+<!-- </p> -->
 <p align="center">
-  <video src="assets/videos/key_features.mp4" width="90%" autoplay loop muted></video>
+  <img src="assets/gifs/sq_pix_features.gif" width="45%" alt="Squeeze Pix Features"/>
 </p>
-
 <p align="center">
   <b>Bulk Compression • Image Editing • AI Tools • Conversion</b>
 </p>
@@ -71,7 +65,8 @@ You can **copy–paste this entire file** 👇
 ## ✨ Key Features
 
 <p align="center">
-  <img src="assets/features.png" width="90%" alt="Squeeze Pix Key Features">
+  <img src="assets/images/squeeze_pix_app_features.png" width="100%" alt="Squeeze Pix App Banner detailed">
+
 </p>
 
 ---
@@ -195,7 +190,10 @@ MIT License
 ---
 
 ## 🙌 Author
+<p align="center">
+  <img src="assets/images/hanif_uddin.jpeg" width="100%" alt="Squeeze Pix App Banner detailed">
 
+</p>
 **Hanif Uddin**
 Flutter Developer | Tech Enthusiast
 
