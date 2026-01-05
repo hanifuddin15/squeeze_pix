@@ -33,7 +33,11 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.compress, size: 100, color: Colors.white),
+              Image.asset(
+                "assets/images/sq_pix_logo_new.png",
+                width: 320,
+                height: 320,
+              ),
                 Text(
                   "Squeeze Pix 2.0",
                   style: TextStyle(fontSize: 32, color: Colors.white),
