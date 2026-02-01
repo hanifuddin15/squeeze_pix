@@ -98,7 +98,7 @@ class EditorHub extends StatelessWidget {
   Widget _buildMainToolbar(EditorController controller) {
     return Container(
       height: 100,
-      color: Colors.black.withValues(alpha: .3),
+      color: Colors.black.withValues(alpha: 0.3),
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -147,7 +147,7 @@ class EditorHub extends StatelessWidget {
   Widget _buildToolPanel(EditorController controller) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-      color: Colors.black.withValues(alpha: .5),
+      color: Colors.black.withValues(alpha: 0.5),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -276,7 +276,7 @@ class _ResizeControlsState extends State<_ResizeControls> {
           ),
           value: _keepAspectRatio,
           onChanged: (val) => setState(() => _keepAspectRatio = val),
-          activeThumbColor : Get.theme.colorScheme.primary,
+          // activeColor: Get.theme.colorScheme.primary,
         ),
         ElevatedButton(
           onPressed: () {
@@ -299,7 +299,7 @@ class _ResizeControlsState extends State<_ResizeControls> {
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withValues(alpha: .7)),
+        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
         enabledBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Colors.white54),
         ),
@@ -396,7 +396,9 @@ class _CompressControls extends StatelessWidget {
               isDense: true,
               contentPadding: const EdgeInsets.all(8),
               enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: .5)),
+                borderSide: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.5),
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Get.theme.colorScheme.primary),

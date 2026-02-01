@@ -37,10 +37,7 @@ class ProUpgradeScreen extends StatelessWidget {
             const SizedBox(height: 10),
             const Text(
               "Unlock the full power of Squeeze Pix",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white70,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.white70),
             ),
             const SizedBox(height: 30),
             Expanded(
@@ -56,7 +53,7 @@ class ProUpgradeScreen extends StatelessWidget {
                       "Contains Ads",
                       "No AI Tools",
                     ],
-                    color: Colors.white.withValues(alpha: .1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     buttonText: "Current Plan",
                     onTap: () {},
                     isCurrent: true,
@@ -70,7 +67,7 @@ class ProUpgradeScreen extends StatelessWidget {
                       "Premium Editing Tools",
                       "No AI Tools",
                     ],
-                    color: Colors.amber.withValues(alpha: .2),
+                    color: Colors.amber.withValues(alpha: 0.2),
                     borderColor: Colors.amber,
                     buttonText: "Upgrade to Gold",
                     onTap: () => iapController.buyPro(),
@@ -84,7 +81,7 @@ class ProUpgradeScreen extends StatelessWidget {
                       "BG Remover",
                       "Priority Support",
                     ],
-                    color: Colors.cyan.withValues(alpha: .2),
+                    color: Colors.cyan.withValues(alpha: 0.2),
                     borderColor: Colors.cyanAccent,
                     buttonText: "Upgrade to Platinum",
                     onTap: () => iapController.buyUltra(),
@@ -118,12 +115,12 @@ class ProUpgradeScreen extends StatelessWidget {
         color: color,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: borderColor ?? Colors.white.withValues(alpha: .2),
+          color: borderColor ?? Colors.white.withValues(alpha: 0.2),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: .2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -136,7 +133,10 @@ class ProUpgradeScreen extends StatelessWidget {
             Align(
               alignment: Alignment.topRight,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.cyanAccent,
                   borderRadius: BorderRadius.circular(20),
@@ -165,7 +165,7 @@ class ProUpgradeScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Colors.white.withValues(alpha: .9),
+              color: Colors.white.withValues(alpha: 0.9),
             ),
           ),
           const SizedBox(height: 24),
@@ -176,7 +176,9 @@ class ProUpgradeScreen extends StatelessWidget {
                 children: [
                   Icon(
                     feature.contains("No") ? Icons.close : Icons.check_circle,
-                    color: feature.contains("No") ? Colors.redAccent : Colors.greenAccent,
+                    color: feature.contains("No")
+                        ? Colors.redAccent
+                        : Colors.greenAccent,
                     size: 20,
                   ),
                   const SizedBox(width: 12),
@@ -203,15 +205,15 @@ class ProUpgradeScreen extends StatelessWidget {
               ),
             ),
           if (isCurrent)
-             Center(
-               child: Text(
+            Center(
+              child: Text(
                 "Active Plan",
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: .5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontWeight: FontWeight.bold,
                 ),
-                           ),
-             ),
+              ),
+            ),
         ],
       ),
     );

@@ -198,7 +198,7 @@ class _DPMakerState extends State<DPMaker> {
   Widget _buildControls() {
     return Material(
       elevation: 8,
-      color: Theme.of(context).colorScheme.surface.withValues(alpha: .7),
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(20),
         topRight: Radius.circular(20),
@@ -289,7 +289,7 @@ class _DPMakerState extends State<DPMaker> {
               activeColor: Theme.of(context).colorScheme.inverseSurface,
               inactiveColor: Theme.of(
                 context,
-              ).colorScheme.onSurface.withValues(alpha: .24),
+              ).colorScheme.onSurface.withValues(alpha: 0.24),
               value: value,
               min: min,
               max: max,

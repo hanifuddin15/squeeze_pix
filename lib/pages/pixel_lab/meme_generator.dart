@@ -246,7 +246,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                       Icons.add_a_photo,
                       color: Theme.of(
                         context,
-                      ).colorScheme.onSurface.withValues(alpha: .54),
+                      ).colorScheme.onSurface.withValues(alpha: 0.54),
                       size: 48,
                     ),
                   ),
@@ -394,7 +394,9 @@ class _MemeGeneratorState extends State<MemeGenerator> {
             filter: ui.ImageFilter.blur(sigmaX: 15, sigmaY: 15),
             child: Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface.withValues(alpha: .15),
+                color: Theme.of(
+                  context,
+                ).colorScheme.surface.withValues(alpha: 0.15),
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(25),
                 ),
@@ -418,12 +420,12 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                         decoration: BoxDecoration(
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withValues(alpha: .1),
+                          ).colorScheme.onSurface.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: Theme.of(
                               context,
-                            ).colorScheme.onSurface.withValues(alpha: .24),
+                            ).colorScheme.onSurface.withValues(alpha: 0.24),
                           ),
                         ),
                         child: Center(
@@ -471,7 +473,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
             decoration: BoxDecoration(
               color: Theme.of(
                 context,
-              ).colorScheme.primaryFixedDim.withValues(alpha: .15),
+              ).colorScheme.primaryFixedDim.withValues(alpha: 0.15),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(25),
               ),
@@ -612,7 +614,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
-                    ).colorScheme.surface.withValues(alpha: .15),
+                    ).colorScheme.surface.withValues(alpha: 0.15),
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(25),
                     ),
@@ -636,18 +638,18 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                               hintStyle: TextStyle(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withValues(alpha: .7),
+                                ).colorScheme.onSurface.withValues(alpha: 0.7),
                               ),
                               prefixIcon: Icon(
                                 Icons.search,
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.onSurface.withValues(alpha: .7),
+                                ).colorScheme.onSurface.withValues(alpha: 0.7),
                               ),
                               filled: true,
                               fillColor: Theme.of(
                                 context,
-                              ).colorScheme.onSurface.withValues(alpha: .1),
+                              ).colorScheme.onSurface.withValues(alpha: 0.1),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide.none,
@@ -781,7 +783,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
   Widget _buildMainToolbar() {
     return Material(
       elevation: 8,
-      color: Theme.of(context).colorScheme.surface.withValues(alpha: .06),
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.06),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
         child: Row(
@@ -828,7 +830,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
         topRight: Radius.circular(20),
       ),
       elevation: 18,
-      color: Theme.of(context).colorScheme.surface.withValues(alpha: .7),
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -913,7 +915,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                   hintStyle: TextStyle(
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurface.withValues(alpha: .5),
+                    ).colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                   border: const UnderlineInputBorder(
                     borderSide: BorderSide(color: Colors.white54),
@@ -971,7 +973,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
               activeColor: Theme.of(context).colorScheme.inverseSurface,
               inactiveColor: Theme.of(
                 context,
-              ).colorScheme.onSurface.withValues(alpha: .24),
+              ).colorScheme.onSurface.withValues(alpha: 0.24),
               value: value,
               min: min,
               max: max,
@@ -1001,7 +1003,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(
           context,
-        ).colorScheme.inversePrimary.withValues(alpha: .8),
+        ).colorScheme.inversePrimary.withValues(alpha: 0.8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Pick a color'),
         content: SingleChildScrollView(

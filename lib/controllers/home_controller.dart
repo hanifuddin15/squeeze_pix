@@ -809,13 +809,13 @@ class HomeController extends GetxController {
           child: Container(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: .15),
+              color: Colors.white.withValues(alpha: 0.15),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(25),
               ),
               border: Border(
                 top: BorderSide(
-                  color: Colors.white.withValues(alpha: .3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   width: 1.5,
                 ),
               ),

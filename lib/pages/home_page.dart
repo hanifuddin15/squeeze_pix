@@ -83,22 +83,31 @@ class ImageGridPage extends StatelessWidget {
                 : Row(
                     children: [
                       IconButton(
-                        icon:  Icon(Icons.add_photo_alternate_outlined, color:Colors.amber),
+                        icon: Icon(
+                          Icons.add_photo_alternate_outlined,
+                          color: Colors.amber,
+                        ),
                         onPressed: homeController.showImageSourceDialog,
                         tooltip: 'Add Images',
                       ),
-                       IconButton(
-                        icon: const Icon(Icons.brightness_6_outlined, color:Colors.amber),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.brightness_6_outlined,
+                          color: Colors.amber,
+                        ),
                         onPressed: homeController.toggleTheme,
-                       tooltip: 'Toggle Theme',
-                       ),
-                       IconButton(
-                        icon: const Icon(Icons.workspace_premium_outlined, color:Colors.amber),
-                        onPressed: (){
+                        tooltip: 'Toggle Theme',
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.workspace_premium_outlined,
+                          color: Colors.amber,
+                        ),
+                        onPressed: () {
                           Get.to(ProUpgradeScreen());
                         },
-                       tooltip: 'Buy Premium',
-                       ),
+                        tooltip: 'Buy Premium',
+                      ),
                     ],
                   ),
           ),
@@ -181,7 +190,7 @@ class _GridItem extends StatelessWidget {
                 duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Colors.black.withValues(alpha: .5)
+                      ? Colors.black.withValues(alpha: 0.5)
                       : Colors.transparent,
                   border: Border.all(
                     color: isSelected
@@ -301,20 +310,22 @@ class GlassBottomNav extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
-               decoration: BoxDecoration(
-            color:context.theme.colorScheme.surface.withValues(alpha: .2), // 👈 glass tint
+          decoration: BoxDecoration(
+            color: context.theme.colorScheme.surface.withValues(
+              alpha: 0.2,
+            ), // 👈 glass tint
             border: Border(
               top: BorderSide(
-                color: Colors.white.withValues(alpha: .2),
+                color: Colors.white.withValues(alpha: 0.2),
                 width: 1,
               ),
             ),
           ),
           child: Obx(
             () => BottomNavigationBar(
-              backgroundColor: Colors.transparent, 
+              backgroundColor: Colors.transparent,
               elevation: 5,
-              selectedItemColor:  Colors.amber,
+              selectedItemColor: Colors.amber,
               unselectedItemColor: Colors.white70,
               currentIndex: homeController.tabIndex.value,
               onTap: (i) => homeController.tabIndex.value = i,
@@ -365,10 +376,13 @@ class _BatchActionBar extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: .7),
+            color: Colors.black.withValues(alpha: 0.7),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
             border: Border(
-              top: BorderSide(color: Colors.white.withValues(alpha: .3), width: 1.5),
+              top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.3),
+                width: 1.5,
+              ),
             ),
           ),
           child: Obx(
@@ -409,7 +423,7 @@ class _BatchActionBar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                     selectedColor: Colors.white,
                     color: Colors.white70,
-                    fillColor: Colors.cyan.withValues(alpha: .5),
+                    fillColor: Colors.cyan.withValues(alpha: 0.5),
                     renderBorder: false,
                     children: const [
                       Padding(

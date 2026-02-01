@@ -2,14 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'package:squeeze_pix/controllers/compressor_controller.dart'; 
-import 'package:squeeze_pix/controllers/home_controller.dart';
+import 'package:squeeze_pix/controllers/compressor_controller.dart';
+// import 'package:squeeze_pix/controllers/home_controller.dart';
 import 'package:squeeze_pix/controllers/iap_controller.dart';
 import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 
 class UnityAdsController extends GetxController {
-  // final CompressorController _compressorController = Get.put(CompressorController());
-  final HomeController _homeController = Get.put(HomeController());
+  final CompressorController _compressorController = Get.put(
+    CompressorController(),
+  );
+  // final HomeController _homeController = Get.put(HomeController());
 
   // Game ID from Unity Dashboard
   static const String _androidGameId = '5970117';

@@ -280,7 +280,7 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
   Widget _buildControls() {
     return Material(
       elevation: 8,
-      color: Theme.of(context).colorScheme.surface.withValues(alpha: .7),
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
       borderRadius: const BorderRadius.only(
         topLeft: Radius.circular(20),
         topRight: Radius.circular(20),
