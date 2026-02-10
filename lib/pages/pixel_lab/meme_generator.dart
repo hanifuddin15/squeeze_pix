@@ -268,7 +268,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
         onTap: () {
           // Deselect text when tapping background
           setState(() => _selectedTextIndex = null);
-          _pickImage(index);
+          _showImageSourcePicker(index);
         },
         child: Container(
           decoration: BoxDecoration(
@@ -366,7 +366,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
             _buildToolbarBtn(
               Icons.burst_mode,
               "Templates",
-              _showTemplatePicker,
+              () => _showTemplatePicker(),
             ),
           ],
         ),
@@ -759,7 +759,68 @@ class _MemeGeneratorState extends State<MemeGenerator> {
     );
   }
 
-  Future<void> _showTemplatePicker() async {
+  Future<void> _showImageSourcePicker(int frameIndex) async {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Select Image Source",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildSourceOption(Icons.photo_library, "Gallery", () {
+                  Navigator.pop(context);
+                  _pickImage(frameIndex);
+                }),
+                _buildSourceOption(Icons.burst_mode, "Template", () {
+                  Navigator.pop(context);
+                  _showTemplatePicker(frameIndex: frameIndex);
+                }),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSourceOption(IconData icon, String label, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white10,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.white, size: 30),
+          ),
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(color: Colors.white70)),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showTemplatePicker({int? frameIndex}) async {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -851,10 +912,16 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                             // Use this template
                             Navigator.pop(context);
                             setState(() {
-                              // Reset to single layout
-                              _updateLayout(MemeLayout.single);
-                              _frames[0].assetImage = templates[index];
-                              _frames[0].image = null;
+                              if (frameIndex != null) {
+                                _frames[frameIndex].assetImage =
+                                    templates[index];
+                                _frames[frameIndex].image = null;
+                              } else {
+                                // Reset to single layout
+                                _updateLayout(MemeLayout.single);
+                                _frames[0].assetImage = templates[index];
+                                _frames[0].image = null;
+                              }
                             });
                           },
                           child: ClipRRect(
