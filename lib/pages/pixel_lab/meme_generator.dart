@@ -212,7 +212,11 @@ class _MemeGeneratorState extends State<MemeGenerator> {
                             child: Stack(
                               children: [
                                 ..._frames.asMap().entries.map(
-                                  (e) => _buildFrame(e.key, e.value),
+                                  (e) => _buildFrame(
+                                    e.key,
+                                    e.value,
+                                    constraints.biggest,
+                                  ),
                                 ),
                                 ..._texts.asMap().entries.map(
                                   (e) => _buildText(e.key, e.value),
@@ -252,14 +256,14 @@ class _MemeGeneratorState extends State<MemeGenerator> {
     return null;
   }
 
-  Widget _buildFrame(int index, MemeFrame frame) {
+  Widget _buildFrame(int index, MemeFrame frame, Size size) {
     final imgProvider = _getFrameImage(frame);
 
     return Positioned(
-      left: frame.rect.left * _canvasSize.width,
-      top: frame.rect.top * _canvasSize.height,
-      width: frame.rect.width * _canvasSize.width,
-      height: frame.rect.height * _canvasSize.height,
+      left: frame.rect.left * size.width,
+      top: frame.rect.top * size.height,
+      width: frame.rect.width * size.width,
+      height: frame.rect.height * size.height,
       child: GestureDetector(
         onTap: () {
           // Deselect text when tapping background
