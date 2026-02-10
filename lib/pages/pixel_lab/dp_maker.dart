@@ -19,6 +19,8 @@ import '../../controllers/unity_ads_controller.dart';
 
 enum DPShape { circle, square, rounded }
 
+enum EditorTool { none, shape, border, rotate }
+
 class DPMaker extends StatefulWidget {
   final File? image;
   const DPMaker({this.image, super.key});
@@ -37,6 +39,9 @@ class _DPMakerState extends State<DPMaker> {
   Color _borderColor = Colors.white;
   double _borderRadius = 30.0;
   DPShape _selectedShape = DPShape.circle;
+
+  // UI State
+  EditorTool _activeTool = EditorTool.none;
 
   final TransformationController _transformationController =
       TransformationController();
@@ -70,8 +75,8 @@ class _DPMakerState extends State<DPMaker> {
   ShapeBorder get _currentShape {
     switch (_selectedShape) {
       case DPShape.circle:
-        return const CircleBorder(
-          side: BorderSide(width: 4, color: Colors.white),
+        return CircleBorder(
+          side: BorderSide(width: _borderWidth, color: _borderColor),
         );
       case DPShape.square:
       case DPShape.rounded:
@@ -89,53 +94,60 @@ class _DPMakerState extends State<DPMaker> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-
       appBar: AppBar(
         title: const Text("DP Maker"),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(gradient: AppTheme.gradient),
-        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.photo_library, color: Colors.white),
+            onPressed: _pickImage,
+            tooltip: 'Change Image',
+          ),
           if (_selectedImage != null)
             IconButton(
-              icon: const Icon(Icons.check, color: Colors.amber,),
+              icon: const Icon(Icons.check, color: Colors.amberAccent),
               onPressed: _saveDP,
               tooltip: 'Save DP',
             ),
           IconButton(
-            icon: const Icon(Icons.share, color: Colors.amber,),
+            icon: const Icon(Icons.share, color: Colors.white),
             onPressed: _shareDP,
             tooltip: 'Share DP',
           ),
         ],
       ),
-      body: _selectedImage == null
-          ? _buildImagePickerPrompt()
-          : Container(
-              decoration: BoxDecoration(gradient: AppTheme.gradient),
-              child: Column(
+      body: Container(
+        decoration: BoxDecoration(gradient: AppTheme.gradient),
+        child: _selectedImage == null
+            ? _buildImagePickerPrompt()
+            : Stack(
                 children: [
-                  Expanded(
+                  // Main Editor Area
+                  Positioned.fill(
+                    bottom: 140, // Leave space for controls
                     child: Center(
-                      child: RepaintBoundary(
-                        key: _repaintBoundaryKey,
-                        child: Container(
-                          margin: const EdgeInsets.all(20),
-                          decoration: ShapeDecoration(shape: _currentShape),
-                          child: ClipPath(
-                            clipper: ShapeBorderClipper(shape: _currentShape),
-                            child: InteractiveViewer(
-                              transformationController:
-                                  _transformationController,
-                              minScale: 0.5,
-                              maxScale: 4.0,
-                              panEnabled: true,
-                              scaleEnabled: true,
-                              child: Transform.rotate(
-                                angle: _rotation,
-                                child: Image.file(
-                                  _selectedImage!,
-                                  fit: BoxFit.cover,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: RepaintBoundary(
+                          key: _repaintBoundaryKey,
+                          child: Container(
+                            decoration: ShapeDecoration(shape: _currentShape),
+                            child: ClipPath(
+                              clipper: ShapeBorderClipper(shape: _currentShape),
+                              child: InteractiveViewer(
+                                transformationController:
+                                    _transformationController,
+                                minScale: 0.5,
+                                maxScale: 4.0,
+                                panEnabled: true,
+                                scaleEnabled: true,
+                                child: Transform.rotate(
+                                  angle: _rotation,
+                                  child: Image.file(
+                                    _selectedImage!,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                             ),
@@ -144,157 +156,44 @@ class _DPMakerState extends State<DPMaker> {
                       ),
                     ),
                   ),
-                  _buildControls(),
+
+                  // Bottom Controls Panel
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: _buildBottomControls(),
+                  ),
                 ],
               ),
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _pickImage,
-        tooltip: 'Pick Image',
-        child: const Icon(Icons.photo_library),
       ),
     );
   }
 
   Widget _buildImagePickerPrompt() {
     return Center(
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(gradient: AppTheme.gradient),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.photo, size: 80, color: Colors.grey),
-            const SizedBox(height: 16),
-            const Text(
-              'No Image Selected',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Tap the button below to select an image.',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () => _pickImage,
-              icon: const Icon(Icons.add_a_photo),
-              label: const Text('Select Image'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                textStyle: const TextStyle(fontSize: 16),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildControls() {
-    return Material(
-      elevation: 8,
-      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(20),
-        topRight: Radius.circular(20),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildShapeSelector(),
-            const SizedBox(height: 16),
-            _buildSliderRow(
-              icon: Icons.rotate_right,
-              label: 'Rotate',
-              value: _rotation,
-              min: -3.14,
-              max: 3.14,
-              onChanged: (val) => setState(() => _rotation = val),
-            ),
-            _buildSliderRow(
-              icon: Icons.border_style_outlined,
-              label: 'Border',
-              value: _borderWidth,
-              min: 0,
-              max: 20,
-              onChanged: (val) => setState(() => _borderWidth = val),
-              onTapIcon: _pickBorderColor,
-            ),
-            if (_showRadiusSlider)
-              _buildSliderRow(
-                icon: Icons.rounded_corner,
-                label: 'Radius',
-                value: _borderRadius,
-                min: 0,
-                max: 150,
-                onChanged: (val) => setState(() => _borderRadius = val),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildShapeSelector() {
-    return CupertinoSlidingSegmentedControl<DPShape>(
-      children: const {
-        DPShape.circle: Icon(Icons.circle_outlined),
-        DPShape.square: Icon(Icons.square_outlined),
-        DPShape.rounded: Icon(Icons.rounded_corner),
-      },
-      groupValue: _selectedShape,
-      onValueChanged: (value) {
-        if (value != null) {
-          setState(() {
-            _selectedShape = value;
-
-            // Default radius for shapes
-            if (value == DPShape.square && _borderRadius == 30) {
-              _borderRadius = 0;
-            }
-            if (value == DPShape.rounded) _borderRadius = 30;
-          });
-        }
-      },
-    );
-  }
-
-  Widget _buildSliderRow({
-    required IconData icon,
-    required String label,
-    required double value,
-    required double min,
-    required double max,
-    required ValueChanged<double> onChanged,
-    VoidCallback? onTapIcon,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          InkWell(
-            onTap: onTapIcon,
-            child: Icon(icon, color: onTapIcon != null ? _borderColor : null),
+          Icon(
+            Icons.add_photo_alternate_outlined,
+            size: 80,
+            color: Colors.white.withValues(alpha: 0.5),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Slider(
-              activeColor: Theme.of(context).colorScheme.inverseSurface,
-              inactiveColor: Theme.of(
-                context,
-              ).colorScheme.onSurface.withValues(alpha: 0.24),
-              value: value,
-              min: min,
-              max: max,
-              label: value.toStringAsFixed(1),
-              onChanged: onChanged,
+          const SizedBox(height: 16),
+          const Text(
+            'Select an Image to Start',
+            style: TextStyle(fontSize: 18, color: Colors.white70),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _pickImage,
+            icon: const Icon(Icons.add),
+            label: const Text('Pick Image'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
           ),
         ],
@@ -302,7 +201,294 @@ class _DPMakerState extends State<DPMaker> {
     );
   }
 
-  void _pickBorderColor() {
+  Widget _buildBottomControls() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.8),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Contextual Controls (Sliders, Color Picker, Segmented Control)
+            if (_activeTool != EditorTool.none) _buildContextualPanel(),
+
+            // Main Toolbar
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildToolbarItem(
+                    icon: Icons.crop_square,
+                    label: "Shape",
+                    tool: EditorTool.shape,
+                  ),
+                  _buildToolbarItem(
+                    icon: Icons.border_style,
+                    label: "Border",
+                    tool: EditorTool.border,
+                  ),
+                  _buildToolbarItem(
+                    icon: Icons.rotate_right,
+                    label: "Rotate",
+                    tool: EditorTool.rotate,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToolbarItem({
+    required IconData icon,
+    required String label,
+    required EditorTool tool,
+  }) {
+    final isSelected = _activeTool == tool;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _activeTool = isSelected ? EditorTool.none : tool;
+        });
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? Colors.amberAccent : Colors.white70,
+              size: 28,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.amberAccent : Colors.white70,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContextualPanel() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        border: Border(
+          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_activeTool == EditorTool.shape) _buildShapeControls(),
+          if (_activeTool == EditorTool.border) _buildBorderControls(),
+          if (_activeTool == EditorTool.rotate) _buildRotateControls(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShapeControls() {
+    return Column(
+      children: [
+        CupertinoSlidingSegmentedControl<DPShape>(
+          backgroundColor: Colors.white.withValues(alpha: 0.2),
+          thumbColor: Colors.amber,
+          children: {
+            DPShape.circle: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Icon(Icons.circle_outlined, color: Colors.black),
+            ),
+            DPShape.square: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Icon(Icons.crop_square, color: Colors.black),
+            ),
+            DPShape.rounded: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Icon(Icons.rounded_corner, color: Colors.black),
+            ),
+          },
+          groupValue: _selectedShape,
+          onValueChanged: (value) {
+            if (value != null) {
+              setState(() {
+                _selectedShape = value;
+                if (value == DPShape.square && _borderRadius == 30) {
+                  _borderRadius = 0;
+                }
+                if (value == DPShape.rounded) _borderRadius = 30;
+              });
+            }
+          },
+        ),
+        if (_showRadiusSlider)
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.rounded_corner,
+                  color: Colors.white70,
+                  size: 20,
+                ),
+                Expanded(
+                  child: Slider(
+                    value: _borderRadius,
+                    min: 0,
+                    max: 150,
+                    activeColor: Colors.amber,
+                    inactiveColor: Colors.white24,
+                    onChanged: (val) => setState(() => _borderRadius = val),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildBorderControls() {
+    return Column(
+      children: [
+        Row(
+          children: [
+            const Text("Width", style: TextStyle(color: Colors.white70)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Slider(
+                value: _borderWidth,
+                min: 0,
+                max: 30,
+                activeColor: Colors.amber,
+                inactiveColor: Colors.white24,
+                onChanged: (val) => setState(() => _borderWidth = val),
+              ),
+            ),
+            Text(
+              "${_borderWidth.toInt()}",
+              style: const TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 40,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              _buildColorOption(Colors.white),
+              _buildColorOption(Colors.black),
+              _buildColorOption(Colors.red),
+              _buildColorOption(Colors.blue),
+              _buildColorOption(Colors.green),
+              _buildColorOption(Colors.amber),
+              _buildColorOption(Colors.purple),
+              _buildColorOption(Colors.cyan),
+              GestureDetector(
+                onTap: _pickCustomBorderColor,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Colors.red, Colors.green, Colors.blue],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: const Icon(
+                    Icons.colorize,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildColorOption(Color color) {
+    final isSelected = _borderColor == color;
+    return GestureDetector(
+      onTap: () => setState(() => _borderColor = color),
+      child: Container(
+        width: 40,
+        height: 40,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: isSelected
+              ? Border.all(color: Colors.amberAccent, width: 3)
+              : Border.all(color: Colors.white24, width: 1),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: Colors.amberAccent.withValues(alpha: 0.4),
+                blurRadius: 8,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRotateControls() {
+    return Row(
+      children: [
+        IconButton(
+          onPressed: () => setState(() => _rotation -= 0.1),
+          icon: const Icon(Icons.rotate_left, color: Colors.white70),
+        ),
+        Expanded(
+          child: Slider(
+            value: _rotation,
+            min: -3.14,
+            max: 3.14,
+            activeColor: Colors.amber,
+            inactiveColor: Colors.white24,
+            onChanged: (val) => setState(() => _rotation = val),
+          ),
+        ),
+        IconButton(
+          onPressed: () => setState(() => _rotation += 0.1),
+          icon: const Icon(Icons.rotate_right, color: Colors.white70),
+        ),
+        IconButton(
+          onPressed: () => setState(() => _rotation = 0),
+          icon: const Icon(Icons.restore, color: Colors.white70),
+          tooltip: "Reset Rotation",
+        ),
+      ],
+    );
+  }
+
+  void _pickCustomBorderColor() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -369,7 +555,9 @@ class _DPMakerState extends State<DPMaker> {
       final file = await File('${tempDir.path}/dp_maker_share.png').create();
       await file.writeAsBytes(imageBytes);
 
-      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)], text: 'Check out my new DP!'));
+      await SharePlus.instance.share(
+        ShareParams(files: [XFile(file.path)], text: 'Check out my new DP!'),
+      );
     });
   }
 }

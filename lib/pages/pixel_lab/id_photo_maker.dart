@@ -25,7 +25,8 @@ class IDPhotoMaker extends StatefulWidget {
   State<IDPhotoMaker> createState() => _IDPhotoMakerState();
 }
 
-class _IDPhotoMakerState extends State<IDPhotoMaker> {
+class _IDPhotoMakerState extends State<IDPhotoMaker>
+    with SingleTickerProviderStateMixin {
   File? _image;
   final _imageKey = GlobalKey();
 
@@ -44,16 +45,16 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
   );
   late TextEditingController _customPaperWidthController;
   late TextEditingController _customPaperHeightController;
-  
+
   // New Controller for Quantity
   final TextEditingController _quantityController = TextEditingController();
-  // Sheet spacing (in mm for PDF, logical px for UI preview)
-// page margin
-// gap between photos
+
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
     _image = widget.image;
     if (_image == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _pickImage());
@@ -77,10 +78,10 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
 
     _customPaperWidthController.addListener(_updateCustomPaperSpec);
     _customPaperHeightController.addListener(_updateCustomPaperSpec);
-    
-    // Listen to quantity changes to refresh UI 
+
+    // Listen to quantity changes to refresh UI
     _quantityController.addListener(() {
-         setState(() {});
+      setState(() {});
     });
   }
 
@@ -120,104 +121,310 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
     _customPaperWidthController.dispose();
     _customPaperHeightController.dispose();
     _quantityController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          AppTheme.gradient.colors.last, // Ensure background matches gradient
+      backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text("ID Photo Maker"),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(gradient: AppTheme.gradient),
-        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.photo_library, color: Colors.white),
+            onPressed: _pickImage,
+            tooltip: 'Change Image',
+          ),
           if (_image != null)
             IconButton(
-              icon: const Icon(Icons.save_alt, color: Colors.amber,),
+              icon: const Icon(Icons.save_alt, color: Colors.amberAccent),
               onPressed: _saveSheet,
               tooltip: 'Save Sheet',
             ),
           if (_image != null)
             IconButton(
-              icon: const Icon(Icons.share, color: Colors.amber,),
+              icon: const Icon(Icons.share, color: Colors.white),
               onPressed: _shareSheet,
               tooltip: 'Share Sheet',
             ),
         ],
       ),
-      body: _image == null
-          ? _buildImagePickerPrompt()
-          : Container(
-              decoration: BoxDecoration(gradient: AppTheme.gradient),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight,
-                      ),
-                      child: IntrinsicHeight(
-                        child: SafeArea(
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 20.0,
-                                    ),
-                                    child: AspectRatio(
-                                      aspectRatio: _isCustomSelected()
-                                          ? (_customSpec.heightMM > 0
-                                                ? _customSpec.aspectRatio
-                                                : 1.0)
-                                          : _selectedSpec.aspectRatio,
-                                      child: Container(
-                                        margin: const EdgeInsets.symmetric(
-                                          horizontal: 20,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: Colors.white,
-                                            width: 2,
-                                          ),
-                                        ),
-                                        child: ClipRect(
-                                          child: InteractiveViewer(
-                                            key: _imageKey,
-                                            transformationController:
-                                                _transformationController,
-                                            minScale: 0.5,
-                                            maxScale: 5.0,
-                                            child: Image.file(
-                                              _image!,
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              _buildControls(),
-                            ],
-                          ),
+      body: Container(
+        decoration: BoxDecoration(gradient: AppTheme.gradient),
+        child: _image == null
+            ? _buildImagePickerPrompt()
+            : Column(
+                children: [
+                  // 1. Preview Area (Expanded)
+                  Expanded(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          top: 80,
+                          bottom: 20,
+                          left: 20,
+                          right: 20,
                         ),
+                        child: _tabController.index == 2
+                            ? _buildSheetPreview() // Show full sheet preview in Layout tab
+                            : _buildSinglePhotoPreview(), // Show single photo cropping in other tabs
                       ),
                     ),
-                  );
-                },
+                  ),
+
+                  // 2. Controls Area (Bottom Panel)
+                  _buildBottomPanel(),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _buildSinglePhotoPreview() {
+    return AspectRatio(
+      aspectRatio: _isCustomSelected()
+          ? (_customSpec.heightMM > 0 ? _customSpec.aspectRatio : 1.0)
+          : _selectedSpec.aspectRatio,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.white, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 20,
+            ),
+          ],
+        ),
+        child: ClipRect(
+          child: InteractiveViewer(
+            key: _imageKey,
+            transformationController: _transformationController,
+            minScale: 0.5,
+            maxScale: 5.0,
+            child: Image.file(_image!, fit: BoxFit.cover),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomPanel() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.85),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+      ),
+      child: SafeArea(
+        // Ensure it respects bottom safe area
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TabBar(
+              controller: _tabController,
+              indicatorColor: Colors.amber,
+              labelColor: Colors.amber,
+              unselectedLabelColor: Colors.white54,
+              onTap: (_) => setState(() {}), // Rebuild to toggle preview mode
+              tabs: const [
+                Tab(icon: Icon(Icons.aspect_ratio), text: "Size"),
+                Tab(icon: Icon(Icons.description), text: "Paper"),
+                Tab(icon: Icon(Icons.grid_view), text: "Layout"),
+              ],
+            ),
+            SizedBox(
+              height: 220, // Fixed height for controls
+              child: TabBarView(
+                controller: _tabController,
+                physics:
+                    const NeverScrollableScrollPhysics(), // Prevent swiping to avoid conflict with sliders
+                children: [
+                  _buildSizeControls(),
+                  _buildPaperControls(),
+                  _buildLayoutControls(),
+                ],
               ),
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _pickImage,
-        tooltip: 'Pick Image',
-        child: const Icon(Icons.photo_library),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSizeControls() {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        DropdownButtonFormField<IdPhotoSpec>(
+          decoration: InputDecoration(
+            labelText: "Select Standard",
+            labelStyle: const TextStyle(color: Colors.amber),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
+            ),
+            border: const OutlineInputBorder(),
+            filled: true,
+            fillColor: Colors.white.withValues(alpha: 0.05),
+          ),
+          dropdownColor: Colors.grey[900],
+          style: const TextStyle(color: Colors.white),
+          initialValue: _selectedSpec,
+          items: idPhotoSpecs
+              .map(
+                (spec) => DropdownMenuItem(
+                  value: spec,
+                  child: Text(
+                    spec.name,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              )
+              .toList(),
+          onChanged: (spec) {
+            if (spec != null) {
+              setState(() {
+                _selectedSpec = spec;
+                if (_isCustomSelected()) {
+                  _customWidthController.text = _customSpec.widthMM.toString();
+                  _customHeightController.text = _customSpec.heightMM
+                      .toString();
+                }
+              });
+            }
+          },
+        ),
+        if (_isCustomSelected())
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildDarkTextField(
+                    controller: _customWidthController,
+                    label: "Width (mm)",
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildDarkTextField(
+                    controller: _customHeightController,
+                    label: "Height (mm)",
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildPaperControls() {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        DropdownButtonFormField<PaperSize>(
+          decoration: InputDecoration(
+            labelText: "Paper Size",
+            labelStyle: const TextStyle(color: Colors.amber),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
+            ),
+            border: const OutlineInputBorder(),
+            filled: true,
+            fillColor: Colors.white.withValues(alpha: 0.05),
+          ),
+          dropdownColor: Colors.grey[900],
+          style: const TextStyle(color: Colors.white),
+          initialValue: _selectedPaper,
+          items: paperSizes
+              .map(
+                (paper) =>
+                    DropdownMenuItem(value: paper, child: Text(paper.name)),
+              )
+              .toList(),
+          onChanged: (paper) {
+            if (paper != null) setState(() => _selectedPaper = paper);
+          },
+        ),
+        if (_isCustomPaperSelected())
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildDarkTextField(
+                    controller: _customPaperWidthController,
+                    label: "Width (mm)",
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildDarkTextField(
+                    controller: _customPaperHeightController,
+                    label: "Height (mm)",
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildLayoutControls() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          _buildDarkTextField(
+            controller: _quantityController,
+            label: "Quantity (Leave empty to fill page)",
+            icon: Icons.grid_on,
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            "Preview above showing how photos fit on the page.",
+            style: TextStyle(color: Colors.white54, fontSize: 12),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDarkTextField({
+    required TextEditingController controller,
+    required String label,
+    IconData? icon,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.white70),
+        prefixIcon: icon != null ? Icon(icon, color: Colors.white54) : null,
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.amber),
+        ),
+        filled: true,
+        fillColor: Colors.white.withValues(alpha: 0.05),
       ),
     );
   }
@@ -233,238 +440,38 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
   }
 
   Widget _buildImagePickerPrompt() {
-    return Container(
-      decoration: BoxDecoration(gradient: AppTheme.gradient),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.photo, size: 80, color: Colors.white70),
-            const SizedBox(height: 16),
-            const Text(
-              'No Image Selected',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.add_photo_alternate_outlined,
+            size: 80,
+            color: Colors.white.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Select an Image to Start',
+            style: TextStyle(fontSize: 18, color: Colors.white70),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () => _pickImage,
+            icon: const Icon(Icons.add),
+            label: const Text('Pick Image'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Tap the button below to select an image.',
-              style: TextStyle(fontSize: 16, color: Colors.white70),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _pickImage,
-              icon: const Icon(Icons.add_a_photo),
-              label: const Text('Select Image'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                textStyle: const TextStyle(fontSize: 16),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   bool _isCustomSelected() => _selectedSpec.name.startsWith('Custom');
   bool _isCustomPaperSelected() => _selectedPaper.name.startsWith('Custom');
-
-  Widget _buildControls() {
-    return Material(
-      elevation: 8,
-      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.7),
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(20),
-        topRight: Radius.circular(20),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "ID Photo Standard",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            DropdownButton<IdPhotoSpec>(
-              isExpanded: true,
-              dropdownColor: Theme.of(context).colorScheme.surface,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onTertiaryFixed,
-              ),
-              value: _selectedSpec,
-              items: idPhotoSpecs
-                  .map(
-                    (spec) => DropdownMenuItem(
-                      value: spec,
-                      child: Text(
-                        spec.name,
-                        style: TextStyle(
-                          color: context.theme.colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (spec) {
-                if (spec != null) {
-                  setState(() {
-                    _selectedSpec = spec;
-                    if (_isCustomSelected()) {
-                      // When custom is selected, ensure controllers match the default custom spec
-                      _customWidthController.text = _customSpec.widthMM
-                          .toString();
-                      _customHeightController.text = _customSpec.heightMM
-                          .toString();
-                    }
-                  });
-                }
-              },
-            ),
-            if (_isCustomSelected())
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _customWidthController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                         style: TextStyle(color: context.theme.colorScheme.onSurface),
-                        decoration: const InputDecoration(
-                          labelText: 'Width (mm)',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: TextField(
-                        controller: _customHeightController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        style: TextStyle(color: context.theme.colorScheme.onSurface),
-                        decoration: const InputDecoration(
-                          labelText: 'Height (mm)',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            const SizedBox(height: 16),
-            Text(
-              "Paper Size",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: context.theme.colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 8),
-            DropdownButton<PaperSize>(
-              isExpanded: true,
-              dropdownColor: Theme.of(context).colorScheme.surface,
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-              value: _selectedPaper,
-              items: paperSizes
-                  .map(
-                    (paper) => DropdownMenuItem(
-                      value: paper,
-                      child: Text(
-                        paper.name,
-                        style: TextStyle(
-                          color: context.theme.colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (paper) {
-                if (paper != null) setState(() => _selectedPaper = paper);
-              },
-            ),
-            if (_isCustomPaperSelected())
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _customPaperWidthController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                         style: TextStyle(color: context.theme.colorScheme.onSurface),
-                        decoration: const InputDecoration(
-                          labelText: 'Width (mm)',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: TextField(
-                        controller: _customPaperHeightController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        style: TextStyle(color: context.theme.colorScheme.onSurface),
-                        decoration: const InputDecoration(
-                          labelText: 'Height (mm)',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            
-            const SizedBox(height: 16),
-            // --- NEW: Quantity Selector ---
-            TextField(
-              controller: _quantityController,
-              keyboardType: TextInputType.number,
-              style: TextStyle(color: context.theme.colorScheme.onSurface),
-              decoration: const InputDecoration(
-                labelText: 'Quantity (Empty = Fill Page)',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.numbers),
-                hintText: 'e.g. 4',
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            Center(
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.visibility),
-                label: const Text("Show Print Preview"),
-                onPressed: _showPrintPreviewPopup,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildSheetPreview() {
     final paper = _isCustomPaperSelected() ? _customPaper : _selectedPaper;
@@ -474,6 +481,12 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 15,
+            ),
+          ],
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -486,20 +499,25 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
             }
 
             return Padding(
-                padding: const EdgeInsets.all(8), // UI margin preview
+              padding: const EdgeInsets.all(8), // UI margin preview
               child: GridView.builder(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: cols,
                   childAspectRatio: _isCustomSelected()
-                      ? (_customSpec.heightMM > 0 ? _customSpec.aspectRatio : 1.0)
+                      ? (_customSpec.heightMM > 0
+                            ? _customSpec.aspectRatio
+                            : 1.0)
                       : _selectedSpec.aspectRatio,
                 ),
                 itemCount: reqCount,
                 itemBuilder: (context, index) {
                   return Container(
-                    margin: const EdgeInsets.all(6),
+                    margin: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300, width: 0.5),
+                      border: Border.all(
+                        color: Colors.grey.shade300,
+                        width: 0.5,
+                      ),
                       image: DecorationImage(
                         image: FileImage(_image!),
                         fit: BoxFit.cover,
@@ -511,26 +529,6 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
             );
           },
         ),
-      ),
-    );
-  }
-
-  void _showPrintPreviewPopup() {
-    if (_image == null) {
-      showErrorSnackkbar(message: "Please select an image first.");
-      return;
-    }
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Print Preview"),
-        content: SizedBox(width: double.maxFinite, child: _buildSheetPreview()),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text("Close"),
-          ),
-        ],
       ),
     );
   }
@@ -558,7 +556,7 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
 
     final (cols, rows) = _calculateLayout();
     final maxItems = cols * rows;
-    
+
     // Parse quantity logic for PDF
     int reqCount = int.tryParse(_quantityController.text) ?? 0;
     if (reqCount <= 0 || reqCount > maxItems) {
@@ -594,15 +592,9 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
       ).writeAsBytes(pdfBytes);
 
       try {
-        // Saving PDF to gallery is not standard, so we offer to share/open it.
-        // For a direct "save", we can save an image representation instead.
-        // Let's save as an image for the "Save" button.
-        // A better approach would be to render the PDF page to an image.
-        // For simplicity, we'll just save the first photo.
         await Gal.putImage(_image!.path);
         showSuccessSnackkbar(
-          message:
-              "Single photo saved to gallery. Use 'Share' for the full PDF sheet.",
+          message: "Single photo saved. Use 'Share' for full PDF.",
         );
         // Add to history
         Get.find<HistoryController>().addHistoryItem(file, HistoryType.id);
@@ -622,9 +614,12 @@ class _IDPhotoMakerState extends State<IDPhotoMaker> {
           '${tempDir.path}/id_photo_sheet.pdf',
         ).writeAsBytes(pdfBytes);
 
-        await SharePlus.instance.share(ShareParams(
-        files: [XFile(file.path)], text: 'Here is my ID Photo Sheet.'
-        ),);
+        await SharePlus.instance.share(
+          ShareParams(
+            files: [XFile(file.path)],
+            text: 'Here is my ID Photo Sheet.',
+          ),
+        );
       } catch (e) {
         showErrorSnackkbar(message: "Failed to generate or share PDF: $e");
       }
