@@ -126,8 +126,8 @@ class UnityAdsController extends GetxController {
         placementId: _rewardedPlacementId,
         onComplete: (placementId) {
           debugPrint('Rewarded Ad ($placementId) complete');
-          _homeController.batchAccessGranted.value = true;
-          _homeController.compressAll();
+          _compressorController.batchAccessGranted.value = true;
+          _compressorController.compressAll();
           isRewardedReady.value = false;
           _loadRewardedAd(); // Load next ad
         },
@@ -144,8 +144,8 @@ class UnityAdsController extends GetxController {
     } else {
       debugPrint('Rewarded ad not ready, granting access and proceeding.');
       // Grant reward and proceed if ad is not ready, so user is not blocked.
-      _homeController.batchAccessGranted.value = true;
-      _homeController.compressAll();
+      _compressorController.batchAccessGranted.value = true;
+      _compressorController.compressAll();
     }
   }
 

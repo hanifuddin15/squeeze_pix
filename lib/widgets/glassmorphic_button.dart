@@ -8,6 +8,8 @@ class GlassmorphicButton extends StatelessWidget {
   final double height;
   final double borderRadius;
   final Color splashColor;
+  final Color? color;
+  final Color? borderColor;
 
   const GlassmorphicButton({
     super.key,
@@ -17,6 +19,8 @@ class GlassmorphicButton extends StatelessWidget {
     this.height = 60,
     this.borderRadius = 15.0,
     this.splashColor = Colors.white30,
+    this.color,
+    this.borderColor,
   });
 
   @override
@@ -29,10 +33,10 @@ class GlassmorphicButton extends StatelessWidget {
           width: width,
           height: height,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.15),
+            color: color ?? Colors.white.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(borderRadius),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: borderColor ?? Colors.white.withValues(alpha: 0.2),
               width: 1.5,
             ),
           ),
