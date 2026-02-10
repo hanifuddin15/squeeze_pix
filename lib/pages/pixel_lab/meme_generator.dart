@@ -829,134 +829,24 @@ class _MemeGeneratorState extends State<MemeGenerator> {
         initialChildSize: 0.7,
         maxChildSize: 0.9,
         minChildSize: 0.5,
-        builder: (_, controller) => Container(
-          decoration: BoxDecoration(
-            color: Colors.grey[900],
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: TextField(
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: "Search templates...",
-                    hintStyle: const TextStyle(color: Colors.white54),
-                    prefixIcon: const Icon(Icons.search, color: Colors.white54),
-                    filled: true,
-                    fillColor: Colors.white.withValues(alpha: 0.1),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  onChanged: (val) {
-                    // Implement filtering would require state inside the modal or parent.
-                    // Leaving as placeholder for simplicity unless requested.
-                  },
-                ),
-              ),
-              Expanded(
-                child: FutureBuilder<List<String>>(
-                  future: _loadTemplateAssets(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    final templates = snapshot.data!;
-                    if (templates.isEmpty) {
-                      return Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.broken_image,
-                            color: Colors.white54,
-                            size: 48,
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            "No templates found.",
-                            style: TextStyle(color: Colors.white54),
-                          ),
-                          const SizedBox(height: 8),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 32),
-                            child: Text(
-                              "Ensure you have restarted the app after adding assets.",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white24,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    }
-
-                    return GridView.builder(
-                      controller: controller,
-                      padding: const EdgeInsets.all(12),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            crossAxisSpacing: 8,
-                            mainAxisSpacing: 8,
-                          ),
-                      itemCount: templates.length,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () {
-                            // Use this template
-                            Navigator.pop(context);
-                            setState(() {
-                              if (frameIndex != null) {
-                                _frames[frameIndex].assetImage =
-                                    templates[index];
-                                _frames[frameIndex].image = null;
-                              } else {
-                                // Reset to single layout
-                                _updateLayout(MemeLayout.single);
-                                _frames[0].assetImage = templates[index];
-                                _frames[0].image = null;
-                              }
-                            });
-                          },
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.asset(
-                              templates[index],
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+        builder: (_, controller) => TemplatePickerSheet(
+          scrollController: controller,
+          onTemplateSelected: (path) {
+            Navigator.pop(context);
+            setState(() {
+              if (frameIndex != null) {
+                _frames[frameIndex].assetImage = path;
+                _frames[frameIndex].image = null;
+              } else {
+                _updateLayout(MemeLayout.single);
+                _frames[0].assetImage = path;
+                _frames[0].image = null;
+              }
+            });
+          },
         ),
       ),
     );
-  }
-
-  Future<List<String>> _loadTemplateAssets() async {
-    try {
-      final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
-      final templatePaths = manifest
-          .listAssets()
-          .where((String key) => key.contains('assets/templates/'))
-          .toList();
-
-      return templatePaths;
-    } catch (e) {
-      print("Error loading templates: $e");
-      return [];
-    }
   }
 
   Future<Uint8List?> _captureMeme() async {
@@ -1015,5 +905,178 @@ class _MemeGeneratorState extends State<MemeGenerator> {
         ),
       );
     });
+  }
+}
+
+class TemplatePickerSheet extends StatefulWidget {
+  final ScrollController scrollController;
+  final ValueChanged<String> onTemplateSelected;
+
+  const TemplatePickerSheet({
+    super.key,
+    required this.scrollController,
+    required this.onTemplateSelected,
+  });
+
+  @override
+  State<TemplatePickerSheet> createState() => _TemplatePickerSheetState();
+}
+
+class _TemplatePickerSheetState extends State<TemplatePickerSheet> {
+  List<String> _allTemplates = [];
+  List<String> _filteredTemplates = [];
+  bool _isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTemplates();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadTemplates() async {
+    try {
+      final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+      final templatePaths = manifest
+          .listAssets()
+          .where((String key) => key.contains('assets/templates/'))
+          .toList();
+
+      setState(() {
+        _allTemplates = templatePaths;
+        _filteredTemplates = templatePaths;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print("Error loading templates: $e");
+      setState(() => _isLoading = false);
+    }
+  }
+
+  void _filterTemplates(String query) {
+    if (query.isEmpty) {
+      setState(() => _filteredTemplates = _allTemplates);
+    } else {
+      setState(() {
+        _filteredTemplates = _allTemplates.where((path) {
+          final name = _formatTemplateName(path).toLowerCase();
+          return name.contains(query.toLowerCase());
+        }).toList();
+      });
+    }
+  }
+
+  String _formatTemplateName(String path) {
+    final fileName = path.split('/').last;
+    final nameWithoutExt = fileName.split('.').first;
+    // Replace underscores and hyphens with spaces
+    final readable = nameWithoutExt.replaceAll(RegExp(r'[_-]'), ' ');
+    // Capitalize words
+    return readable
+        .split(' ')
+        .map((word) {
+          if (word.isEmpty) return '';
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[900],
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: "Search templates...",
+                hintStyle: const TextStyle(color: Colors.white54),
+                prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                filled: true,
+                fillColor: Colors.white.withValues(alpha: 0.1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              onChanged: _filterTemplates,
+            ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _filteredTemplates.isEmpty
+                ? _buildEmptyState()
+                : GridView.builder(
+                    controller: widget.scrollController,
+                    padding: const EdgeInsets.all(12),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                          childAspectRatio: 0.8, // Adjusted for title
+                        ),
+                    itemCount: _filteredTemplates.length,
+                    itemBuilder: (context, index) {
+                      final path = _filteredTemplates[index];
+                      final name = _formatTemplateName(path);
+                      return GestureDetector(
+                        onTap: () => widget.onTemplateSelected(path),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.asset(path, fit: BoxFit.cover),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 10,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.search_off, color: Colors.white54, size: 48),
+        const SizedBox(height: 16),
+        const Text(
+          "No templates found.",
+          style: TextStyle(color: Colors.white54),
+        ),
+      ],
+    );
   }
 }
