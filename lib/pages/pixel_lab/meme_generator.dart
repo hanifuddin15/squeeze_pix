@@ -554,7 +554,7 @@ class _MemeGeneratorState extends State<MemeGenerator> {
       case TextTool.font:
         // Simple font switcher for demo
         return SizedBox(
-          height: 40,
+          height: 45,
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
@@ -563,6 +563,33 @@ class _MemeGeneratorState extends State<MemeGenerator> {
               _buildFontBtn("Roboto", GoogleFonts.roboto(), memeText),
               _buildFontBtn("Lato", GoogleFonts.lato(), memeText),
               _buildFontBtn("Oswald", GoogleFonts.oswald(), memeText),
+              _buildFontBtn("Lobster", GoogleFonts.lobster(), memeText),
+              _buildFontBtn("Pacifico", GoogleFonts.pacifico(), memeText),
+              _buildFontBtn("Bangers", GoogleFonts.bangers(), memeText),
+              _buildFontBtn("Anton", GoogleFonts.anton(), memeText),
+              _buildFontBtn("Fredoka", GoogleFonts.fredoka(), memeText),
+              _buildFontBtn(
+                "Dancing Script",
+                GoogleFonts.dancingScript(),
+                memeText,
+              ),
+              _buildFontBtn(
+                "Permanent Marker",
+                GoogleFonts.permanentMarker(),
+                memeText,
+              ),
+              _buildFontBtn("Satisfy", GoogleFonts.satisfy(), memeText),
+              _buildFontBtn("Amatic SC", GoogleFonts.amaticSc(), memeText),
+              _buildFontBtn("Cinzel", GoogleFonts.cinzel(), memeText),
+              // Bangla Fonts
+              _buildFontBtn("Galada", GoogleFonts.galada(), memeText),
+              _buildFontBtn(
+                "Hind Siliguri",
+                GoogleFonts.hindSiliguri(),
+                memeText,
+              ),
+              _buildFontBtn("Mina", GoogleFonts.mina(), memeText),
+              _buildFontBtn("Tiro Bangla", GoogleFonts.tiroBangla(), memeText),
             ],
           ),
         );
@@ -586,12 +613,18 @@ class _MemeGeneratorState extends State<MemeGenerator> {
         decoration: BoxDecoration(
           color: isSelected ? Colors.amber : Colors.white10,
           borderRadius: BorderRadius.circular(20),
+          border: isSelected
+              ? Border.all(color: Colors.amber, width: 2)
+              : Border.all(color: Colors.white24, width: 1),
         ),
-        child: Text(
-          name,
-          style: TextStyle(
-            color: isSelected ? Colors.black : Colors.white,
-            fontWeight: FontWeight.bold,
+        child: Center(
+          child: Text(
+            name,
+            style: font.copyWith(
+              color: isSelected ? Colors.black : Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
         ),
       ),
