@@ -659,7 +659,7 @@ class CompressorController extends GetxController {
   //===== Set Batch Save Path =====//
   Future<void> setBatchSavePath() async {
     // Use flutter_document_picker to get a writable content URI for a directory
-    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+    String? selectedDirectory = await FilePicker.getDirectoryPath();
 
     if (selectedDirectory != null) {
       try {

@@ -13,33 +13,33 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^1.0.8
-  get: ^4.7.2
+  cupertino_icons: ^1.0.9
+  get: ^4.7.3
   get_storage: ^2.1.1
-  image_picker: ^1.2.1
-  path_provider: ^2.1.5 # Add this line
+  image_picker: ^1.2.3
+  path_provider: ^2.1.6
   path: ^1.9.1 # Add this line
   share_plus: ^12.0.1
-  flutter_image_compress: ^2.4.0
+  flutter_image_compress: ^2.5.1
   flutter_staggered_animations: ^1.1.1
   open_filex: ^4.7.0
-  archive: ^4.0.7
-  unity_ads_plugin: ^0.3.28
+  archive: ^4.0.9
+  unity_ads_plugin: ^0.4.0
   flutter_launcher_icons: ^0.14.4
   rename: ^3.1.0
   before_after: ^3.2.0
-  file_picker: ^10.3.6
-  file_saver: ^0.3.1
-  saf_stream: ^0.12.3
-  permission_handler: ^12.0.1
-  google_fonts: ^6.3.2
-  in_app_purchase: ^3.2.3
+  file_picker: ^11.0.2
+  file_saver: ^0.4.0
+  saf_stream: ^3.1.0
+  permission_handler: ^12.0.3
+  google_fonts: ^8.2.0
+  in_app_purchase: ^3.3.0
   shimmer: ^3.0.0
-  image_cropper: ^11.0.0
-  gal: ^2.3.2
+  image_cropper: ^12.2.1
+  gal: ^2.3.3
   pdf: ^3.11.3
   flutter_colorpicker: ^1.1.0
-  image: ^4.5.4
+  image: ^4.9.1
   http: ^1.6.0
   # flutter_document_picker: ^5.4.1
   # google_mobile_ads: ^6.0.0
