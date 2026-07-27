@@ -21,6 +21,7 @@ import 'package:squeeze_pix/utils/snackbar.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:gal/gal.dart';
 import 'package:squeeze_pix/services/review_service.dart';
+import 'package:squeeze_pix/widgets/result_preview_dialog.dart';
 
 /// A data class to pass parameters to the isolate for batch compression.
 class _BatchCompressParams {
@@ -640,6 +641,7 @@ class HomeController extends GetxController {
   Future<void> compressSingleSelected() async {
     if (selected.value == null) return;
     isCompressing.value = true;
+    final originalFile = selected.value!;
     try {
       final result = await _compressFile(selected.value!);
       lastCompressed.value = result;
@@ -649,14 +651,12 @@ class HomeController extends GetxController {
         if (history.length > 10) history.removeLast();
         box.write('history', history.toList());
         
-        // Automatically save to Gallery
-        try {
-           // Check permission implicitly handled by Gal or check before
-           await Gal.putImage(lastCompressed.value!.path, album: 'Squeeze Pix');
-           showSuccessSnackkbar(message: 'Image saved to Gallery (Album: Squeeze Pix)');
-        } catch (e) {
-           debugPrint('Failed to save to gallery: $e');
-        }
+        // Show in-app result preview instead of just snackbar
+        await showResultPreview(
+          originalFile: originalFile,
+          resultFile: lastCompressed.value!,
+          operationLabel: 'Single Compress',
+        );
       }
     } finally {
       isCompressing.value = false;

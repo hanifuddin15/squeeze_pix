@@ -5,7 +5,8 @@ import 'package:squeeze_pix/theme/app_theme.dart';
 import 'package:squeeze_pix/widgets/glass_card.dart';
 
 class ProUpgradeScreen extends StatefulWidget {
-  const ProUpgradeScreen({super.key});
+  final int initialPlanIndex;
+  const ProUpgradeScreen({super.key, this.initialPlanIndex = 1});
 
   @override
   State<ProUpgradeScreen> createState() => _ProUpgradeScreenState();
@@ -33,7 +34,7 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
     ),
     PlanModel(
       title: "Gold Pro",
-      basePrice: "\$1.99 / Month",
+      basePrice: null,
       productId: 'pro_monthly',
       features: [
         "Ad-Free Squeeze Experience",
@@ -47,13 +48,14 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
     ),
     PlanModel(
       title: "Platinum Ultra",
-      basePrice: "\$2.99 / Month",
+      basePrice: null,
       productId: 'ultra_monthly',
       features: [
         "Everything in Gold Pro",
         "Full AI Studio Access",
         "1-Tap Background Remover",
         "HD AI Image Upscaler",
+        "AI Headshot Generator",
         "Priority Customer Support",
       ],
       color: Colors.cyanAccent,
@@ -65,10 +67,15 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
   @override
   void initState() {
     super.initState();
-    if (iapController.isUltraUser) {
+    // Use the initialPlanIndex if provided, otherwise use the user's current plan
+    if (widget.initialPlanIndex != 1) {
+      selectedPlanIndex.value = widget.initialPlanIndex;
+    } else if (iapController.isUltraUser) {
       selectedPlanIndex.value = 2;
     } else if (iapController.isProUser) {
       selectedPlanIndex.value = 1;
+    } else {
+      selectedPlanIndex.value = widget.initialPlanIndex;
     }
   }
 
@@ -223,13 +230,20 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
           final plan = plans[index];
           final isSelected = selectedPlanIndex.value == index;
 
-          String displayPrice = plan.basePrice;
-          if (plan.productId != null) {
+          String displayPrice;
+          if (plan.productId == null) {
+            displayPrice = plan.basePrice ?? 'Free';
+          } else {
+            // Use native currency from the store (locale-aware price)
             final product = iapController.products.firstWhereOrNull(
               (p) => p.id == plan.productId,
             );
             if (product != null) {
-              displayPrice = "${product.price} / Month";
+              // product.price from IAP is already in the user's local currency
+              displayPrice = '${product.price} / mo';
+            } else {
+              // Products not loaded yet (offline or store unavailable)
+              displayPrice = iapController.isLoading.value ? 'Loading...' : (plan.basePrice ?? '–');
             }
           }
 
@@ -395,7 +409,7 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
 
 class PlanModel {
   final String title;
-  final String basePrice;
+  final String? basePrice;
   final String? productId;
   final List<String> features;
   final Color color;

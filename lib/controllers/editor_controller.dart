@@ -11,6 +11,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/utils/snackbar.dart';
 import 'package:squeeze_pix/controllers/unity_ads_controller.dart';
+import 'package:squeeze_pix/widgets/result_preview_dialog.dart';
 import 'package:image/image.dart' as img;
 
 enum EditorTool { none, crop, resize, compress, convert, effects }
@@ -86,12 +87,9 @@ class EditorController extends GetxController {
 
     final adsController = Get.find<UnityAdsController>();
     adsController.performAction(() async {
+      final originalBeforeCrop = editedImage.value!;
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: editedImage.value!.path,
-        aspectRatio: const CropAspectRatio(
-          ratioX: 1,
-          ratioY: 1,
-        ), // default = square
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Crop Image',
@@ -106,7 +104,13 @@ class EditorController extends GetxController {
       if (croppedFile != null) {
         final bytes = await croppedFile.readAsBytes();
         await _updateEditedImage(bytes);
-        showSuccessSnackkbar(message: 'Image cropped.');
+        if (editedImage.value != null) {
+          await showResultPreview(
+            originalFile: originalBeforeCrop,
+            resultFile: editedImage.value!,
+            operationLabel: 'Crop Applied',
+          );
+        }
       }
     });
   }
@@ -116,6 +120,7 @@ class EditorController extends GetxController {
     
     final adsController = Get.find<UnityAdsController>();
     adsController.performAction(() async {
+      final originalBeforeResize = editedImage.value!;
       final img.Image? image = img.decodeImage(
         await editedImage.value!.readAsBytes(),
       );
@@ -126,8 +131,14 @@ class EditorController extends GetxController {
         height: newHeight,
       );
       await _updateEditedImage(Uint8List.fromList(img.encodeJpg(resizedImage)));
-      showSuccessSnackkbar(message: 'Image resized.');
       activeTool.value = EditorTool.none;
+      if (editedImage.value != null) {
+        await showResultPreview(
+          originalFile: originalBeforeResize,
+          resultFile: editedImage.value!,
+          operationLabel: 'Resized to $newWidth×$newHeight',
+        );
+      }
     });
   }
 
@@ -136,6 +147,7 @@ class EditorController extends GetxController {
     
     final adsController = Get.find<UnityAdsController>();
     adsController.performAction(() async {
+      final originalBeforeCompress = editedImage.value!;
       final imageBytes = await editedImage.value!.readAsBytes();
 
       Uint8List resultBytes;
@@ -170,14 +182,15 @@ class EditorController extends GetxController {
         return;
       }
 
-      final originalSize = imageBytes.lengthInBytes;
-      final newSize = resultBytes.lengthInBytes;
-      final reduction = ((originalSize - newSize) / originalSize * 100)
-          .toStringAsFixed(1);
-
       await _updateEditedImage(resultBytes);
-      showSuccessSnackkbar(message: 'Compressed by $reduction%');
       activeTool.value = EditorTool.none;
+      if (editedImage.value != null) {
+        await showResultPreview(
+          originalFile: originalBeforeCompress,
+          resultFile: editedImage.value!,
+          operationLabel: 'Compressed',
+        );
+      }
     });
   }
 
@@ -186,6 +199,7 @@ class EditorController extends GetxController {
 
     final adsController = Get.find<UnityAdsController>();
     adsController.performAction(() async {
+      final originalBeforeConvert = editedImage.value!;
       final imageBytes = await editedImage.value!.readAsBytes();
       final image = img.decodeImage(imageBytes);
       if (image == null) return;
@@ -235,8 +249,14 @@ class EditorController extends GetxController {
         Uint8List.fromList(encoded),
         newExtension: '.${format.toLowerCase()}',
       );
-      showSuccessSnackkbar(message: 'Image converted to $format.');
       activeTool.value = EditorTool.none;
+      if (editedImage.value != null) {
+        await showResultPreview(
+          originalFile: originalBeforeConvert,
+          resultFile: editedImage.value!,
+          operationLabel: 'Converted to $format',
+        );
+      }
     });
   }
 
@@ -269,6 +289,7 @@ class EditorController extends GetxController {
 
     final adsController = Get.find<UnityAdsController>();
     adsController.performAction(() async {
+        final originalBeforeEffect = editedImage.value!;
         // If applying a one-tap effect, always start from the original image.
         // Otherwise, use the currently edited image for adjustments.
         final sourceImageFile = (effect != null && originalImage.value != null)
@@ -304,8 +325,14 @@ class EditorController extends GetxController {
         }
 
         await _updateEditedImage(Uint8List.fromList(img.encodeJpg(newImage)));
-        showSuccessSnackkbar(message: 'Effect applied.');
         resetEffects(); // Reset sliders and UI filter after applying to bake the changes
+        if (editedImage.value != null) {
+          await showResultPreview(
+            originalFile: originalBeforeEffect,
+            resultFile: editedImage.value!,
+            operationLabel: 'Effect Applied',
+          );
+        }
     });
   }
 

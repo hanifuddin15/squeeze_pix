@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:squeeze_pix/controllers/home_controller.dart';
 import 'package:squeeze_pix/models/app_images_model.dart';
 import 'package:squeeze_pix/controllers/history_controller.dart';
@@ -144,7 +145,7 @@ class ImageGridPage extends StatelessWidget {
           Obx(() {
             if (homeController.images.isEmpty) return const SizedBox.shrink();
             return Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
               child: Row(
                 children: [
                   CustomStatCard(
@@ -171,27 +172,21 @@ class ImageGridPage extends StatelessWidget {
             );
           }),
 
+          // Long-press batch selection hint banner
+          Obx(() {
+            if (homeController.images.isEmpty || homeController.isSelectionMode.value) {
+              return const SizedBox.shrink();
+            }
+            return _LongPressHintBanner();
+          }),
+
           // Main Grid / Empty State
           Expanded(
             child: Obx(() {
               if (homeController.images.isEmpty) {
                 return const _EmptyState();
               }
-              return GridView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
-                physics: const BouncingScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.85,
-                ),
-                itemCount: homeController.images.length,
-                itemBuilder: (context, index) {
-                  final image = homeController.images[index];
-                  return _GridItem(image: image);
-                },
-              );
+              return _StaggeredImageGrid(images: homeController.images);
             }),
           ),
           _buildBatchActionBar(homeController),
@@ -201,17 +196,173 @@ class ImageGridPage extends StatelessWidget {
   }
 }
 
+/// Animated staggered grid for images
+class _StaggeredImageGrid extends StatefulWidget {
+  final List<AppImage> images;
+  const _StaggeredImageGrid({required this.images});
+
+  @override
+  State<_StaggeredImageGrid> createState() => _StaggeredImageGridState();
+}
+
+class _StaggeredImageGridState extends State<_StaggeredImageGrid>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
+      physics: const BouncingScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 0.85,
+      ),
+      itemCount: widget.images.length,
+      itemBuilder: (context, index) {
+        final image = widget.images[index];
+        // Staggered delay for each item
+        final delay = (index * 0.05).clamp(0.0, 0.6);
+        final animation = CurvedAnimation(
+          parent: _controller,
+          curve: Interval(delay, (delay + 0.4).clamp(0.0, 1.0),
+              curve: Curves.easeOutCubic),
+        );
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.3),
+              end: Offset.zero,
+            ).animate(animation),
+            child: _GridItem(image: image),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Dismissible hint banner for long-press to batch select
+class _LongPressHintBanner extends StatefulWidget {
+  @override
+  State<_LongPressHintBanner> createState() => _LongPressHintBannerState();
+}
+
+class _LongPressHintBannerState extends State<_LongPressHintBanner>
+    with SingleTickerProviderStateMixin {
+  final _box = GetStorage();
+  bool _dismissed = false;
+  late final AnimationController _shimmerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _dismissed = _box.read('hintDismissed') ?? false;
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    super.dispose();
+  }
+
+  void _dismiss() {
+    _box.write('hintDismissed', true);
+    setState(() => _dismissed = true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_dismissed) return const SizedBox.shrink();
+
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 400),
+      opacity: _dismissed ? 0 : 1,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          gradient: LinearGradient(
+            colors: [
+              Colors.cyanAccent.withValues(alpha: 0.15),
+              Colors.blue.withValues(alpha: 0.1),
+            ],
+          ),
+          border: Border.all(
+            color: Colors.cyanAccent.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          children: [
+            AnimatedBuilder(
+              animation: _shimmerController,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: 1.0 + 0.15 * (_shimmerController.value > 0.5
+                      ? 1.0 - _shimmerController.value
+                      : _shimmerController.value) * 2,
+                  child: child,
+                );
+              },
+              child: const Icon(
+                Icons.touch_app_rounded,
+                color: Colors.cyanAccent,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text(
+                '💡 Long-press any image to select multiple for batch compression',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  height: 1.4,
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: _dismiss,
+              child: const Icon(Icons.close, color: Colors.white38, size: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 Widget _buildBatchActionBar(HomeController homeController) {
   return Obx(
     () => AnimatedContainer(
       height: homeController.isSelectionMode.value ? 360 : 0,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 350),
       curve: Curves.easeOutCubic,
-      transform: Matrix4.translationValues(
-        0,
-        homeController.isSelectionMode.value ? 0 : 360,
-        0,
-      ),
+      clipBehavior: Clip.hardEdge,
+      decoration: const BoxDecoration(),
       child: _BatchActionBar(
         onCompress: homeController.compressAll,
         onShare: () => homeController.shareZipFile(),
@@ -221,100 +372,152 @@ Widget _buildBatchActionBar(HomeController homeController) {
   );
 }
 
-class _GridItem extends StatelessWidget {
+class _GridItem extends StatefulWidget {
   final AppImage image;
   const _GridItem({required this.image});
+
+  @override
+  State<_GridItem> createState() => _GridItemState();
+}
+
+class _GridItemState extends State<_GridItem>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pressController;
+  late final Animation<double> _pressScale;
+
+  @override
+  void initState() {
+    super.initState();
+    _pressController = AnimationController(
+      duration: const Duration(milliseconds: 120),
+      vsync: this,
+    );
+    _pressScale = Tween<double>(begin: 1.0, end: 0.93).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeIn),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pressController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final homeController = Get.find<HomeController>();
     return Obx(() {
-      final isSelected = homeController.selection.contains(image);
-      final fileSizeString = formatBytes(image.file.lengthSync(), 1);
+      final isSelected = homeController.selection.contains(widget.image);
+      final fileSizeString = formatBytes(widget.image.file.lengthSync(), 1);
 
       return GestureDetector(
-        onTap: () => homeController.handleImageTap(image),
-        onLongPress: () => homeController.toggleSelection(image),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isSelected ? Colors.cyanAccent : Colors.white.withValues(alpha: 0.15),
-              width: isSelected ? 2.5 : 1,
+        onTapDown: (_) => _pressController.forward(),
+        onTapUp: (_) {
+          _pressController.reverse();
+          HapticFeedback.selectionClick();
+          homeController.handleImageTap(widget.image);
+        },
+        onTapCancel: () => _pressController.reverse(),
+        onLongPress: () {
+          HapticFeedback.mediumImpact();
+          homeController.toggleSelection(widget.image);
+        },
+        child: ScaleTransition(
+          scale: _pressScale,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isSelected
+                    ? Colors.cyanAccent
+                    : Colors.white.withValues(alpha: 0.15),
+                width: isSelected ? 2.5 : 1,
+              ),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: Colors.cyanAccent.withValues(alpha: 0.3),
+                        blurRadius: 10,
+                        spreadRadius: 1,
+                      ),
+                    ]
+                  : [],
             ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: Colors.cyanAccent.withValues(alpha: 0.3),
-                      blurRadius: 10,
-                      spreadRadius: 1,
-                    ),
-                  ]
-                : [],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Image.file(image.file, fit: BoxFit.cover),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.file(widget.image.file, fit: BoxFit.cover),
 
-                // Top Size Badge
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.black.withValues(alpha: 0.8),
-                          Colors.black.withValues(alpha: 0.2),
-                        ],
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                      ),
-                    ),
-                    child: Text(
-                      fileSizeString,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Selection Overlay
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  color: isSelected
-                      ? Colors.cyanAccent.withValues(alpha: 0.25)
-                      : Colors.transparent,
-                ),
-
-                if (isSelected)
+                  // Bottom size badge
                   Positioned(
-                    top: 6,
-                    right: 6,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
                     child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: Colors.cyanAccent,
-                        shape: BoxShape.circle,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 6),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.black.withValues(alpha: 0.8),
+                            Colors.black.withValues(alpha: 0.2),
+                          ],
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.check,
-                        color: Colors.black,
-                        size: 16,
+                      child: Text(
+                        fileSizeString,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-              ],
+
+                  // Selection overlay
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    color: isSelected
+                        ? Colors.cyanAccent.withValues(alpha: 0.25)
+                        : Colors.transparent,
+                  ),
+
+                  if (isSelected)
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        duration: const Duration(milliseconds: 200),
+                        builder: (context, value, child) {
+                          return Transform.scale(
+                            scale: value,
+                            child: child,
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(
+                            color: Colors.cyanAccent,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.check,
+                            color: Colors.black,
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -323,8 +526,35 @@ class _GridItem extends StatelessWidget {
   }
 }
 
-class _EmptyState extends StatelessWidget {
+class _EmptyState extends StatefulWidget {
   const _EmptyState();
+
+  @override
+  State<_EmptyState> createState() => _EmptyStateState();
+}
+
+class _EmptyStateState extends State<_EmptyState>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _floatController;
+  late final Animation<double> _floatAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
+    _floatAnimation = Tween<double>(begin: -8, end: 8).animate(
+      CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _floatController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -335,20 +565,33 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: AppTheme.heroCardGradient,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.4),
-                    blurRadius: 24,
-                    spreadRadius: 2,
-                  ),
-                ],
+            AnimatedBuilder(
+              animation: _floatAnimation,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(0, _floatAnimation.value),
+                  child: child,
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: AppTheme.heroCardGradient,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.4),
+                      blurRadius: 24,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.add_photo_alternate_rounded,
+                  size: 56,
+                  color: Colors.white,
+                ),
               ),
-              child: const Icon(Icons.add_photo_alternate_rounded, size: 56, color: Colors.white),
             ),
             const SizedBox(height: 24),
             const Text(
@@ -371,7 +614,34 @@ class _EmptyState extends StatelessWidget {
                 height: 1.4,
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 12),
+            // Pro tip
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.cyanAccent.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.cyanAccent.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.touch_app_rounded,
+                      color: Colors.cyanAccent, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Long-press images to batch select',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 28),
             Obx(
               () => homeController.isPicking.value
                   ? const CircularProgressIndicator(color: Colors.cyanAccent)
@@ -387,7 +657,8 @@ class _EmptyState extends StatelessWidget {
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.photo_library_outlined, color: Colors.white),
+                              Icon(Icons.photo_library_outlined,
+                                  color: Colors.white),
                               SizedBox(width: 10),
                               Text(
                                 "Pick from Gallery",
@@ -409,7 +680,8 @@ class _EmptyState extends StatelessWidget {
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.camera_alt_outlined, color: Colors.white),
+                              Icon(Icons.camera_alt_outlined,
+                                  color: Colors.white),
                               SizedBox(width: 10),
                               Text(
                                 "Use Camera",
@@ -460,15 +732,20 @@ class GlassBottomNav extends StatelessWidget {
                 elevation: 0,
                 selectedItemColor: Colors.cyanAccent,
                 unselectedItemColor: Colors.white.withValues(alpha: 0.5),
-                selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                selectedLabelStyle:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                 unselectedLabelStyle: const TextStyle(fontSize: 11),
                 currentIndex: homeController.tabIndex.value,
-                onTap: (i) => homeController.tabIndex.value = i,
+                onTap: (i) {
+                  HapticFeedback.selectionClick();
+                  homeController.tabIndex.value = i;
+                },
                 type: BottomNavigationBarType.fixed,
                 items: const [
                   BottomNavigationBarItem(
                     icon: Icon(Icons.compress_rounded),
-                    activeIcon: Icon(Icons.compress_rounded, color: Colors.cyanAccent),
+                    activeIcon: Icon(Icons.compress_rounded,
+                        color: Colors.cyanAccent),
                     label: "Squeeze",
                   ),
                   BottomNavigationBarItem(
@@ -478,7 +755,8 @@ class GlassBottomNav extends StatelessWidget {
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.history_toggle_off_rounded),
-                    activeIcon: Icon(Icons.history_rounded, color: Colors.cyanAccent),
+                    activeIcon: Icon(Icons.history_rounded,
+                        color: Colors.cyanAccent),
                     label: "History",
                   ),
                 ],
@@ -534,7 +812,8 @@ class _BatchActionBar extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.check_circle_outline, color: Colors.cyanAccent, size: 18),
+                          const Icon(Icons.check_circle_outline,
+                              color: Colors.cyanAccent, size: 18),
                           const SizedBox(width: 8),
                           Text(
                             '${homeController.selection.length} Selected',
@@ -547,7 +826,7 @@ class _BatchActionBar extends StatelessWidget {
                         ],
                       ),
                       Text(
-                        'Total Size: ${formatBytes(homeController.selectionTotalSize, 2)}',
+                        'Total: ${formatBytes(homeController.selectionTotalSize, 2)}',
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 13,
@@ -569,14 +848,18 @@ class _BatchActionBar extends StatelessWidget {
                       children: [
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => homeController.batchCompressionMode.value = 0,
+                            onTap: () =>
+                                homeController.batchCompressionMode.value = 0,
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8),
                               decoration: BoxDecoration(
-                                color: homeController.batchCompressionMode.value == 0
-                                    ? AppTheme.primaryColor
-                                    : Colors.transparent,
+                                color:
+                                    homeController.batchCompressionMode.value ==
+                                            0
+                                        ? AppTheme.primaryColor
+                                        : Colors.transparent,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Text(
@@ -593,14 +876,18 @@ class _BatchActionBar extends StatelessWidget {
                         ),
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => homeController.batchCompressionMode.value = 1,
+                            onTap: () =>
+                                homeController.batchCompressionMode.value = 1,
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8),
                               decoration: BoxDecoration(
-                                color: homeController.batchCompressionMode.value == 1
-                                    ? AppTheme.primaryColor
-                                    : Colors.transparent,
+                                color:
+                                    homeController.batchCompressionMode.value ==
+                                            1
+                                        ? AppTheme.primaryColor
+                                        : Colors.transparent,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Text(
@@ -624,22 +911,27 @@ class _BatchActionBar extends StatelessWidget {
                   if (homeController.batchCompressionMode.value == 0)
                     Row(
                       children: [
-                        const Icon(Icons.tune, color: Colors.cyanAccent, size: 20),
+                        const Icon(Icons.tune,
+                            color: Colors.cyanAccent, size: 20),
                         const SizedBox(width: 8),
                         Expanded(
                           child: SliderTheme(
                             data: SliderTheme.of(context).copyWith(
                               activeTrackColor: Colors.cyanAccent,
-                              inactiveTrackColor: Colors.white.withValues(alpha: 0.1),
+                              inactiveTrackColor:
+                                  Colors.white.withValues(alpha: 0.1),
                               thumbColor: Colors.white,
                             ),
                             child: Slider(
-                              value: homeController.batchQuality.value.toDouble(),
+                              value: homeController.batchQuality.value
+                                  .toDouble(),
                               min: 1,
                               max: 100,
                               divisions: 99,
                               label: '${homeController.batchQuality.value}%',
-                              onChanged: (val) => homeController.batchQuality.value = val.round(),
+                              onChanged: (val) =>
+                                  homeController.batchQuality.value =
+                                      val.round(),
                             ),
                           ),
                         ),
@@ -656,22 +948,31 @@ class _BatchActionBar extends StatelessWidget {
                   else
                     Row(
                       children: [
-                        const Icon(Icons.straighten, color: Colors.cyanAccent, size: 20),
+                        const Icon(Icons.straighten,
+                            color: Colors.cyanAccent, size: 20),
                         const SizedBox(width: 12),
                         Expanded(
                           child: TextField(
                             onChanged: (value) {
-                              homeController.batchTargetSizeKB.value = int.tryParse(value);
+                              homeController.batchTargetSizeKB.value =
+                                  int.tryParse(value);
                             },
                             keyboardType: TextInputType.number,
-                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 14),
                             decoration: InputDecoration(
                               hintText: 'Target max size (e.g. 200)',
-                              hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
+                              hintStyle: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.4)),
                               suffixText: 'KB',
-                              suffixStyle: const TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              suffixStyle: const TextStyle(
+                                  color: Colors.cyanAccent,
+                                  fontWeight: FontWeight.bold),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 10),
                               filled: true,
                               fillColor: Colors.white.withValues(alpha: 0.08),
                               border: OutlineInputBorder(
@@ -693,30 +994,40 @@ class _BatchActionBar extends StatelessWidget {
                         flex: 2,
                         child: ElevatedButton.icon(
                           onPressed: onCompress,
-                          icon: const Icon(Icons.compress, color: Colors.black, size: 20),
-                          label: const Text('Compress Now', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                          icon: const Icon(Icons.compress,
+                              color: Colors.black, size: 20),
+                          label: const Text('Compress Now',
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.cyanAccent,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14)),
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       IconButton.filledTonal(
                         onPressed: homeController.compressAndShare,
-                        icon: const Icon(Icons.share, color: Colors.white, size: 20),
+                        icon: const Icon(Icons.share,
+                            color: Colors.white, size: 20),
                         style: IconButton.styleFrom(
-                          backgroundColor: Colors.white.withValues(alpha: 0.15),
+                          backgroundColor:
+                              Colors.white.withValues(alpha: 0.15),
                           padding: const EdgeInsets.all(12),
                         ),
                       ),
                       const SizedBox(width: 4),
                       IconButton.filledTonal(
                         onPressed: onDelete,
-                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                        icon: const Icon(Icons.delete_outline,
+                            color: Colors.redAccent, size: 20),
                         style: IconButton.styleFrom(
-                          backgroundColor: Colors.redAccent.withValues(alpha: 0.15),
+                          backgroundColor:
+                              Colors.redAccent.withValues(alpha: 0.15),
                           padding: const EdgeInsets.all(12),
                         ),
                       ),
