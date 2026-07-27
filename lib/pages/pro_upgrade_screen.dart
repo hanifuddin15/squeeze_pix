@@ -34,7 +34,7 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
     ),
     PlanModel(
       title: "Gold Pro",
-      basePrice: null,
+      basePrice: "\$1.99 / mo",
       productId: 'pro_monthly',
       features: [
         "Ad-Free Squeeze Experience",
@@ -48,7 +48,7 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
     ),
     PlanModel(
       title: "Platinum Ultra",
-      basePrice: null,
+      basePrice: "\$2.99 / mo",
       productId: 'ultra_monthly',
       features: [
         "Everything in Gold Pro",

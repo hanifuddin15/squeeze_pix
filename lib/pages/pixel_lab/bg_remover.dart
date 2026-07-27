@@ -107,7 +107,11 @@ class _BackgroundRemoverState extends State<BackgroundRemover>
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.bolt, color: Colors.cyanAccent, size: 18),
+                      const Icon(
+                        Icons.bolt,
+                        color: Colors.cyanAccent,
+                        size: 18,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         '$tokensUsed / $maxTokens Tokens Used Today',
@@ -148,7 +152,7 @@ class _BackgroundRemoverState extends State<BackgroundRemover>
                   const SizedBox(width: 10),
                   const Expanded(
                     child: Text(
-                      'Platinum Ultra Feature',
+                      'Gold Pro Plan',
                       style: TextStyle(
                         color: Colors.amber,
                         fontWeight: FontWeight.bold,
@@ -158,7 +162,7 @@ class _BackgroundRemoverState extends State<BackgroundRemover>
                   ),
                   GestureDetector(
                     onTap: () => Get.to(
-                      () => const ProUpgradeScreen(initialPlanIndex: 2),
+                      () => const ProUpgradeScreen(initialPlanIndex: 1),
                       transition: Transition.rightToLeft,
                     ),
                     child: Container(
@@ -398,9 +402,7 @@ class _BackgroundRemoverState extends State<BackgroundRemover>
             color: const Color(0xFF0F172A).withValues(alpha: 0.9),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             border: Border(
-              top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.1),
-              ),
+              top: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
             ),
           ),
           child: Column(
@@ -420,7 +422,9 @@ class _BackgroundRemoverState extends State<BackgroundRemover>
                   Expanded(
                     flex: 2,
                     child: _buildActionBtn(
-                      label: _isLoading ? 'Processing...' : 'Remove BG (1 Token)',
+                      label: _isLoading
+                          ? 'Processing...'
+                          : 'Remove BG (1 Token)',
                       icon: _isLoading
                           ? Icons.hourglass_empty
                           : Icons.layers_clear_rounded,
@@ -479,9 +483,7 @@ class _BackgroundRemoverState extends State<BackgroundRemover>
           color: gradient == null ? color : null,
           gradient: gradient,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: borderColor ?? Colors.transparent,
-          ),
+          border: Border.all(color: borderColor ?? Colors.transparent),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

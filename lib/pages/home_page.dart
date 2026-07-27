@@ -39,7 +39,10 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const GlassBottomNav(),
+      bottomNavigationBar: Obx(() {
+        final isSelectionMode = homeController.isSelectionMode.value;
+        return isSelectionMode ? const SizedBox.shrink() : const GlassBottomNav();
+      }),
     );
   }
 }
@@ -54,60 +57,69 @@ class ImageGridPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: _buildAppBar(homeController),
-      body: Column(
+      body: Stack(
         children: [
-          // Stats row
-          Obx(() {
-            if (homeController.images.isEmpty) return const SizedBox.shrink();
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              child: Row(
-                children: [
-                  CustomStatCard(
-                    label: "Total Images",
-                    value: "${homeController.images.length}",
-                    icon: Icons.photo_library,
-                    iconColor: Colors.cyanAccent,
-                  ),
-                  const SizedBox(width: 12),
-                  CustomStatCard(
-                    label: "Total Size",
-                    value: formatBytes(
-                      homeController.images.fold<int>(
-                        0,
-                        (sum, img) => sum + img.file.lengthSync(),
+          Column(
+            children: [
+              // Stats row
+              Obx(() {
+                if (homeController.images.isEmpty) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  child: Row(
+                    children: [
+                      CustomStatCard(
+                        label: "Total Images",
+                        value: "${homeController.images.length}",
+                        icon: Icons.photo_library,
+                        iconColor: Colors.cyanAccent,
                       ),
-                      1,
-                    ),
-                    icon: Icons.compress,
-                    iconColor: Colors.amber,
+                      const SizedBox(width: 12),
+                      CustomStatCard(
+                        label: "Total Size",
+                        value: formatBytes(
+                          homeController.images.fold<int>(
+                            0,
+                            (sum, img) => sum + img.file.lengthSync(),
+                          ),
+                          1,
+                        ),
+                        icon: Icons.compress,
+                        iconColor: Colors.amber,
+                      ),
+                    ],
                   ),
-                ],
+                );
+              }),
+
+              // Long-press hint banner
+              Obx(() {
+                if (homeController.images.isEmpty ||
+                    homeController.isSelectionMode.value) {
+                  return const SizedBox.shrink();
+                }
+                return const _LongPressHintBanner();
+              }),
+
+              // Main content
+              Expanded(
+                child: Obx(() {
+                  if (homeController.images.isEmpty) {
+                    return const _EmptyState();
+                  }
+                  return _StaggeredImageGrid(images: homeController.images);
+                }),
               ),
-            );
-          }),
-
-          // Long-press hint banner
-          Obx(() {
-            if (homeController.images.isEmpty ||
-                homeController.isSelectionMode.value) {
-              return const SizedBox.shrink();
-            }
-            return const _LongPressHintBanner();
-          }),
-
-          // Main content
-          Expanded(
-            child: Obx(() {
-              if (homeController.images.isEmpty) {
-                return const _EmptyState();
-              }
-              return _StaggeredImageGrid(images: homeController.images);
-            }),
+            ],
           ),
 
-          // Animated batch action panel
-          _AnimatedBatchPanel(homeController: homeController),
+          // Animated batch action panel floating at bottom, rests at bottom as GlassBottomNav is hidden during selection
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _AnimatedBatchPanel(homeController: homeController),
+          ),
         ],
       ),
     );
