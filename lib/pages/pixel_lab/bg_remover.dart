@@ -93,12 +93,12 @@ class _BackgroundRemoverState extends State<BackgroundRemover>
                   colors: [Color(0xFF1A1060), Color(0xFF0D1B4B)],
                 )
               : const LinearGradient(
-                  colors: [Color(0xFF2D1B00), Color(0xFF1A0F00)],
+                  colors: [Color(0xFF0A1E3F), Color(0xFF07142A)],
                 ),
           border: Border.all(
             color: isUltra
                 ? Colors.cyanAccent.withValues(alpha: 0.4)
-                : Colors.amber.withValues(alpha: 0.4),
+                : Colors.cyanAccent.withValues(alpha: 0.3),
           ),
         ),
         child: isUltra
@@ -148,13 +148,13 @@ class _BackgroundRemoverState extends State<BackgroundRemover>
               )
             : Row(
                 children: [
-                  const Icon(Icons.lock_outline, color: Colors.amber, size: 18),
+                  const Icon(Icons.lock_outline, color: Colors.cyanAccent, size: 18),
                   const SizedBox(width: 10),
                   const Expanded(
                     child: Text(
-                      'Gold Pro Plan',
+                      'Platinum Ultra Plan',
                       style: TextStyle(
-                        color: Colors.amber,
+                        color: Colors.cyanAccent,
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
                       ),
@@ -162,7 +162,7 @@ class _BackgroundRemoverState extends State<BackgroundRemover>
                   ),
                   GestureDetector(
                     onTap: () => Get.to(
-                      () => const ProUpgradeScreen(initialPlanIndex: 1),
+                      () => const ProUpgradeScreen(initialPlanIndex: 2),
                       transition: Transition.rightToLeft,
                     ),
                     child: Container(
@@ -172,7 +172,7 @@ class _BackgroundRemoverState extends State<BackgroundRemover>
                       ),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Colors.amber, Color(0xFFFF8C00)],
+                          colors: [Color(0xFF00C6FF), Color(0xFF0072FF)],
                         ),
                         borderRadius: BorderRadius.circular(20),
                       ),
