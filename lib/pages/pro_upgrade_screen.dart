@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:squeeze_pix/controllers/iap_controller.dart';
 import 'package:squeeze_pix/theme/app_theme.dart';
-import 'package:squeeze_pix/widgets/glassmorphic_button.dart';
+import 'package:squeeze_pix/widgets/glass_card.dart';
 
 class ProUpgradeScreen extends StatefulWidget {
   const ProUpgradeScreen({super.key});
@@ -19,43 +19,45 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
 
   final List<PlanModel> plans = [
     PlanModel(
-      title: "Freemium",
+      title: "Free",
       basePrice: "Free Forever",
       productId: null,
       features: [
-        "Basic Compression",
-        "Basic Editing",
+        "Basic Batch Compression",
+        "Standard Editor Tools",
         "Contains Ads",
-        "No AI Tools",
+        "No AI Tools Access",
       ],
-      color: Colors.white,
-      buttonText: "Current Plan",
+      color: Colors.white70,
+      buttonText: "Current Active Plan",
     ),
     PlanModel(
-      title: "Gold",
-      basePrice: "৳199 / Month",
+      title: "Gold Pro",
+      basePrice: "\$1.99 / Month",
       productId: 'pro_monthly',
       features: [
-        "No Ads",
+        "Ad-Free Squeeze Experience",
         "Fast Batch Processing",
-        "Premium Editing Tools",
-        "No AI Tools",
+        "Premium Photo Editing Suite",
+        "No Compression Limits",
       ],
       color: Colors.amber,
-      buttonText: "Upgrade to Gold",
+      buttonText: "Upgrade to Gold Pro",
+      isPopular: false,
     ),
     PlanModel(
-      title: "Platinum",
-      basePrice: "৳299 / Month",
+      title: "Platinum Ultra",
+      basePrice: "\$2.99 / Month",
       productId: 'ultra_monthly',
       features: [
-        "All Gold Features",
-        "AI Tools Access",
-        "BG Remover",
-        "Priority Support",
+        "Everything in Gold Pro",
+        "Full AI Studio Access",
+        "1-Tap Background Remover",
+        "HD AI Image Upscaler",
+        "Priority Customer Support",
       ],
       color: Colors.cyanAccent,
-      buttonText: "Upgrade to Platinum",
+      buttonText: "Upgrade to Platinum Ultra",
       isPopular: true,
     ),
   ];
@@ -63,7 +65,6 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
   @override
   void initState() {
     super.initState();
-    // Default to Gold or current plan if active
     if (iapController.isUltraUser) {
       selectedPlanIndex.value = 2;
     } else if (iapController.isProUser) {
@@ -74,7 +75,7 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -82,30 +83,42 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
           icon: const Icon(Icons.close, color: Colors.white),
           onPressed: () => Get.back(),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => iapController.restorePurchases(),
+            child: const Text(
+              "Restore",
+              style: TextStyle(color: Colors.cyanAccent, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(gradient: AppTheme.gradient),
-        child: Column(
-          children: [
-            const SizedBox(height: 80),
-            _buildHeader(),
-            const SizedBox(height: 20),
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(bottom: 40),
-                child: Column(
-                  children: [
-                    _buildDynamicFeatures(),
-                    const SizedBox(height: 30),
-                    _buildPlanSelectionList(),
-                    const SizedBox(height: 30),
-                    _buildSubscribeButton(),
-                  ],
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 16),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Column(
+                    children: [
+                      _buildDynamicFeatures(),
+                      const SizedBox(height: 24),
+                      _buildPlanSelectionList(),
+                      const SizedBox(height: 24),
+                      _buildSubscribeButton(),
+                      const SizedBox(height: 16),
+                      _buildLegalFooter(),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -113,19 +126,36 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
 
   Widget _buildHeader() {
     return Column(
-      children: const [
-        Text(
-          "Choose Your Plan",
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: AppTheme.heroCardGradient,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.cyanAccent.withValues(alpha: 0.3),
+                blurRadius: 20,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: const Icon(Icons.workspace_premium_rounded, size: 36, color: Colors.white),
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          "Unlock Premium Power",
           style: TextStyle(
-            fontSize: 28,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 4),
         Text(
-          "Unlock the full power of Squeeze Pix",
-          style: TextStyle(fontSize: 16, color: Colors.white70),
+          "Remove ads, enable AI cutouts & unlimited batch processing",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.7)),
         ),
       ],
     );
@@ -134,48 +164,47 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
   Widget _buildDynamicFeatures() {
     return Obx(() {
       final plan = plans[selectedPlanIndex.value];
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20),
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: plan.color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: plan.color.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
+      return GlassCard(
+        padding: const EdgeInsets.all(20),
+        borderColor: plan.color.withValues(alpha: 0.4),
         child: Column(
           children: [
-            Text(
-              "${plan.title} Features",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: plan.color,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.star, color: plan.color, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  "${plan.title} Plan Highlights",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: plan.color,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             ...plan.features.map(
               (feature) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.only(bottom: 10),
                 child: Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.center, // Centered features
                   children: [
                     Icon(
-                      feature.contains("No") && !feature.contains("Ads")
-                          ? Icons.close
-                          : Icons.check_circle,
-                      color: feature.contains("No") && !feature.contains("Ads")
-                          ? Colors.redAccent.withValues(alpha: 0.8)
+                      feature.startsWith("No ") && !feature.contains("Ads") && !feature.contains("Limits")
+                          ? Icons.remove_circle_outline
+                          : Icons.check_circle_rounded,
+                      color: feature.startsWith("No ") && !feature.contains("Ads") && !feature.contains("Limits")
+                          ? Colors.redAccent
                           : plan.color,
-                      size: 20,
+                      size: 18,
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      feature,
-                      style: const TextStyle(color: Colors.white, fontSize: 15),
+                    Expanded(
+                      child: Text(
+                        feature,
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                      ),
                     ),
                   ],
                 ),
@@ -188,117 +217,105 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
   }
 
   Widget _buildPlanSelectionList() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Obx(
-        () => Column(
-          children: List.generate(plans.length, (index) {
-            final plan = plans[index];
-            final isSelected = selectedPlanIndex.value == index;
+    return Obx(
+      () => Column(
+        children: List.generate(plans.length, (index) {
+          final plan = plans[index];
+          final isSelected = selectedPlanIndex.value == index;
 
-            // Get price from IAP controller if available
-            String displayPrice = plan.basePrice;
-            if (plan.productId != null) {
-              final product = iapController.products.firstWhereOrNull(
-                (p) => p.id == plan.productId,
-              );
-              if (product != null) {
-                displayPrice = "${product.price} / Month"; // Localized price
-              }
+          String displayPrice = plan.basePrice;
+          if (plan.productId != null) {
+            final product = iapController.products.firstWhereOrNull(
+              (p) => p.id == plan.productId,
+            );
+            if (product != null) {
+              displayPrice = "${product.price} / Month";
             }
+          }
 
-            return GestureDetector(
-              onTap: () => selectedPlanIndex.value = index,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? plan.color.withValues(alpha: 0.15)
-                      : Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isSelected
-                        ? plan.color
-                        : Colors.white.withValues(alpha: 0.1),
-                    width: isSelected ? 2 : 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    // Customizable Checkbox
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isSelected ? plan.color : Colors.white38,
-                          width: 2,
-                        ),
-                        color: isSelected ? plan.color : Colors.transparent,
-                      ),
-                      child: isSelected
-                          ? const Icon(
-                              Icons.check,
-                              size: 16,
-                              color: Colors.black,
-                            )
-                          : null,
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          plan.title,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: isSelected ? plan.color : Colors.white,
-                          ),
-                        ),
-                        if (plan.isPopular)
-                          Container(
-                            margin: const EdgeInsets.only(top: 4),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.pinkAccent,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: const Text(
-                              "Best Value",
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const Spacer(),
-                    Text(
-                      displayPrice,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                    ),
-                  ],
+          return GestureDetector(
+            onTap: () => selectedPlanIndex.value = index,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? plan.color.withValues(alpha: 0.15)
+                    : Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: isSelected ? plan.color : Colors.white.withValues(alpha: 0.1),
+                  width: isSelected ? 2 : 1,
                 ),
               ),
-            );
-          }),
-        ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected ? plan.color : Colors.white38,
+                        width: 2,
+                      ),
+                      color: isSelected ? plan.color : Colors.transparent,
+                    ),
+                    child: isSelected
+                        ? const Icon(Icons.check, size: 14, color: Colors.black)
+                        : null,
+                  ),
+                  const SizedBox(width: 14),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            plan.title,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: isSelected ? plan.color : Colors.white,
+                            ),
+                          ),
+                          if (plan.isPopular) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.pinkAccent,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                "BEST VALUE",
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  Text(
+                    displayPrice,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: isSelected ? Colors.white : Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
       ),
     );
   }
@@ -307,41 +324,72 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
     return Obx(() {
       final plan = plans[selectedPlanIndex.value];
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: GlassmorphicButton(
+      return SizedBox(
+        width: double.infinity,
+        height: 54,
+        child: ElevatedButton(
           onPressed: () {
             if (plan.productId == 'pro_monthly') {
               iapController.buyPro();
             } else if (plan.productId == 'ultra_monthly') {
               iapController.buyUltra();
             } else {
-              // Action for Freemium/Current Plan (maybe nothing or info toast)
               if (Get.isSnackbarOpen) Get.closeAllSnackbars();
               Get.snackbar(
                 "Current Plan",
-                "You are on the free plan.",
+                "You are currently using the free tier.",
                 colorText: Colors.white,
-                backgroundColor: Colors.black54,
+                backgroundColor: Colors.black87,
               );
             }
           },
-          width: double.infinity,
-          height: 56,
-          borderRadius: 16,
-          color: plan.color.withValues(alpha: 0.2),
-          borderColor: plan.color.withValues(alpha: 0.5),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: plan.color,
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
           child: Text(
             plan.buttonText,
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Colors.black,
             ),
           ),
         ),
       );
     });
+  }
+
+  Widget _buildLegalFooter() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        TextButton(
+          onPressed: () => iapController.restorePurchases(),
+          child: Text(
+            "Restore Purchases",
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11),
+          ),
+        ),
+        Text("•", style: TextStyle(color: Colors.white.withValues(alpha: 0.3))),
+        TextButton(
+          onPressed: () {},
+          child: Text(
+            "Privacy Policy",
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11),
+          ),
+        ),
+        Text("•", style: TextStyle(color: Colors.white.withValues(alpha: 0.3))),
+        TextButton(
+          onPressed: () {},
+          child: Text(
+            "Terms of Service",
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11),
+          ),
+        ),
+      ],
+    );
   }
 }
 

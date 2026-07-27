@@ -20,6 +20,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/utils/snackbar.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:gal/gal.dart';
+import 'package:squeeze_pix/services/review_service.dart';
 
 /// A data class to pass parameters to the isolate for batch compression.
 class _BatchCompressParams {
@@ -525,6 +526,7 @@ class HomeController extends GetxController {
       showSuccessSnackkbar(
         message: 'Batch compression complete. ZIP file saved.',
       );
+      ReviewService.checkAndPromptReview();
     } catch (e) {
       showErrorSnackkbar(
         message: 'An error occurred during batch compression: $e',

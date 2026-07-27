@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
@@ -151,6 +152,18 @@ class IAPController extends GetxController {
     if (ultraDetails != null) {
       final param = PurchaseParam(productDetails: ultraDetails);
       await _iap.buyNonConsumable(purchaseParam: param);
+    }
+  }
+
+  Future<void> restorePurchases() async {
+    if (await _iap.isAvailable()) {
+      await _iap.restorePurchases();
+      Get.snackbar(
+        "Purchases Restored",
+        "Your previous purchases have been restored.",
+        colorText: Colors.white,
+        backgroundColor: Colors.black87,
+      );
     }
   }
 }

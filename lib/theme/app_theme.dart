@@ -1,30 +1,61 @@
 import 'package:flutter/material.dart';
-
-
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
+  // Brand Primary & Accent Colors
+  static const Color primaryColor = Color(0xFF6366F1); // Modern Electric Indigo
+  static const Color secondaryColor = Color(0xFF06B6D4); // Cyan Glow
+  static const Color accentColor = Color(0xFFF59E0B); // Vibrant Amber
+  static const Color successColor = Color(0xFF10B981); // Emerald Green
+  static const Color errorColor = Color(0xFFEF4444); // Crimson Red
+
+  // Dark Palette
+  static const Color darkBackground = Color(0xFF0B0F19);
+  static const Color darkSurface = Color(0xFF131B2E);
+  static const Color darkCard = Color(0xFF1E293B);
+
+  // Light Palette
+  static const Color lightBackground = Color(0xFFF8FAFC);
+  static const Color lightSurface = Color(0xFFFFFFFF);
+  static const Color lightCard = Color(0xFFF1F5F9);
+
   // ------------------------- LIGHT THEME -------------------------
   static final light = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
-    fontFamily: 'SolaimanLipi',
-    scaffoldBackgroundColor: const Color(0xFFEFF2F5),
+    fontFamily: GoogleFonts.outfit().fontFamily,
+    scaffoldBackgroundColor: lightBackground,
 
     colorScheme: const ColorScheme.light(
-      primary: Color(0xFF3A7BD5),
-      secondary: Color(0xFF00B4D8),
-      surface: Color(0xFF182848),
-
-      onSurface: Color(0xFF1E1E1E),
+      primary: primaryColor,
+      secondary: secondaryColor,
+      tertiary: accentColor,
+      surface: lightSurface,
+      onSurface: Color(0xFF0F172A),
       onPrimary: Colors.white,
-      onSecondary: Colors.black,
-      // background: Color(0xFFEFF2F5),
+      onSecondary: Colors.white,
+      error: errorColor,
     ),
 
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       elevation: 0,
+      centerTitle: true,
       backgroundColor: Colors.transparent,
-      foregroundColor: Color(0xFF1E1E1E),
+      foregroundColor: const Color(0xFF0F172A),
+      titleTextStyle: GoogleFonts.outfit(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: const Color(0xFF0F172A),
+      ),
+    ),
+
+    cardTheme: CardThemeData(
+      color: lightSurface,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+      ),
     ),
   );
 
@@ -32,35 +63,67 @@ class AppTheme {
   static final dark = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    fontFamily: 'SolaimanLipi',
-    scaffoldBackgroundColor: const Color(0xFF0D0F12),
+    fontFamily: GoogleFonts.outfit().fontFamily,
+    scaffoldBackgroundColor: darkBackground,
 
     colorScheme: const ColorScheme.dark(
-      primary: Color(0xFF8F8CFF),
-      secondary: Color(0xFF46CFFF),
-      surface: Color(0xFF182848),
-      onSurface: Color(0xFFE6E6E6),
+      primary: primaryColor,
+      secondary: secondaryColor,
+      tertiary: accentColor,
+      surface: darkSurface,
+      onSurface: Color(0xFFF8FAFC),
       onPrimary: Colors.white,
       onSecondary: Colors.white,
-      // background: Color(0xFF0D0F12),
+      error: errorColor,
     ),
 
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       elevation: 0,
+      centerTitle: true,
       backgroundColor: Colors.transparent,
       foregroundColor: Colors.white,
+      titleTextStyle: GoogleFonts.outfit(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+      ),
+    ),
+
+    cardTheme: CardThemeData(
+      color: darkSurface,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1),
+      ),
     ),
   );
 
-  // ---------------------- UNIVERSAL GRADIENT ----------------------
-  /// New warm-to-cool gradient (Orange → Pink → Purple)
+  // ---------------------- UNIVERSAL GRADIENTS ----------------------
   static const LinearGradient gradient = LinearGradient(
     colors: [
-      Color(0xFF4B6CB7), // Indigo
-      Color(0xFF182848), // Deep Blue
-      Color(0xFF8E9EAB),
+      Color(0xFF0B0F19),
+      Color(0xFF131B2E),
+      Color(0xFF1E1035),
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
-      /// Coral Peach
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [
+      Color(0xFF6366F1),
+      Color(0xFF8B5CF6),
+      Color(0xFFD946EF),
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient heroCardGradient = LinearGradient(
+    colors: [
+      Color(0xFF4F46E5),
+      Color(0xFF06B6D4),
     ],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -69,10 +132,15 @@ class AppTheme {
   // ---------------------- GLASS EFFECT GRADIENT ----------------------
   static final LinearGradient glassGradient = LinearGradient(
     colors: [
-      Colors.white.withValues(alpha: 0.15),
+      Colors.white.withValues(alpha: 0.12),
       Colors.white.withValues(alpha: 0.04),
     ],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
+  );
+
+  static final Border glassBorder = Border.all(
+    color: Colors.white.withValues(alpha: 0.15),
+    width: 1,
   );
 }

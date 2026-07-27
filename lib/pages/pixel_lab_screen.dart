@@ -7,7 +7,7 @@ import 'package:squeeze_pix/pages/pixel_lab/meme_generator.dart';
 import 'package:squeeze_pix/pages/pixel_lab/bg_remover.dart';
 import 'package:squeeze_pix/pages/pixel_lab/ai_enhancer_screen.dart';
 import 'package:squeeze_pix/pages/pixel_lab/ai_headshot_screen.dart';
-import 'package:squeeze_pix/theme/app_theme.dart';
+import 'package:squeeze_pix/widgets/glass_card.dart';
 
 class PixelLabScreen extends GetView<PixelLabController> {
   const PixelLabScreen({super.key});
@@ -15,157 +15,179 @@ class PixelLabScreen extends GetView<PixelLabController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Pixel Lab'),
+        title: const Text('Pixel Lab & Studio', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: true,
       ),
-      body: Container(
-        decoration: BoxDecoration(gradient: AppTheme.gradient),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: GridView.count(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            children: [
-              _buildFeatureCard(
-                title: 'DP Maker',
-                icon: Icons.account_circle,
-                gradient: const LinearGradient(
-                  colors: [Colors.blueAccent, Colors.lightBlueAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 16),
+              child: Text(
+                'AI & Creative Tools',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white.withValues(alpha: 0.9),
+                  letterSpacing: 0.3,
                 ),
-                onTap: () {
-                  Get.to(() => const DPMaker());
-                },
               ),
-              _buildFeatureCard(
-                title: 'ID Photo',
-                icon: Icons.badge,
-                gradient: const LinearGradient(
-                  colors: [Colors.purpleAccent, Colors.deepPurpleAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+            ),
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+              childAspectRatio: 1.1,
+              children: [
+                _buildToolCard(
+                  title: 'DP Maker',
+                  subtitle: 'Profile frames & borders',
+                  icon: Icons.account_circle_outlined,
+                  accentColor: Colors.blueAccent,
+                  badge: 'FREE',
+                  badgeColor: Colors.blueAccent,
+                  onTap: () => Get.to(() => const DPMaker()),
                 ),
-                onTap: () {
-                  Get.to(() => const IDPhotoMaker());
-                },
-              ),
-              _buildFeatureCard(
-                title: 'Meme Gen',
-                icon: Icons.emoji_emotions,
-                gradient: const LinearGradient(
-                  colors: [Colors.orangeAccent, Colors.deepOrangeAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                _buildToolCard(
+                  title: 'ID Photo',
+                  subtitle: 'Passport & Visa sizing',
+                  icon: Icons.badge_outlined,
+                  accentColor: Colors.purpleAccent,
+                  badge: 'FREE',
+                  badgeColor: Colors.purpleAccent,
+                  onTap: () => Get.to(() => const IDPhotoMaker()),
                 ),
-                onTap: () {
-                  Get.to(() => const MemeGenerator());
-                },
-              ),
-               _buildFeatureCard(
-                title: 'Remove BG',
-                 subtitle: 'Ultra', 
-
-                icon: Icons.layers_clear,
-                gradient: const LinearGradient(
-                  colors: [Colors.redAccent, Colors.pinkAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                _buildToolCard(
+                  title: 'Meme Gen',
+                  subtitle: 'Text overlays & templates',
+                  icon: Icons.emoji_emotions_outlined,
+                  accentColor: Colors.orangeAccent,
+                  badge: 'POPULAR',
+                  badgeColor: Colors.amber,
+                  onTap: () => Get.to(() => const MemeGenerator()),
                 ),
-                onTap: () {
-                  Get.to(() => const BackgroundRemover());
-                },
-              ),
-               _buildFeatureCard(
-                title: 'AI Enhancer',
-                icon: Icons.auto_fix_high,
-                 subtitle: 'Ultra', 
-                gradient: const LinearGradient(
-                  colors: [Colors.teal, Colors.greenAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                _buildToolCard(
+                  title: 'Remove BG',
+                  subtitle: '1-tap auto cutout',
+                  icon: Icons.layers_clear_outlined,
+                  accentColor: Colors.pinkAccent,
+                  badge: 'PRO',
+                  badgeColor: Colors.pinkAccent,
+                  onTap: () => Get.to(() => const BackgroundRemover()),
                 ),
-                onTap: () {
-                  Get.to(() => const AIEnhancerScreen());
-                },
-              ),
-               _buildFeatureCard(
-                title: 'Headshot Pro',
-                icon: Icons.person_add_alt_1,
-                subtitle: 'Ultra',
-                gradient: const LinearGradient(
-                  colors: [Colors.indigo, Colors.blue],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                _buildToolCard(
+                  title: 'AI Enhancer',
+                  subtitle: 'Upscale resolution HD',
+                  icon: Icons.auto_fix_high_outlined,
+                  accentColor: Colors.tealAccent,
+                  badge: 'ULTRA',
+                  badgeColor: Colors.cyanAccent,
+                  onTap: () => Get.to(() => const AIEnhancerScreen()),
                 ),
-                onTap: () {
-                  Get.to(() => const AIHeadshotScreen());
-                },
-              ),
-            ],
-          ),
+                _buildToolCard(
+                  title: 'Headshot Pro',
+                  subtitle: 'AI avatar & professional',
+                  icon: Icons.person_add_alt_1_outlined,
+                  accentColor: Colors.indigoAccent,
+                  badge: 'ULTRA',
+                  badgeColor: Colors.indigoAccent,
+                  onTap: () => Get.to(() => const AIHeadshotScreen()),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildFeatureCard({
+  Widget _buildToolCard({
     required String title,
+    required String subtitle,
     required IconData icon,
-    required Gradient gradient,
+    required Color accentColor,
+    required String badge,
+    required Color badgeColor,
     required VoidCallback onTap,
-    String? subtitle,
   }) {
-    return Card(
-      elevation: 8.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(gradient: gradient),
-          child: Stack(
+    return GlassCard(
+      padding: const EdgeInsets.all(14),
+      onTap: onTap,
+      child: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-               Center(
-                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(icon, size: 40, color: Colors.white),
-                    const SizedBox(height: 8),
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                               ),
-               ),
-              if (subtitle != null)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.black26,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      subtitle,
-                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                    ),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: accentColor.withValues(alpha: 0.3),
                   ),
                 ),
+                child: Icon(icon, size: 26, color: accentColor),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: 11,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ],
           ),
-        ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: badgeColor.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: badgeColor.withValues(alpha: 0.4),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                badge,
+                style: TextStyle(
+                  color: badgeColor,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
