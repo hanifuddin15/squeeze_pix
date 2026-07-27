@@ -157,7 +157,10 @@ class _BackgroundRemoverState extends State<BackgroundRemover>
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => Get.to(() => const ProUpgradeScreen(initialPlanIndex: 2)),
+                    onTap: () => Get.to(
+                      () => const ProUpgradeScreen(initialPlanIndex: 2),
+                      transition: Transition.rightToLeft,
+                    ),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
@@ -512,7 +515,10 @@ class _BackgroundRemoverState extends State<BackgroundRemover>
 
   void _removeBG() async {
     if (!_iapController.isUltraUser) {
-      Get.to(() => const ProUpgradeScreen(initialPlanIndex: 2));
+      Get.to(
+        () => const ProUpgradeScreen(initialPlanIndex: 2),
+        transition: Transition.rightToLeft,
+      );
       return;
     }
 

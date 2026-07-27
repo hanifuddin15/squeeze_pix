@@ -12,6 +12,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:squeeze_pix/utils/snackbar.dart';
 import 'package:squeeze_pix/controllers/unity_ads_controller.dart';
 import 'package:squeeze_pix/widgets/result_preview_dialog.dart';
+import 'package:squeeze_pix/controllers/history_controller.dart';
 import 'package:image/image.dart' as img;
 
 enum EditorTool { none, crop, resize, compress, convert, effects }
@@ -105,6 +106,7 @@ class EditorController extends GetxController {
         final bytes = await croppedFile.readAsBytes();
         await _updateEditedImage(bytes);
         if (editedImage.value != null) {
+          _recordHistory(editedImage.value!);
           await showResultPreview(
             originalFile: originalBeforeCrop,
             resultFile: editedImage.value!,
@@ -133,6 +135,7 @@ class EditorController extends GetxController {
       await _updateEditedImage(Uint8List.fromList(img.encodeJpg(resizedImage)));
       activeTool.value = EditorTool.none;
       if (editedImage.value != null) {
+        _recordHistory(editedImage.value!);
         await showResultPreview(
           originalFile: originalBeforeResize,
           resultFile: editedImage.value!,
@@ -185,6 +188,7 @@ class EditorController extends GetxController {
       await _updateEditedImage(resultBytes);
       activeTool.value = EditorTool.none;
       if (editedImage.value != null) {
+        _recordHistory(editedImage.value!);
         await showResultPreview(
           originalFile: originalBeforeCompress,
           resultFile: editedImage.value!,
@@ -251,6 +255,7 @@ class EditorController extends GetxController {
       );
       activeTool.value = EditorTool.none;
       if (editedImage.value != null) {
+        _recordHistory(editedImage.value!);
         await showResultPreview(
           originalFile: originalBeforeConvert,
           resultFile: editedImage.value!,
@@ -325,8 +330,9 @@ class EditorController extends GetxController {
         }
 
         await _updateEditedImage(Uint8List.fromList(img.encodeJpg(newImage)));
-        resetEffects(); // Reset sliders and UI filter after applying to bake the changes
+        resetEffects();
         if (editedImage.value != null) {
+          _recordHistory(editedImage.value!);
           await showResultPreview(
             originalFile: originalBeforeEffect,
             resultFile: editedImage.value!,
@@ -447,6 +453,13 @@ class EditorController extends GetxController {
     final tempFile = File('${tempDir.path}/$fileName');
     await tempFile.writeAsBytes(imageBytes);
     editedImage.value = tempFile;
+  }
+
+  /// Records a processed file to the unified history.
+  void _recordHistory(File file) {
+    try {
+      Get.find<HistoryController>().addHistoryItem(file, HistoryType.editor);
+    } catch (_) {}
   }
 
   void shareImage() {

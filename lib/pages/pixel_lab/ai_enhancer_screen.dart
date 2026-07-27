@@ -36,13 +36,6 @@ class _AIEnhancerScreenState extends State<AIEnhancerScreen>
     _pulseAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-
-    // Immediately redirect non-Ultra users to the upgrade screen
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_iapController.isUltraUser) {
-        Get.off(() => const ProUpgradeScreen(initialPlanIndex: 2));
-      }
-    });
   }
 
   @override

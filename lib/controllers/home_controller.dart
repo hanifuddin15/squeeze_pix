@@ -22,6 +22,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:gal/gal.dart';
 import 'package:squeeze_pix/services/review_service.dart';
 import 'package:squeeze_pix/widgets/result_preview_dialog.dart';
+import 'package:squeeze_pix/controllers/history_controller.dart';
 
 /// A data class to pass parameters to the isolate for batch compression.
 class _BatchCompressParams {
@@ -527,6 +528,15 @@ class HomeController extends GetxController {
       showSuccessSnackkbar(
         message: 'Batch compression complete. ZIP file saved.',
       );
+
+      // Record each compressed file to history
+      try {
+        final historyCtrl = Get.find<HistoryController>();
+        for (final f in imagesToCompress) {
+          historyCtrl.addHistoryItem(f, HistoryType.compression);
+        }
+      } catch (_) {}
+
       ReviewService.checkAndPromptReview();
     } catch (e) {
       showErrorSnackkbar(
@@ -657,6 +667,12 @@ class HomeController extends GetxController {
           resultFile: lastCompressed.value!,
           operationLabel: 'Single Compress',
         );
+
+        // Record to history
+        try {
+          final historyCtrl = Get.find<HistoryController>();
+          historyCtrl.addHistoryItem(lastCompressed.value!, HistoryType.compression);
+        } catch (_) {}
       }
     } finally {
       isCompressing.value = false;
