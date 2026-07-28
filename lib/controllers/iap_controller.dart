@@ -22,8 +22,8 @@ class IAPController extends GetxController {
   final InAppPurchase _iap = InAppPurchase.instance;
   late StreamSubscription<List<PurchaseDetails>> _purchaseSubscription;
 
-  static const String _proId = 'pro_monthly';
-  static const String _ultraId = 'ultra_monthly';
+  static const String _proId = 'gold_monthly';
+  static const String _ultraId = 'platinum_monthly';
   final Set<String> _productIds = {_proId, _ultraId};
 
   bool get isProUser => isPro.value || isUltra.value; // Gold or Platinum
@@ -34,7 +34,7 @@ class IAPController extends GetxController {
     super.onInit();
     _loadPersistence();
     _checkTokenReset();
-    
+
     final Stream<List<PurchaseDetails>> purchaseUpdated = _iap.purchaseStream;
     _purchaseSubscription = purchaseUpdated.listen(
       (purchaseDetailsList) {
@@ -94,13 +94,13 @@ class IAPController extends GetxController {
     return false;
   }
 
-  int get remainingTokens => isUltraUser ? (maxDailyTokens - dailyTokensUsed.value) : 0;
+  int get remainingTokens =>
+      isUltraUser ? (maxDailyTokens - dailyTokensUsed.value) : 0;
 
   Future<void> _initializeIAP() async {
     storeAvailable.value = await _iap.isAvailable();
     if (storeAvailable.value) {
       await _loadProducts();
-      await _iap.restorePurchases();
     }
     isLoading.value = false;
   }
@@ -120,14 +120,26 @@ class IAPController extends GetxController {
 
   void _listenToPurchaseUpdates(List<PurchaseDetails> purchaseDetailsList) {
     for (var purchaseDetails in purchaseDetailsList) {
-      if (purchaseDetails.status == PurchaseStatus.purchased ||
-          purchaseDetails.status == PurchaseStatus.error) {
+      if (purchaseDetails.status == PurchaseStatus.error) {
         log("Purchase Error: ${purchaseDetails.error}");
+        Get.snackbar(
+          "Purchase Failed",
+          purchaseDetails.error?.message ??
+              "An error occurred during the transaction.",
+          colorText: Colors.white,
+          backgroundColor: Colors.redAccent,
+        );
       } else if (purchaseDetails.status == PurchaseStatus.purchased ||
           purchaseDetails.status == PurchaseStatus.restored) {
         if (purchaseDetails.productID == _proId) isPro.value = true;
         if (purchaseDetails.productID == _ultraId) isUltra.value = true;
         _savePersistence();
+        Get.snackbar(
+          "Success",
+          "Thank you for upgrading!",
+          colorText: Colors.white,
+          backgroundColor: Colors.green,
+        );
       }
       if (purchaseDetails.pendingCompletePurchase) {
         _iap.completePurchase(purchaseDetails);
@@ -136,22 +148,54 @@ class IAPController extends GetxController {
   }
 
   Future<void> buyPro() async {
+    if (!storeAvailable.value) {
+      Get.snackbar(
+        "Store Unavailable",
+        "The App Store/Play Store is currently unavailable. Please check your connection.",
+        colorText: Colors.white,
+        backgroundColor: Colors.redAccent,
+      );
+      return;
+    }
     final ProductDetails? proDetails = products.firstWhereOrNull(
       (p) => p.id == _proId,
     );
     if (proDetails != null) {
       final param = PurchaseParam(productDetails: proDetails);
       await _iap.buyNonConsumable(purchaseParam: param);
+    } else {
+      Get.snackbar(
+        "Product Unavailable",
+        "Gold Pro product could not be loaded. Please try again later.",
+        colorText: Colors.white,
+        backgroundColor: Colors.redAccent,
+      );
     }
   }
 
   Future<void> buyUltra() async {
+    if (!storeAvailable.value) {
+      Get.snackbar(
+        "Store Unavailable",
+        "The App Store/Play Store is currently unavailable. Please check your connection.",
+        colorText: Colors.white,
+        backgroundColor: Colors.redAccent,
+      );
+      return;
+    }
     final ProductDetails? ultraDetails = products.firstWhereOrNull(
       (p) => p.id == _ultraId,
     );
     if (ultraDetails != null) {
       final param = PurchaseParam(productDetails: ultraDetails);
       await _iap.buyNonConsumable(purchaseParam: param);
+    } else {
+      Get.snackbar(
+        "Product Unavailable",
+        "Platinum Ultra product could not be loaded. Please try again later.",
+        colorText: Colors.white,
+        backgroundColor: Colors.redAccent,
+      );
     }
   }
 

@@ -31,8 +31,8 @@ android {
         applicationId = "com.hanif.squeezepix"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 30
-        versionName = "3.1.29"
+        versionCode = 33
+        versionName = "3.3.32"
         multiDexEnabled = true
     }
 

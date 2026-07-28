@@ -35,7 +35,7 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
     PlanModel(
       title: "Gold Pro",
       basePrice: "\$1.99 / mo",
-      productId: 'pro_monthly',
+      productId: 'gold_monthly',
       features: [
         "Ad-Free Squeeze Experience",
         "Fast Batch Processing",
@@ -49,7 +49,7 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
     PlanModel(
       title: "Platinum Ultra",
       basePrice: "\$2.99 / mo",
-      productId: 'ultra_monthly',
+      productId: 'platinum_monthly',
       features: [
         "Everything in Gold Pro",
         "Full AI Studio Access",
@@ -343,9 +343,9 @@ class _ProUpgradeScreenState extends State<ProUpgradeScreen> {
         height: 54,
         child: ElevatedButton(
           onPressed: () {
-            if (plan.productId == 'pro_monthly') {
+            if (plan.productId == 'gold_monthly') {
               iapController.buyPro();
-            } else if (plan.productId == 'ultra_monthly') {
+            } else if (plan.productId == 'platinum_monthly') {
               iapController.buyUltra();
             } else {
               if (Get.isSnackbarOpen) Get.closeAllSnackbars();

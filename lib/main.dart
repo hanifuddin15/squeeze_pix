@@ -9,8 +9,8 @@ import 'package:squeeze_pix/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Get.put(IAPController(), permanent: true);
   await GetStorage.init();
+  Get.put(IAPController(), permanent: true);
   runApp(const MyApp());
 }
 
